@@ -39,7 +39,6 @@ class Punic(object):
                 specifications.append(specification)
         return specifications
 
-
     @property
     def dependencies(self):
         if not hasattr(self, "_dependencies"):
@@ -55,14 +54,15 @@ class Punic(object):
 
         return self._dependencies
 
-    def update(self, dependencies = None):
-        pass
+    def update(self):
+        logging.info("# Updating dependencies")
+        for dependency in self.dependencies:
+            dependency.update()
 
     def resolve(self, dependencies = None):
+        logging.info('# Resolving versions')
         specs = [dependency.resolved_spec for dependency in self.dependencies]
-        logging.info('# Updating Cartfile.resolved')
         cartfile_resolve_path = self.root_path / "Cartfile.resolved"
-
         specs = [unicode(spec) for spec in specs]
         cartfile_resolve_path.open("w").write("\n".join(specs) + "\n")
 
@@ -165,8 +165,9 @@ class Dependency(object):
 
         self.repo_path = self.punic.scratch_directory / self.name
 
-        # Clone repo and checkout the latest tag
-        self.update()
+        self.repo = None
+        if self.repo_path.exists:
+            self.repo = pygit2.Repository(str(self.repo_path))
 
     def __repr__(self):
         return "Dependency({})".format(self.spec)
@@ -177,6 +178,7 @@ class Dependency(object):
                 logging.info("# Cloning: {}".format(self.spec))
                 command = "git clone --recursive '{}'".format(self.spec.remote_url)
                 command = shlex.split(command)
+                self.repo = pygit2.Repository(str(self.repo_path))
         else:
             with cwd(str(self.repo_path)):
                 logging.info("# Fetching: {}".format(self.spec))
@@ -184,7 +186,6 @@ class Dependency(object):
                 command = shlex.split(command)
                 subprocess.check_output(command)
         self.repo = pygit2.Repository(str(self.repo_path))
-
         versions = sorted(self.versions)
         if not versions:
             raise Exception("No tags")

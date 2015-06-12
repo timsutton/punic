@@ -16,6 +16,7 @@ def main():
 @click.argument('only_dependencies', nargs=-1)
 def update(configuration, platform, no_build, only_dependencies):
     punic = Punic(Path.cwd())
+    punic.update()
     punic.resolve()
     if platform == "all":
         platform = None
@@ -23,9 +24,15 @@ def update(configuration, platform, no_build, only_dependencies):
         punic.build(configuration = configuration, platform = platform, only_dependencies=only_dependencies)
 
 @main.command()
-def bootstrap():
+@click.option("--configuration", type=unicode, default=None, help="the Xcode configuration to build (ignored if --no-build option is present)")
+@click.option("--platform", type=unicode, default="all", help="the platform (iOS or Mac) to build for (ignored if --no-build option is present)")
+@click.argument('only_dependencies', nargs=-1)
+def bootstrap(configuration, platform, only_dependencies):
     punic = Punic(Path.cwd())
-    punic.build()
+    punic.update()
+    if platform == "all":
+        platform = None
+    punic.build(configuration = configuration, platform = platform, only_dependencies=only_dependencies)
 
 if __name__ == '__main__':
     import sys
