@@ -66,6 +66,9 @@ class Punic(object):
         specs = [unicode(spec) for spec in specs]
         cartfile_resolve_path.open("w").write("\n".join(specs) + "\n")
 
+    def checkout(self):
+        pass
+
     def build(self, configuration = None, platform = None, only_dependencies = None):
         for dependency in self.dependencies:
             if only_dependencies:

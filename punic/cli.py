@@ -1,5 +1,7 @@
 __author__ = 'schwa'
 
+import warnings
+
 import click
 from pathlib import Path
 from punic import *
@@ -18,6 +20,7 @@ def update(configuration, platform, no_build, only_dependencies):
     punic = Punic(Path.cwd())
     punic.update()
     punic.resolve()
+    punic.checkout()
     if platform == "all":
         platform = None
     if no_build == False:
@@ -28,8 +31,10 @@ def update(configuration, platform, no_build, only_dependencies):
 @click.option("--platform", type=unicode, default="all", help="the platform (iOS or Mac) to build for (ignored if --no-build option is present)")
 @click.argument('only_dependencies', nargs=-1)
 def bootstrap(configuration, platform, only_dependencies):
+    warnings.warn("Bootstrap doesn't currently build what is in the .resolved file")
     punic = Punic(Path.cwd())
     punic.update()
+    punic.checkout()
     if platform == "all":
         platform = None
     punic.build(configuration = configuration, platform = platform, only_dependencies=only_dependencies)
@@ -40,6 +45,7 @@ def bootstrap(configuration, platform, only_dependencies):
 @click.argument('only_dependencies', nargs=-1)
 def build(configuration, platform, only_dependencies):
     punic = Punic(Path.cwd())
+    punic.checkout()
     if platform == "all":
         platform = None
     punic.build(configuration = configuration, platform = platform, only_dependencies=only_dependencies)
