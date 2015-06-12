@@ -64,7 +64,7 @@ class Punic(object):
         cartfile_resolve_path = self.root_path / "Cartfile.resolved"
 
         specs = [unicode(spec) for spec in specs]
-        cartfile_resolve_path.open("w").write("\n".join(specs))
+        cartfile_resolve_path.open("w").write("\n".join(specs) + "\n")
 
     def build(self, configuration = None, platform = None, only_dependencies = None):
         for dependency in self.dependencies:
@@ -219,6 +219,16 @@ class Dependency(object):
             project = Project(project_path)
 
         return project
+
+    @property
+    def resolved_spec(self):
+
+        head = self.repo.lookup_reference('HEAD').resolve()
+        version = head.get_object().oid
+
+        spec = '{} "{}"'.format(self.spec.origin, version)
+
+        return Specification(spec)
 
     def build(self, configuration = None, platform = None):
         project = self.project
