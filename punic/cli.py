@@ -34,6 +34,16 @@ def bootstrap(configuration, platform, only_dependencies):
         platform = None
     punic.build(configuration = configuration, platform = platform, only_dependencies=only_dependencies)
 
+@main.command()
+@click.option("--configuration", type=unicode, default=None, help="the Xcode configuration to build (ignored if --no-build option is present)")
+@click.option("--platform", type=unicode, default="all", help="the platform (iOS or Mac) to build for (ignored if --no-build option is present)")
+@click.argument('only_dependencies', nargs=-1)
+def build(configuration, platform, only_dependencies):
+    punic = Punic(Path.cwd())
+    if platform == "all":
+        platform = None
+    punic.build(configuration = configuration, platform = platform, only_dependencies=only_dependencies)
+
 if __name__ == '__main__':
     import sys
     import os
