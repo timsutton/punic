@@ -239,5 +239,5 @@ class Dependency(object):
             if output_path.exists():
                 shutil.rmtree(str(output_path))
 
-            shutil.copytree(str(result), str(output_path))
+            shutil.copytree(str(result), str(output_path), symlinks=True)
 
