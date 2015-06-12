@@ -14,6 +14,9 @@ import pygit2
 from utilities import *
 from xcode import *
 
+# TODO: Really simple logging config for now.
+logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+
 class Punic(object):
     def __init__(self, root_path):
         self.root_path = root_path
@@ -56,8 +59,8 @@ class Punic(object):
         pass
 
     def resolve(self, dependencies = None):
-        specs = [dependency.spec for dependency in self.dependencies]
-        logging.info('Updating Cartfile.resolved')
+        specs = [dependency.resolved_spec for dependency in self.dependencies]
+        logging.info('# Updating Cartfile.resolved')
         cartfile_resolve_path = self.root_path / "Cartfile.resolved"
 
         specs = [unicode(spec) for spec in specs]
@@ -68,7 +71,7 @@ class Punic(object):
             if only_dependencies:
                 if dependency.name not in only_dependencies:
                     continue
-            logging.info("Building {}".format(dependency))
+            logging.info("# Building {}".format(dependency))
             dependency.build(configuration, platform)
 
 
@@ -107,6 +110,8 @@ class Specification(object):
     @property
     def spec(self):
         return self.origin + (" {}".format(self.version) if self.version else "")
+
+
 
 class SpecVersion:
     def __init__(self, string):
@@ -230,7 +235,6 @@ class Dependency(object):
 
             # TODO: Should be unique per repo/version.
             symroot = self.punic.scratch_directory / "builds"
-
 
             build = Build(target, symroot, configuration)
             result = build.run()
