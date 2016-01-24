@@ -42,7 +42,7 @@ See https://github.com/Carthage/Carthage for usage information
 
 Punic supports Cartfile and Cartfile.resolved
 
-It currently supports a limited subset of Carthage features including limited subsets of "update" and "bootstrap".
+It currently supports a limited subset of Carthage features including limited subsets of 'update' and 'bootstrap'.
 
 ## License
 

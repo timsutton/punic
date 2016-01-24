@@ -1,123 +1,125 @@
 __author__ = 'schwa'
-__all__ = ["Project", "Target", "Build"]
+__all__ = ['Project', 'Target', 'Build', 'xcodebuild']
 
 import re
 import shlex
-import subprocess
+import logging
 import tempfile
 
-from pathlib import Path
-from utilities import *
+from pathlib2 import Path
+from memoize import mproperty
+
+from utilities import run
 
 class Project(object):
-
-    def __init__(self, path):
+    def __init__(self, punic, path, identifier):
+        self.punic = punic
         self.path = path
+        self.identifier = identifier
 
-        command = "xcodebuild -project '{}' -list".format(self.path.name)
-        command = shlex.split(command)
-        with cwd(str(self.path.parent)):
-            result = subprocess.check_output(command, stderr=subprocess.PIPE)
+        self.targets, self.configurations, self.schemes = self.info
 
-            lines = iter(result.splitlines())
+    @mproperty
+    def info(self):
+        command = xcodebuild(project=self.path, command='-list')
+        output = self.punic.cacheable_runner.run(cache_key=self.identifier, command=command)
+        targets, configurations, schemes = parse_info(output)
+        return targets, configurations, schemes
 
-            targets = []
-            configurations = []
-            schemes = []
+    @mproperty
+    def base_command(self):
+        command = 'xcodebuild -project "{}"'.format(self.path.name)
+        return shlex.split(command)
 
-            try:
+    def build_settings(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None, echo = True):
+        if not arguments:
+            arguments = dict()
+        command = xcodebuild(project=self.path, command='-showBuildSettings', scheme=scheme, target=target,
+                             configuration=configuration, sdk=sdk, arguments=arguments)
+        output = self.punic.cacheable_runner.run(cache_key=self.identifier, command=command)
+        return parse_build_settings(output)
+
+    def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None, echo = True, temp_symroot = False):
+        if not arguments:
+            arguments = dict()
+
+        if temp_symroot:
+            symroot = tempfile.mkdtemp()
+            arguments['SYMROOT'] = symroot
+
+        command = xcodebuild(project=self.path, command='build', scheme=scheme, target=target,
+                             configuration=configuration, sdk=sdk, arguments=arguments)
+
+        run(command, echo = echo)
+
+        build_settings = self.build_settings(scheme=scheme, target=target, configuration=configuration, sdk=sdk,
+                                             arguments=arguments, echo = echo)
+
+        return Path('{TARGET_BUILD_DIR}/{FULL_PRODUCT_NAME}/{EXECUTABLE_NAME}'.format(**build_settings))
+
+
+########################################################################################################################
+
+def xcodebuild(project, command, scheme=None, target=None, configuration=None, sdk=None, jobs=None, arguments=None):
+    if not arguments:
+        arguments = dict()
+
+    command = ['/usr/bin/xcrun', 'xcodebuild'] \
+              + ['-project', str(project)] \
+              + (['-scheme', scheme] if scheme else []) \
+              + (['-target', target] if target else []) \
+              + (['-configuration', configuration] if configuration else []) \
+              + (['-sdk', sdk] if sdk else []) \
+              + (['-jobs', str(jobs)] if jobs else []) \
+              + ['{}={}'.format(key, value) for key, value in arguments.items()] \
+              + [command]
+    return command
+
+
+########################################################################################################################
+
+def parse_info(string):
+    lines = iter(string.splitlines())
+    targets = []
+    configurations = []
+    schemes = []
+
+    try:
+        while True:
+            line = lines.next()
+            if re.match(r'^\s+Targets:$', line):
                 while True:
                     line = lines.next()
-                    if re.match(r"^\s+Targets:$", line):
-                        while True:
-                            line = lines.next()
-                            match = re.match(r"        (.+)", line)
-                            if not match:
-                                break
-                            else:
-                                targets.append(match.group(1))
-                    if re.match(r"^\s+Build Configurations:$", line):
-                        while True:
-                            line = lines.next()
-                            match = re.match(r"        (.+)", line)
-                            if not match:
-                                break
-                            else:
-                                configurations.append(match.group(1))
-                    if re.match(r"^\s+Schemes:$", line):
-                        while True:
-                            line = lines.next()
-                            match = re.match(r"        (.+)", line)
-                            if not match:
-                                break
-                            else:
-                                schemes.append(match.group(1))
+                    match = re.match(r'        (.+)', line)
+                    if not match:
+                        break
+                    else:
+                        targets.append(match.group(1))
+            if re.match(r'^\s+Build Configurations:$', line):
+                while True:
+                    line = lines.next()
+                    match = re.match(r'        (.+)', line)
+                    if not match:
+                        break
+                    else:
+                        configurations.append(match.group(1))
+            if re.match(r'^\s+Schemes:$', line):
+                while True:
+                    line = lines.next()
+                    match = re.match(r'        (.+)', line)
+                    if not match:
+                        break
+                    else:
+                        schemes.append(match.group(1))
 
-            except StopIteration:
-                pass
+    except StopIteration:
+        pass
 
-            self.targets = [Target(self, target) for target in targets]
-
-class Target(object):
-    def __init__(self, project, name):
-        self.project = project
-        self.name = name
-
-    def __repr__(self):
-        return "Target(\"{}\" ({}))".format(self.name, self.build_settings["PLATFORM_NAME"])
-
-    @property
-    def base_command(self):
-        command = "xcodebuild -project '{}' -target '{}'".format(self.project.path.name, self.name)
-        command = shlex.split(command)
-        return command
-
-    @property
-    def build_settings(self):
-        if not hasattr(self, "_build_settings"):
-            self._build_settings = get_build_settings(self, self.base_command)
-        return self._build_settings
-
-    @property
-    def product_type(self):
-        return self.build_settings.get("PACKAGE_TYPE", None)
-
-def get_build_settings(target, base_command):
-    command = base_command + ["-showBuildSettings"]
-    with cwd(str(target.project.path.parent)):
-        result = subprocess.check_output(command, stderr = subprocess.PIPE)
-        lines = iter(result.splitlines())
-        matches = (re.match(r"^    (.+) = (.+)$", line) for line in lines)
-        matches = (match.groups() for match in matches if match)
-        return dict(matches)
+    return targets, configurations, schemes
 
 
-class Build(object):
-    def __init__(self, target, symroot = None, configuration = None):
-        self.target = target
-        self.symroot = symroot if symroot else tempfile.mkdtemp()
-        self.configuration = configuration
-
-    @property
-    def base_command(self):
-        return self.target.base_command + ["SYMROOT={}".format(self.symroot)]
-
-    @property
-    def build_settings(self):
-        if not hasattr(self, "_build_settings"):
-            self._build_settings = get_build_settings(self.target, self.base_command)
-        return self._build_settings
-
-    def run(self):
-        command = self.base_command + ["build"]
-        with cwd(str(self.target.project.path.parent)):
-            try:
-                result = subprocess.check_output(command, stderr = subprocess.STDOUT)
-            except subprocess.CalledProcessError, ex:
-                print "--------error------"
-                print ex.cmd
-                print ex.message
-                print ex.returncode
-                print ex.output
-            return Path("{TARGET_BUILD_DIR}/{FULL_PRODUCT_NAME}".format(**self.build_settings))
-
+def parse_build_settings(string):
+    lines = iter(string.splitlines())
+    matches = (re.match(r'^    (.+) = (.+)$', line) for line in lines)
+    matches = (match.groups() for match in matches if match)
+    return dict(matches)

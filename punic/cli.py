@@ -1,58 +1,90 @@
 __author__ = 'schwa'
 
-import warnings
-
 import click
-from pathlib import Path
-from punic import *
+from pathlib2 import Path
 
+from punic.utilities import *
+from punic.model import *
+import shutil
+import verboselogs
 
 @click.group()
 def main():
     pass
 
 @main.command()
-@click.option("--configuration", type=unicode, default=None, help="the Xcode configuration to build (ignored if --no-build option is present)")
-@click.option("--platform", type=unicode, default="all", help="the platform (iOS or Mac) to build for (ignored if --no-build option is present)")
-@click.option("--no-build", is_flag=True, help="skip the building of dependencies after updating")
-@click.argument('only_dependencies', nargs=-1)
-def update(configuration, platform, no_build, only_dependencies):
-    punic = Punic(Path.cwd())
-    punic.update()
+def resolve():
+    punic = Punic()
     punic.resolve()
-    punic.checkout()
-    if platform == "all":
-        platform = None
-    if no_build == False:
-        punic.build(configuration = configuration, platform = platform, only_dependencies=only_dependencies)
 
 @main.command()
-@click.option("--configuration", type=unicode, default=None, help="the Xcode configuration to build (ignored if --no-build option is present)")
-@click.option("--platform", type=unicode, default="all", help="the platform (iOS or Mac) to build for (ignored if --no-build option is present)")
-@click.argument('only_dependencies', nargs=-1)
-def bootstrap(configuration, platform, only_dependencies):
-    warnings.warn("Bootstrap doesn't currently build what is in the .resolved file")
-    punic = Punic(Path.cwd())
-    punic.update()
-    punic.checkout()
-    if platform == "all":
-        platform = None
-    punic.build(configuration = configuration, platform = platform, only_dependencies=only_dependencies)
+@click.option('--configuration', default=None)
+@click.option('--platform', default=None)
+def build(configuration, platform):
+    with timeit('build'):
+        platforms = [Platform.platform_for_nickname(platform)]
+        punic = Punic()
+        punic.build(configuration=configuration, platforms=platforms)
+
 
 @main.command()
-@click.option("--configuration", type=unicode, default=None, help="the Xcode configuration to build (ignored if --no-build option is present)")
-@click.option("--platform", type=unicode, default="all", help="the platform (iOS or Mac) to build for (ignored if --no-build option is present)")
-@click.argument('only_dependencies', nargs=-1)
-def build(configuration, platform, only_dependencies):
+@click.option('--configuration', default=None)
+@click.option('--platform', default=None)
+def bootstrap(configuration, platform):
+    with timeit('build'):
+        platforms = [Platform.platform_for_nickname(platform)]
+        punic = Punic()
+        punic.build(configuration=configuration, platforms= platforms)
+
+
+
+@main.command()
+@click.option('--configuration', default=None)
+@click.option('--platform', default=None)
+def clean(configuration, platform):
+    if not platform:
+        platforms = Platform.all
+    else:
+        platforms = [Platform.platform_for_nickname(platform)]
+    punic = Punic()
+    punic.clean(configuration=configuration, platforms= platforms)
+
+
+@main.command()
+def nuke():
     punic = Punic(Path.cwd())
-    punic.checkout()
-    if platform == "all":
-        platform = None
-    punic.build(configuration = configuration, platform = platform, only_dependencies=only_dependencies)
+    clean(configuration = None, platform = None)
+    shutil.rmtree(str(punic.scratch_directory))
+
+# import toml
+# import yaml
+#
+# @main.command()
+# def init():
+#
+#     d = {
+#         'name': 'Example Name',
+#         'platforms': ['iOS', 'tvOS'],
+#         'default_configuration': 'Debug',
+#         'requirements': [
+#             'Xcode "7.3.1"'
+#         ],
+#         'dependencies': [
+#             'github "foo/bar" ~> 0.1',
+#         ],
+#         'build_order': [
+#             'github "foo/bar" "0.1"',
+#         ]
+#     }
+#
+#     yaml.dump(d, Path('/Users/schwa/Desktop/punic.yaml').open('wb'))
 
 if __name__ == '__main__':
     import sys
     import os
-    sys.argv += ["update", "--platform=iOS"]
-    os.chdir("/Users/schwa/Documents/Personal/Work/3DRobotics/Source/iSolo")
+
+    os.chdir('/Users/schwa/Projects/punic/Testing/3dr-Site-Scan-iOS')
+    sys.argv += ['build', '--configuration=Debug', '--platform=iOS']
+#    sys.argv += ['clean']
+#    sys.argv += ['init']
     main()
