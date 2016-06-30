@@ -24,11 +24,6 @@ logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
 ########################################################################################################################
 
-class Context(object):
-    pass
-
-
-########################################################################################################################
 
 class Punic(object):
     def __init__(self, root_path = None):
@@ -58,7 +53,7 @@ class Punic(object):
         self.root_project = self.repository_for_identifier(root_project_identifier)
 
     def resolve(self):
-        logging.info("# Resolving")
+        logging.info("#### Resolving")
         build_order = Resolver(self).resolve()
 
         for index, value in enumerate(build_order):
@@ -71,26 +66,21 @@ class Punic(object):
         cartfile = Cartfile(specifications = specifications)
         cartfile.write((self.root_path / 'Cartfile.resolved').open('w'))
 
-    def clean(self, configuration, platforms):
-        for platform, project, scheme in self.scheme_walker(configuration, platforms):
-            for sdk in platform.sdks:
-                command = xcode.xcodebuild(project = project.path, command = 'clean', scheme = scheme, sdk = sdk, configuration = configuration)
-                run(command, echo = True)
+    def fetch(self):
+        logging.info("#### Fetching")
+
+        for project in self.xcode_projects(fetch = True):
+            pass
 
     def build(self, configuration, platforms):
+        logging.info("#### Building")
 
-        cartfile = Cartfile()
+        # cartfile = Cartfile()
+        # cartfile.read((self.root_path / 'Cartfile'))
 
-        cartfile.read((self.root_path / 'Cartfile'))
-        print cartfile.specifications
-
-
-        for platform, project, scheme in self.scheme_walker(configuration, platforms):
-
+        for platform, project, scheme in self.scheme_walker(configuration, platforms, checkout = False):
             with timeit(project.path.name):
-
                 platform_build_path = self.build_path / platform.output_directory_name
-
                 logging.info('#' * 80)
                 logging.info('# Building {} {}'.format(project.path.name, scheme))
 
@@ -137,7 +127,14 @@ class Punic(object):
                             for f in modules_source_path.glob("*"):
                                 shutil.copyfile(str(f), str(modules_destination_path / f.name))
 
-    def xcode_projects(self, checkout = False):
+    def clean(self, configuration, platforms):
+        logging.info("#### Cleaning")
+        for platform, project, scheme in self.scheme_walker(configuration, platforms, checkout = False):
+            for sdk in platform.sdks:
+                command = xcode.xcodebuild(project = project.path, command = 'clean', scheme = scheme, sdk = sdk, configuration = configuration)
+                run(command, echo = True)
+
+    def xcode_projects(self, fetch = False):
         all_projects = []
 
         cartfile = Cartfile()
@@ -146,7 +143,7 @@ class Punic(object):
         dependencies = [(spec.identifier, Tag(spec.predicate.value)) for spec in cartfile.specifications]
 
         resolver = Resolver(self)
-        build_order = resolver.resolve_versions(dependencies)
+        build_order = resolver.resolve_versions(dependencies, fetch = fetch)
 
         for (identifier, tag) in build_order:
             project = self.repository_for_identifier(identifier)
@@ -154,15 +151,16 @@ class Punic(object):
             revision = tag.tag
 
             checkout_path = self.checkouts_path / project.path.name
-            if not checkout_path.exists():
-                raise Exception('No checkout at path: {}'.format(checkout_path))
 
-            if checkout == True:
+            if fetch == True:
                 project.checkout(revision)
                 logging.info('# Copying project to Carthage/Checkouts')
                 if checkout_path.exists():
                     shutil.rmtree(str(checkout_path))
                 shutil.copytree(str(project.path), str(checkout_path), ignore=shutil.ignore_patterns('.git'))
+
+            if not checkout_path.exists():
+                raise Exception('No checkout at path: {}'.format(checkout_path))
 
             carthage_symlink_path = checkout_path / 'Carthage'
             if carthage_symlink_path.exists():
@@ -180,9 +178,8 @@ class Punic(object):
             all_projects += projects
         return all_projects
 
-    def scheme_walker(self, configuration, platforms):
-        projects = self.xcode_projects()
-        platforms = [Platform.platform_for_nickname('iOS')]
+    def scheme_walker(self, configuration, platforms, checkout):
+        projects = self.xcode_projects(checkout = checkout)
         for platform in platforms:
             platform_build_path = self.build_path / platform.output_directory_name
             if not platform_build_path.exists():
@@ -195,25 +192,24 @@ class Punic(object):
                 for scheme in schemes:
                     yield platform, project, scheme
 
-    def repository_for_identifier(self, identifier):
+    def repository_for_identifier(self, identifier, fetch = True):
         # type: (ProjectIdentifier) -> Repository
         if identifier in self.all_repositories:
             return self.all_repositories[identifier]
         else:
             path = self.repo_cache_directory / identifier.project_name
             repository = Repository(self, identifier=identifier, repo_path=path)
+            if fetch:
+                repository.fetch()
             self.all_repositories[identifier] = repository
             return repository
 
-    def dependencies_for_project_and_tag(self, identifier, tag):
-
-
-
-        repository = self.repository_for_identifier(identifier)
+    def dependencies_for_project_and_tag(self, identifier, tag, fetch):
+        repository = self.repository_for_identifier(identifier, fetch = fetch)
         specifications = repository.specifications_for_tag(tag)
 
         def make(specification):
-            repository = self.repository_for_identifier(specification.identifier)
+            repository = self.repository_for_identifier(specification.identifier, fetch = fetch)
             tags = repository.tags_for_predicate(specification.predicate)
             return repository.identifier, tags
 
@@ -242,8 +238,6 @@ class Repository(object):
 
     @mproperty
     def repo(self):
-        if not self.path.exists():
-            self.fetch()
         assert self.path.exists()
         return pygit2.Repository(str(self.path))
 
@@ -272,7 +266,7 @@ class Repository(object):
                 logging.info('# Cloned: {}'.format(self))
         else:
             with work_directory(str(self.path)):
-                logging.info('# Checking out: {}'.format(self))
+                logging.info('# Fetching: {}'.format(self))
                 command = 'git fetch'
                 command = shlex.split(command)
                 subprocess.check_output(command)
@@ -282,7 +276,7 @@ class Repository(object):
 
         #logging.info('Getting cartfile from tag {} of {}'.format(tag, self))
 
-        if tag == None and self == self.repo.root_project:
+        if tag == None and self == self.punic.root_project:
             cartfile = Cartfile()
             cartfile.read(self.path / "Cartfile")
             return cartfile.specifications

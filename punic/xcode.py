@@ -17,7 +17,17 @@ class Project(object):
         self.path = path
         self.identifier = identifier
 
-        self.targets, self.configurations, self.schemes = self.info
+    @property
+    def targets(self):
+        return self.info[0]
+
+    @property
+    def configurations(self):
+        return self.info[1]
+
+    @property
+    def targets(self):
+        return self.schemes[2]
 
     @mproperty
     def info(self):

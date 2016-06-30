@@ -12,6 +12,7 @@ import shlex
 import time
 from pathlib2 import Path
 import shelve
+from memoize import mproperty
 
 class Tag(object):
     def __init__(self, string):
@@ -89,8 +90,7 @@ def timeit(task=None):
     start = time.time()
     yield
     end = time.time()
-    logging.info('Duration: {} {}'.format(task if task else '<unnamed task>', end - start))
-
+    logging.info('{} {}'.format(task if task else '<unnamed task>', end - start))
 
 
 class Cartfile(object):
@@ -286,14 +286,25 @@ def run(command, cwd=None, echo=True):
 
 class CacheableRunner(object):
     def __init__(self, path):
+        self.path = path
+
+    @mproperty
+    def shelf(self):
         try:
-            self.shelf = shelve.open(str(path))
+            return shelve.open(str(self.path))
         except:
-            if path.exists():
-                path.unlink()
-                self.shelf = shelve.open(str(path))
+            if self.path.exists():
+                self.path.unlink()
+                self.shelf = shelve.open(str(self.path))
             else:
                 raise
+
+    def reset(self):
+        if self.path.exists():
+            self.shelf.close()
+            self.path.unlink()
+            # TODO: Reopen
+
 
     def run(self, *args, **kwargs):
         if 'cache_key' in kwargs and 'command' in kwargs:

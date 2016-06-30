@@ -4,7 +4,6 @@ __all__ = ['Resolver']
 from networkx import (DiGraph, dfs_preorder_nodes, topological_sort, number_of_nodes, number_of_edges)
 from collections import defaultdict
 import logging
-import verboselogs
 
 def dump(graph, node, depth=0):
     count = len(graph.predecessors(node))
@@ -105,7 +104,7 @@ class Resolver(object):
 
         return build_order
 
-    def resolve_versions(self, dependencies):
+    def resolve_versions(self, dependencies, fetch = False):
         # type: (ProjectIdentifier, Tag) -> [ProjectIdentifier, Tag]
         """Given an array of project identifier/version pairs work out the build order"""
         graph = DiGraph()
@@ -113,10 +112,9 @@ class Resolver(object):
         for identifier, version in dependencies:
             parent = (identifier, version)
             graph.add_node(parent)
-            for dependency, _ in self.punic.dependencies_for_project_and_tag(identifier=identifier, tag=version.tag):
+            for dependency, _ in self.punic.dependencies_for_project_and_tag(identifier=identifier, tag=version.tag, fetch = fetch):
                 version = versions_for_identifier[dependency]
                 child = (dependency, version)
                 graph.add_edge(parent, child)
         build_order = topological_sort(graph, reverse=True)
-        print(build_order)
         return build_order
