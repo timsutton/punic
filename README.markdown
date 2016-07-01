@@ -43,7 +43,9 @@ Punic supports Carthage `Cartfile` and `Cartfile.resolved` files.
 
 Punic is very immature right now and probably is not ready for production use. Use at your own peril.
 
-## Unsupported Carthage Features
+## Differences between Punic & Carthage
+
+Aside from differences of implementation one of the fundamental differences is that Carthage always runs `xcodebuild clean` before building dependencies. Punic deliberately does not perform this clean step and provides an explicit `punic clean` command. The goal of this is to not force collaborators to sit through long clean builds when very little has changed. This can provide dramatic speed ups to a users workflow (during testing builds that can take Carthage 20-25 minutes to build on top-end hardware take less than a minute to do a 'dirty' build.)
 
 * `carthage archive`
 * `carthage copy-frameworks`
