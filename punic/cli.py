@@ -46,7 +46,7 @@ def update(context, configuration, platform):
 
 @main.command()
 @click.pass_context
-def fetch(context):
+def checkout(context):
     punic = context.obj
     with timeit('fetch'):
         punic.fetch()
@@ -95,6 +95,10 @@ def clean(context, configuration, platform, xcode, caches):
         logging.info('# Cleaning run cache')
         punic.runner.reset()
 
+# archive
+# copy-frameworks
+# outdated
+# version
 
 def parse_platforms(s):
     if not s:
@@ -108,11 +112,11 @@ if __name__ == '__main__':
     import os
     import shlex
 
-    os.chdir('/Users/schwa/Projects/3dr-Site-Scan-iOS')
+    os.chdir('/Users/schwa/Desktop/3dr-Site-Scan-iOS')
 
     # sys.argv = shlex.split('{} --verbose --echo clean'.format(sys.argv[0]))
     # sys.argv = shlex.split('{} --verbose --echo build --platform=iOS --configuration=Debug'.format(sys.argv[0]))
-    sys.argv = shlex.split('{} --verbose --echo bootstrap --platform=iOS --configuration=Debug'.format(sys.argv[0]))
+    sys.argv = shlex.split('{} --verbose --echo build --platform=iOS --configuration=Debug'.format(sys.argv[0]))
 
     punic = Punic()
 

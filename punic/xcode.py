@@ -1,5 +1,5 @@
 __author__ = 'schwa'
-__all__ = ['XcodeProject', 'xcodebuild']
+__all__ = ['XcodeProject', 'xcodebuild', 'uuids_from_binary']
 
 import re
 import shlex
@@ -133,3 +133,13 @@ def parse_build_settings(string):
     matches = (re.match(r'^    (.+) = (.+)$', line) for line in lines)
     matches = (match.groups() for match in matches if match)
     return dict(matches)
+
+########################################################################################################################
+
+def uuids_from_binary(path):
+    command = ['/usr/bin/xcrun', 'dwarfdump', '--uuid', str(path)]
+    output = run(command)
+    lines = output.splitlines()
+    matches = [re.match(r'^UUID: ([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}) \((.+)\) (.+)$', line) for line in lines]
+    uuids = [match.group(1) for match in matches]
+    return uuids

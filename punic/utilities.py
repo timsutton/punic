@@ -5,6 +5,7 @@ import contextlib
 import os
 import logging
 import time
+import re
 
 @contextlib.contextmanager
 def work_directory(path):
@@ -20,6 +21,4 @@ def timeit(task=None):
     yield
     end = time.time()
     logging.debug('# {} {}'.format(task if task else '<unnamed task>', end - start))
-
-########################################################################################################################
 

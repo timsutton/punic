@@ -79,6 +79,10 @@ class Punic(object):
             pass
 
     def build(self, configuration, platforms):
+        # TODO: This code needs a major refactoring and clean-up.
+
+        if not self.build_path.exists():
+            self.build_path.mkdir(parents = True)
 
         for platform, project, scheme in self.scheme_walker(configuration, platforms, fetch = False):
             with timeit(project.path.name):
@@ -103,6 +107,8 @@ class Punic(object):
                     executable_path = project.build(scheme=scheme, configuration=configuration, sdk=sdk, arguments=arguments, temp_symroot = False)
                     paths_for_sdk_build[sdk] = executable_path
 
+                product_name = paths_for_sdk_build[sdks[0]].name
+
                 logging.debug('# Copying binary')
                 final_path = platform_build_path / paths_for_sdk_build[sdks[0]].parent.name
                 if final_path.exists():
@@ -121,7 +127,11 @@ class Punic(object):
                     mtime = executable_paths[0].stat().st_mtime
                     os.utime(str(output_path), (mtime, mtime))
 
-                    logging.debug('# Copying modules')
+                    executable_path = output_path
+
+                    ####################################################################################################
+
+                    logging.debug('# Copying swiftmodule files')
                     for sdk in sdks:
                         modules_source_path = paths_for_sdk_build[sdk].parent / "Modules/{}.swiftmodule".format(paths_for_sdk_build[sdk].name)
                         if modules_source_path.exists():
@@ -129,14 +139,39 @@ class Punic(object):
                             for f in modules_source_path.glob("*"):
                                 shutil.copyfile(str(f), str(modules_destination_path / f.name))
 
+                    logging.debug('# Copying bcsymbolmap files')
+                    for sdk in sdks:
+                        modules_source_path = paths_for_sdk_build[sdk].parent / "Modules/{}.swiftmodule".format(
+                            paths_for_sdk_build[sdk].name)
+                        uuids = uuids_from_binary(paths_for_sdk_build[sdk])
+                        for uuid in uuids:
+                            path = modules_source_path.parent.parent.parent / (uuid + '.bcsymbolmap')
+                            if path.exists():
+                                shutil.copy(str(path), str(platform_build_path))
+
+                ########################################################################################################
+
+                logging.debug('# Producing dSYM files')
+                command = ['/usr/bin/xcrun', 'dsymutil', str(executable_path), '-o', str(platform_build_path / (product_name + '.dSYM'))]
+                run(command, echo = self.echo)
+
+                ########################################################################################################
+
+
+                #print uuids_from_binary(output_path)
+
     def clean(self, configuration, platforms):
         logging.debug("#### Cleaning")
         for platform, project, scheme in self.scheme_walker(configuration, platforms, fetch = False):
             for sdk in platform.sdks:
-                command = xcode.xcodebuild(project = project.path, command = 'clean', scheme = scheme, sdk = sdk, configuration = configuration)
+                command = xcodebuild(project = project.path, command = 'clean', scheme = scheme, sdk = sdk, configuration = configuration)
                 run(command, echo = self.echo)
 
     def xcode_projects(self, fetch = False):
+
+        if not self.build_path.exists():
+            self.build_path.mkdir(parents = True)
+
         all_projects = []
 
         cartfile = Cartfile()
@@ -172,8 +207,9 @@ class Punic(object):
             carthage_symlink_path = carthage_path / 'Build'
             if carthage_symlink_path.exists():
                 carthage_symlink_path.unlink()
-            os.symlink(str(self.build_path), str(carthage_symlink_path ))
-
+            logging.debug('# Symlinking: {} {}'.format(self.build_path, carthage_symlink_path))
+            assert self.build_path.exists()
+            os.symlink(str(self.build_path), str(carthage_symlink_path))
 
             def make_identifier(project_path):
                 rev = project.repo.revparse_single(revision).id
