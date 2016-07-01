@@ -19,6 +19,8 @@ from punic.runner import *
 from punic.resolver import *
 from punic.config import *
 
+from copy import copy
+
 ########################################################################################################################
 
 
@@ -78,6 +80,16 @@ class Punic(object):
         for project in self.xcode_projects(fetch = True):
             pass
 
+    @property
+    def xcode_arguments(self):
+        return {
+                    'ONLY_ACTIVE_ARCH': 'NO',
+                    'BITCODE_GENERATION_MODE': 'bitcode',
+                    'CODE_SIGNING_REQUIRED': 'NO',
+                    'CODE_SIGN_IDENTITY': '',
+                    'CARTHAGE': 'YES',
+                }
+
     def build(self, configuration, platforms):
         # TODO: This code needs a major refactoring and clean-up.
 
@@ -86,79 +98,68 @@ class Punic(object):
 
         for platform, project, scheme in self.scheme_walker(configuration, platforms, fetch = False):
             with timeit(project.path.name):
-                platform_build_path = self.build_path / platform.output_directory_name
                 logging.debug('#' * 80)
                 logging.debug('# Building {} {}'.format(project.path.name, scheme))
 
-                arguments = {
-                    'ONLY_ACTIVE_ARCH': 'NO',
-                    'BITCODE_GENERATION_MODE': 'bitcode',
-                    'CODE_SIGNING_REQUIRED': 'NO',
-                    'CODE_SIGN_IDENTITY': '',
-                    'CARTHAGE': 'YES',
-                }
+                ########################################################################################################
 
-                sdks = platform.sdks
-
-                paths_for_sdk_build = dict()
-
-                for sdk in sdks:
+                products = dict()
+                for sdk in platform.sdks:
                     logging.debug('# Building {} {} {} {}'.format(project.path.name, scheme, sdk, configuration))
-                    executable_path = project.build(scheme=scheme, configuration=configuration, sdk=sdk, arguments=arguments, temp_symroot = False)
-                    paths_for_sdk_build[sdk] = executable_path
+                    product = project.build(scheme=scheme, configuration=configuration, sdk=sdk, arguments=self.xcode_arguments, temp_symroot = False)
+                    products[sdk] = product
 
-                product_name = paths_for_sdk_build[sdks[0]].name
+                ########################################################################################################
+
+                device_sdk = platform.sdks[0] # By convention sdk[0] is always the device sdk (e.g. 'iphoneos' and not 'iphonesimulator')
+                device_product = products[device_sdk]
+
+                ########################################################################################################
+
+                output_product = copy(device_product)
+                output_product.target_build_dir = self.build_path / platform.output_directory_name
+
+                ########################################################################################################
 
                 logging.debug('# Copying binary')
-                final_path = platform_build_path / paths_for_sdk_build[sdks[0]].parent.name
-                if final_path.exists():
-                    shutil.rmtree(str(final_path))
-                shutil.copytree(str(paths_for_sdk_build[sdks[0]].parent), str(final_path))
+                if output_product.product_path.exists():
+                    shutil.rmtree(str(output_product.product_path))
+                shutil.copytree(str(device_product.product_path), str(output_product.product_path))
 
-                if len(sdks) > 1:
+                ########################################################################################################
+
+                if len(products) > 1:
                     logging.debug('# Lipoing')
-
-                    executable_paths = [path for path in paths_for_sdk_build.values()]
-
-                    output_path = final_path / paths_for_sdk_build[sdks[0]].name
-                    command = ['/usr/bin/xcrun', 'lipo', '-create'] + [str(path) for path in executable_paths ] + ['-output', str(output_path)]
+                    executable_paths = [product.executable_path for product in products.values()]
+                    command = ['/usr/bin/xcrun', 'lipo', '-create'] + executable_paths + ['-output', output_product.executable_path]
                     run(command, echo = self.echo)
-
                     mtime = executable_paths[0].stat().st_mtime
-                    os.utime(str(output_path), (mtime, mtime))
+                    os.utime(str(output_product.executable_path), (mtime, mtime))
 
-                    executable_path = output_path
+                ########################################################################################################
 
-                    ####################################################################################################
+                logging.debug('# Copying swiftmodule files')
+                for product in products.values():
+                    for path in product.module_paths:
+                        relative_path = path.relative_to(product.product_path)
+                        shutil.copyfile(str(path), str(output_product.product_path / relative_path ))
 
-                    logging.debug('# Copying swiftmodule files')
-                    for sdk in sdks:
-                        modules_source_path = paths_for_sdk_build[sdk].parent / "Modules/{}.swiftmodule".format(paths_for_sdk_build[sdk].name)
-                        if modules_source_path.exists():
-                            modules_destination_path = final_path / "Modules/{}.swiftmodule".format(paths_for_sdk_build[sdk].name)
-                            for f in modules_source_path.glob("*"):
-                                shutil.copyfile(str(f), str(modules_destination_path / f.name))
+                ########################################################################################################
 
-                    logging.debug('# Copying bcsymbolmap files')
-                    for sdk in sdks:
-                        modules_source_path = paths_for_sdk_build[sdk].parent / "Modules/{}.swiftmodule".format(
-                            paths_for_sdk_build[sdk].name)
-                        uuids = uuids_from_binary(paths_for_sdk_build[sdk])
-                        for uuid in uuids:
-                            path = modules_source_path.parent.parent.parent / (uuid + '.bcsymbolmap')
-                            if path.exists():
-                                shutil.copy(str(path), str(platform_build_path))
+                logging.debug('# Copying bcsymbolmap files')
+                for product in products.values():
+                    for path in product.bcsymbolmap_paths:
+                        shutil.copy(str(path), str(output_product.target_build_dir))
 
                 ########################################################################################################
 
                 logging.debug('# Producing dSYM files')
-                command = ['/usr/bin/xcrun', 'dsymutil', str(executable_path), '-o', str(platform_build_path / (product_name + '.dSYM'))]
+                command = ['/usr/bin/xcrun', 'dsymutil', str(output_product.executable_path), '-o', str(output_product.target_build_dir / (output_product.executable_name + '.dSYM'))]
                 run(command, echo = self.echo)
 
                 ########################################################################################################
 
-
-                #print uuids_from_binary(output_path)
+#            exit(0)
 
     def clean(self, configuration, platforms):
         logging.debug("#### Cleaning")
