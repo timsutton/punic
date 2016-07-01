@@ -1,29 +1,30 @@
 __author__ = 'schwa'
-__all__ = ['Punic', 'Specification', 'Repository']
+__all__ = ['Punic', 'Repository']
 
 import re
 import shlex
 import subprocess
 import logging
-from pathlib2 import Path
-import pygit2
 import os
 import shutil
+
+from pathlib2 import Path
+import pygit2
 from memoize import mproperty
 
 from punic.utilities import *
-from punic import xcode
-
-from resolver import *
-
-from config import *
-
+from punic.xcode import *
+from punic.types import *
+from punic.runner import *
+from punic.resolver import *
+from punic.config import *
 
 ########################################################################################################################
 
 
 class Punic(object):
     def __init__(self, root_path = None):
+
         # root_path: (Path)
 
         self.echo = False
@@ -53,7 +54,7 @@ class Punic(object):
     @mproperty
     def cacheable_runner(self):
         runner = CacheableRunner(path=self.library_directory / "cache.shelf")
-        self.echo = False
+        runner.echo = self.echo
         return runner
 
     def resolve(self):
@@ -73,14 +74,11 @@ class Punic(object):
     def fetch(self):
         logging.debug("#### Fetching")
 
+        # TODO: FIXME
         for project in self.xcode_projects(fetch = True):
             pass
 
     def build(self, configuration, platforms):
-        logging.debug("#### Building")
-
-        # cartfile = Cartfile()
-        # cartfile.read((self.root_path / 'Cartfile'))
 
         for platform, project, scheme in self.scheme_walker(configuration, platforms, fetch = False):
             with timeit(project.path.name):
@@ -101,8 +99,8 @@ class Punic(object):
                 paths_for_sdk_build = dict()
 
                 for sdk in sdks:
-                    logging.debug('# Building {}{} {} {}'.format(project.path.name, scheme, sdk, configuration))
-                    executable_path = project.build(scheme=scheme, configuration=configuration, sdk=sdk, arguments=arguments, echo = False, temp_symroot = False)
+                    logging.debug('# Building {} {} {} {}'.format(project.path.name, scheme, sdk, configuration))
+                    executable_path = project.build(scheme=scheme, configuration=configuration, sdk=sdk, arguments=arguments, temp_symroot = False)
                     paths_for_sdk_build[sdk] = executable_path
 
                 logging.debug('# Copying binary')
@@ -156,7 +154,7 @@ class Punic(object):
 
             checkout_path = self.checkouts_path / project.path.name
 
-            if fetch == True:
+            if fetch:
                 project.checkout(revision)
                 logging.debug('# Copying project to Carthage/Checkouts')
                 if checkout_path.exists():
@@ -183,7 +181,7 @@ class Punic(object):
                 return identifier
 
             project_paths = checkout_path.glob("*.xcodeproj")
-            projects = [xcode.Project(self, project_path, make_identifier(project_path)) for project_path in project_paths]
+            projects = [XcodeProject(self, project_path, make_identifier(project_path)) for project_path in project_paths]
             all_projects += projects
         return all_projects
 
@@ -271,7 +269,7 @@ class Repository(object):
         if not self.path.exists():
             with work_directory(str(self.path.parent)):
                 logging.debug('# Cloning: {}'.format(self))
-                run('git clone --recursive "{}"'.format(self.identifier.remote_url), self.echo)
+                run('git clone --recursive "{}"'.format(self.identifier.remote_url), echo = self.punic.echo)
                 logging.debug('# Cloned: {}'.format(self))
         else:
             with work_directory(str(self.path)):

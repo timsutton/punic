@@ -1,15 +1,17 @@
 __author__ = 'schwa'
 __all__ = ['Resolver']
 
-from networkx import (DiGraph, dfs_preorder_nodes, topological_sort, number_of_nodes, number_of_edges)
-from collections import defaultdict
 import logging
+from collections import defaultdict
 
-def dump(graph, node, depth=0):
+from networkx import (DiGraph, dfs_preorder_nodes, topological_sort, number_of_nodes, number_of_edges)
+
+def dump(stream, graph, node, depth=0):
     count = len(graph.predecessors(node))
-    print("{}{} {}".format('\t' * depth, node, count))
+
+    stream.write("{}{} {}\n".format('\t' * depth, node, count))
     for child in sorted(graph[node].keys()):
-        dump(graph, child, depth + 1)
+        dump(stream, graph, child, depth + 1)
 
 
 class Resolver(object):

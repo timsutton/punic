@@ -4,7 +4,8 @@ __all__ = ['Cartfile']
 import re
 
 from pathlib2 import Path
-from utilities import Specification
+
+from punic.types import Specification
 
 class Cartfile(object):
     def __init__(self, specifications = None):

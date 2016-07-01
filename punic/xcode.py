@@ -1,22 +1,21 @@
 __author__ = 'schwa'
-__all__ = ['Project', 'Target', 'Build', 'xcodebuild']
+__all__ = ['XcodeProject', 'xcodebuild']
 
 import re
 import shlex
-import logging
 import tempfile
+import logging
 
 from pathlib2 import Path
 from memoize import mproperty
 
-from utilities import run
+from punic.runner import *
 
-class Project(object):
+class XcodeProject(object):
     def __init__(self, punic, path, identifier):
         self.punic = punic
         self.path = path
         self.identifier = identifier
-        self.echo = self.punic.echo
 
     @property
     def targets(self):
@@ -51,6 +50,7 @@ class Project(object):
         return parse_build_settings(output)
 
     def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None, temp_symroot = False):
+
         if not arguments:
             arguments = dict()
 
@@ -60,11 +60,10 @@ class Project(object):
 
         command = xcodebuild(project=self.path, command='build', scheme=scheme, target=target,
                              configuration=configuration, sdk=sdk, arguments=arguments)
-
-        run(command, echo = echo)
+        run(command, echo = self.punic.echo)
 
         build_settings = self.build_settings(scheme=scheme, target=target, configuration=configuration, sdk=sdk,
-                                             arguments=arguments, echo = self.echo)
+                                             arguments=arguments)
 
         return Path('{TARGET_BUILD_DIR}/{FULL_PRODUCT_NAME}/{EXECUTABLE_NAME}'.format(**build_settings))
 

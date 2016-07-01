@@ -1,38 +1,57 @@
 __author__ = 'schwa'
 
-import click
-from pathlib2 import Path
-
-from punic.utilities import *
-from punic.model import *
 import shutil
 import logging
 
-punic = Punic()
+import click
+
+from punic.types import *
+from punic.utilities import *
+from punic.model import *
+
 
 @click.group()
 @click.option('--echo', default=False, is_flag=True)
 @click.option('--verbose', default=False, is_flag=True)
-def main(echo, verbose):
-    punic.echo = echo
+@click.pass_context
+def main(context, echo, verbose):
+    if context.obj:
+        punic = context.obj
+    else:
+        punic = Punic()
+        context.obj = punic
+
     logging.basicConfig(format='%(message)s', level= logging.DEBUG if verbose else logging.INFO)
+
+    if echo:
+        logging.debug("# Echo enabled")
+        punic.echo = True
+
 
 
 @main.command()
-def resolve():
+@click.pass_context
+def resolve(context):
+    punic = context.obj
     punic.resolve()
+
 
 @main.command()
 @click.option('--configuration', default=None)
 @click.option('--platform', default=None)
-def update(configuration, platform):
+@click.pass_context
+def update(context, configuration, platform):
+    punic = context.obj
     with timeit('update'):
-        platforms = [Platform.platform_for_nickname(platform)]
+        platforms = parse_platforms(platform)
         punic.resolve()
         punic.build(configuration=configuration, platforms=platforms)
 
+
 @main.command()
-def fetch():
+@click.pass_context
+def fetch(context):
+    punic = context.obj
     with timeit('fetch'):
         punic.fetch()
 
@@ -40,21 +59,24 @@ def fetch():
 @main.command()
 @click.option('--configuration', default=None)
 @click.option('--platform', default=None)
-def build(configuration, platform):
+@click.pass_context
+def build(context, configuration, platform):
+    punic = context.obj
     with timeit('build'):
-        platforms = [Platform.platform_for_nickname(platform)]
+        platforms = parse_platforms(platform)
         punic.build(configuration=configuration, platforms=platforms)
 
 
 @main.command()
 @click.option('--configuration', default=None)
 @click.option('--platform', default=None)
-def bootstrap(configuration, platform):
+@click.pass_context
+def bootstrap(context, configuration, platform):
+    punic = context.obj
     with timeit('bootstrap'):
-        platforms = [Platform.platform_for_nickname(platform)]
+        platforms = parse_platforms(platform)
         punic.fetch()
         punic.build(configuration=configuration, platforms= platforms)
-
 
 
 @main.command()
@@ -62,20 +84,27 @@ def bootstrap(configuration, platform):
 @click.option('--platform', default=None)
 @click.option('--xcode/--no-xcode', default=True, is_flag=True)
 @click.option('--caches', default=False, is_flag=True)
-def clean(configuration, platform, xcode, caches):
+@click.pass_context
+def clean(context, configuration, platform, xcode, caches):
+    punic = context.obj
     if xcode:
-        logging.debug('# Cleaning Xcode projects'.format(**punic.__dict__))
-        if not platform:
-            platforms = Platform.all
-        else:
-            platforms = [Platform.platform_for_nickname(platform)]
+        logging.info('# Cleaning Xcode projects'.format(**punic.__dict__))
+        platforms = parse_platforms(platform)
         punic.clean(configuration=configuration, platforms= platforms)
 
     if caches:
         if punic.repo_cache_directory.exists():
-            logging.debug('# Cleaning {repo_cache_directory}'.format(**punic.__dict__))
+            logging.info('# Cleaning {repo_cache_directory}'.format(**punic.__dict__))
             shutil.rmtree(str(punic.repo_cache_directory))
+        logging.info('# Cleaning run cache')
         punic.cacheable_runner.reset()
+
+
+def parse_platforms(s):
+    if not s:
+        return Platform.all
+    else:
+        return [Platform.platform_for_nickname(platform.strip()) for platform in s.split(',')]
 
 
 if __name__ == '__main__':
@@ -85,11 +114,10 @@ if __name__ == '__main__':
 
     os.chdir('/Users/schwa/Projects/3dr-Site-Scan-iOS')
 
+    # sys.argv = shlex.split('{} --verbose --echo clean'.format(sys.argv[0]))
+    # sys.argv = shlex.split('{} --verbose --echo build --platform=iOS --configuration=Debug'.format(sys.argv[0]))
+    sys.argv = shlex.split('{} --verbose --echo bootstrap --platform=iOS --configuration=Debug'.format(sys.argv[0]))
 
-#    sys.argv += ['build', '--configuration=Debug', '--platform=iOS']
-#    sys.argv += ['resolve']
-#    sys.argv += ['resolve']
-    sys.argv = shlex.split('{} --verbose clean'.format(sys.argv[0]))
-#    sys.argv += ['fetch']
-    main()
+    punic = Punic()
 
+    main(obj=punic)
