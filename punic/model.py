@@ -18,9 +18,6 @@ from resolver import *
 
 from config import *
 
-# TODO: Really simple logging config for now.
-logging.basicConfig(format='%(message)s', level=logging.DEBUG)
-
 
 ########################################################################################################################
 
@@ -28,6 +25,8 @@ logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 class Punic(object):
     def __init__(self, root_path = None):
         # root_path: (Path)
+
+        self.echo = False
 
         if not root_path:
             root_path = Path.cwd()
@@ -42,7 +41,6 @@ class Punic(object):
         self.punic_path = self.root_path / 'Carthage'
         self.build_path = self.punic_path / 'Build'
         self.checkouts_path = self.punic_path / 'Checkouts'
-        self.cacheable_runner = CacheableRunner(path = self.library_directory / "cache.shelf")
 
         root_project_identifier = ProjectIdentifier(project_name=self.root_path.name)
 
@@ -52,28 +50,34 @@ class Punic(object):
 
         self.root_project = self.repository_for_identifier(root_project_identifier)
 
+    @mproperty
+    def cacheable_runner(self):
+        runner = CacheableRunner(path=self.library_directory / "cache.shelf")
+        self.echo = False
+        return runner
+
     def resolve(self):
-        logging.info("#### Resolving")
+        logging.debug("#### Resolving")
         build_order = Resolver(self).resolve()
 
         for index, value in enumerate(build_order):
             dependency, version = value
-            logging.info('# {} {} {}'.format(index + 1, dependency, version.tag if version else ''))
+            logging.debug('# {} {} {}'.format(index + 1, dependency, version.tag if version else ''))
 
         specifications = [Specification(identifier = dependency, predicate = VersionPredicate('"{}"'.format(version.tag))) for dependency, version in build_order[:-1]]
-        logging.info("# Saving Cartfile.resolved")
+        logging.debug("# Saving Cartfile.resolved")
 
         cartfile = Cartfile(specifications = specifications)
         cartfile.write((self.root_path / 'Cartfile.resolved').open('w'))
 
     def fetch(self):
-        logging.info("#### Fetching")
+        logging.debug("#### Fetching")
 
         for project in self.xcode_projects(fetch = True):
             pass
 
     def build(self, configuration, platforms):
-        logging.info("#### Building")
+        logging.debug("#### Building")
 
         # cartfile = Cartfile()
         # cartfile.read((self.root_path / 'Cartfile'))
@@ -81,8 +85,8 @@ class Punic(object):
         for platform, project, scheme in self.scheme_walker(configuration, platforms, fetch = False):
             with timeit(project.path.name):
                 platform_build_path = self.build_path / platform.output_directory_name
-                logging.info('#' * 80)
-                logging.info('# Building {} {}'.format(project.path.name, scheme))
+                logging.debug('#' * 80)
+                logging.debug('# Building {} {}'.format(project.path.name, scheme))
 
                 arguments = {
                     'ONLY_ACTIVE_ARCH': 'NO',
@@ -97,29 +101,29 @@ class Punic(object):
                 paths_for_sdk_build = dict()
 
                 for sdk in sdks:
-                    logging.info('# Building {}{} {} {}'.format(project.path.name, scheme, sdk, configuration))
+                    logging.debug('# Building {}{} {} {}'.format(project.path.name, scheme, sdk, configuration))
                     executable_path = project.build(scheme=scheme, configuration=configuration, sdk=sdk, arguments=arguments, echo = False, temp_symroot = False)
                     paths_for_sdk_build[sdk] = executable_path
 
-                logging.info('# Copying binary')
+                logging.debug('# Copying binary')
                 final_path = platform_build_path / paths_for_sdk_build[sdks[0]].parent.name
                 if final_path.exists():
                     shutil.rmtree(str(final_path))
                 shutil.copytree(str(paths_for_sdk_build[sdks[0]].parent), str(final_path))
 
                 if len(sdks) > 1:
-                    logging.info('# Lipoing')
+                    logging.debug('# Lipoing')
 
                     executable_paths = [path for path in paths_for_sdk_build.values()]
 
                     output_path = final_path / paths_for_sdk_build[sdks[0]].name
                     command = ['/usr/bin/xcrun', 'lipo', '-create'] + [str(path) for path in executable_paths ] + ['-output', str(output_path)]
-                    run(command, echo = False)
+                    run(command, echo = self.echo)
 
                     mtime = executable_paths[0].stat().st_mtime
                     os.utime(str(output_path), (mtime, mtime))
 
-                    logging.info('# Copying modules')
+                    logging.debug('# Copying modules')
                     for sdk in sdks:
                         modules_source_path = paths_for_sdk_build[sdk].parent / "Modules/{}.swiftmodule".format(paths_for_sdk_build[sdk].name)
                         if modules_source_path.exists():
@@ -128,11 +132,11 @@ class Punic(object):
                                 shutil.copyfile(str(f), str(modules_destination_path / f.name))
 
     def clean(self, configuration, platforms):
-        logging.info("#### Cleaning")
+        logging.debug("#### Cleaning")
         for platform, project, scheme in self.scheme_walker(configuration, platforms, fetch = False):
             for sdk in platform.sdks:
                 command = xcode.xcodebuild(project = project.path, command = 'clean', scheme = scheme, sdk = sdk, configuration = configuration)
-                run(command, echo = True)
+                run(command, echo = self.echo)
 
     def xcode_projects(self, fetch = False):
         all_projects = []
@@ -154,7 +158,7 @@ class Punic(object):
 
             if fetch == True:
                 project.checkout(revision)
-                logging.info('# Copying project to Carthage/Checkouts')
+                logging.debug('# Copying project to Carthage/Checkouts')
                 if checkout_path.exists():
                     shutil.rmtree(str(checkout_path))
                 shutil.copytree(str(project.path), str(checkout_path), ignore=shutil.ignore_patterns('.git'))
@@ -259,19 +263,19 @@ class Repository(object):
 
     def checkout(self, revision):
         # type: (String)
-        logging.info('# Checking out {} @ revision {}'.format(self, revision))
+        logging.debug('# Checking out {} @ revision {}'.format(self, revision))
         rev = self.repo.revparse_single(revision)
         self.repo.checkout_tree(rev, strategy=pygit2.GIT_CHECKOUT_FORCE)
 
     def fetch(self):
         if not self.path.exists():
             with work_directory(str(self.path.parent)):
-                logging.info('# Cloning: {}'.format(self))
-                run('git clone --recursive "{}"'.format(self.identifier.remote_url))
-                logging.info('# Cloned: {}'.format(self))
+                logging.debug('# Cloning: {}'.format(self))
+                run('git clone --recursive "{}"'.format(self.identifier.remote_url), self.echo)
+                logging.debug('# Cloned: {}'.format(self))
         else:
             with work_directory(str(self.path)):
-                logging.info('# Fetching: {}'.format(self))
+                logging.debug('# Fetching: {}'.format(self))
                 command = 'git fetch'
                 command = shlex.split(command)
                 subprocess.check_output(command)
@@ -279,7 +283,7 @@ class Repository(object):
     def specifications_for_tag(self, tag):
         # type: (Tag) -> [Specification]
 
-        #logging.info('Getting cartfile from tag {} of {}'.format(tag, self))
+        #logging.debug('Getting cartfile from tag {} of {}'.format(tag, self))
 
         if tag == None and self == self.punic.root_project:
             cartfile = Cartfile()

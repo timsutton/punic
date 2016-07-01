@@ -34,12 +34,12 @@ class Resolver(object):
 
     def resolve(self):
 
-        logging.info('# Building universal graph')
+        logging.debug('# Building universal graph')
 
         # Build a graph up of _all_ version of _all_ dependencies
         graph = self.build_graph()
 
-        logging.info('# Universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logging.debug('# Universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         # Build a dictionary of all versions of all dependencies
         all_dependencies = defaultdict(set)
@@ -77,12 +77,12 @@ class Resolver(object):
 
         ################################################################################################################
 
-        logging.info('# Pruning graph')
+        logging.debug('# Pruning graph')
 
         prune_1()
         prune_2()
 
-        logging.info('# Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logging.debug('# Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         ################################################################################################################
 
@@ -93,13 +93,13 @@ class Resolver(object):
 
         graph = self.build_graph(filter=lambda child, child_version: (child, child_version) in dependencies)
 
-        logging.info('# Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logging.debug('# Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         ################################################################################################################
 
         #        nx.drawing.nx_pydot.write_dot(resolved_graph, '/Users/schwa/Desktop/dependencioes.dot')
 
-        logging.info('# Topologicalling sorting graph')
+        logging.debug('# Topologicalling sorting graph')
         build_order = topological_sort(graph, reverse=True)
 
         return build_order

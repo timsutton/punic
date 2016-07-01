@@ -90,7 +90,7 @@ def timeit(task=None):
     start = time.time()
     yield
     end = time.time()
-    logging.info('{} {}'.format(task if task else '<unnamed task>', end - start))
+    logging.debug('{} {}'.format(task if task else '<unnamed task>', end - start))
 
 
 class Cartfile(object):
@@ -287,6 +287,7 @@ def run(command, cwd=None, echo=True):
 class CacheableRunner(object):
     def __init__(self, path):
         self.path = path
+        self.echo = False
 
     @mproperty
     def shelf(self):
@@ -310,6 +311,10 @@ class CacheableRunner(object):
         if 'cache_key' in kwargs and 'command' in kwargs:
             key = kwargs['cache_key']
             command = kwargs['command']
+
+            if 'echo' in kwargs:
+                del kwargs['echo']
+            kwargs['echo'] = self.echo
 
             key = '{}{}'.format(key, command)
             if key in self.shelf:

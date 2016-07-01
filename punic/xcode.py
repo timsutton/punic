@@ -16,6 +16,7 @@ class Project(object):
         self.punic = punic
         self.path = path
         self.identifier = identifier
+        self.echo = self.punic.echo
 
     @property
     def targets(self):
@@ -41,7 +42,7 @@ class Project(object):
         command = 'xcodebuild -project "{}"'.format(self.path.name)
         return shlex.split(command)
 
-    def build_settings(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None, echo = True):
+    def build_settings(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None):
         if not arguments:
             arguments = dict()
         command = xcodebuild(project=self.path, command='-showBuildSettings', scheme=scheme, target=target,
@@ -49,7 +50,7 @@ class Project(object):
         output = self.punic.cacheable_runner.run(cache_key=self.identifier, command=command)
         return parse_build_settings(output)
 
-    def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None, echo = True, temp_symroot = False):
+    def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None, temp_symroot = False):
         if not arguments:
             arguments = dict()
 
@@ -63,7 +64,7 @@ class Project(object):
         run(command, echo = echo)
 
         build_settings = self.build_settings(scheme=scheme, target=target, configuration=configuration, sdk=sdk,
-                                             arguments=arguments, echo = echo)
+                                             arguments=arguments, echo = self.echo)
 
         return Path('{TARGET_BUILD_DIR}/{FULL_PRODUCT_NAME}/{EXECUTABLE_NAME}'.format(**build_settings))
 
