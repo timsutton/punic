@@ -26,8 +26,8 @@ class Project(object):
         return self.info[1]
 
     @property
-    def targets(self):
-        return self.schemes[2]
+    def schemes(self):
+        return self.info[2]
 
     @mproperty
     def info(self):

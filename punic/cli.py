@@ -52,6 +52,7 @@ def bootstrap(configuration, platform):
     with timeit('bootstrap'):
         platforms = [Platform.platform_for_nickname(platform)]
         punic = Punic()
+        punic.fetch()
         punic.build(configuration=configuration, platforms= platforms)
 
 
@@ -81,10 +82,10 @@ if __name__ == '__main__':
     import sys
     import os
 
-    os.chdir('/Users/schwa/Projects/punic/Testing/3dr-Site-Scan-iOS')
+    os.chdir('/Users/schwa/Projects/3dr-Site-Scan-iOS')
 #    sys.argv += ['build', '--configuration=Debug', '--platform=iOS']
-#    sys.argv += ['clean', '--caches']
+    sys.argv += ['resolve']
 #    sys.argv += ['resolve']
 #    sys.argv += ['bootstrap', '--configuration=Debug', '--platform=iOS']
-    sys.argv += ['fetch']
+#    sys.argv += ['fetch']
     main()

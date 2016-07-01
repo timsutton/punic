@@ -18,6 +18,6 @@ class Cartfile(object):
 
     def write(self, output):
         strings = [str(specification) for specification in self.specifications]
-        string = u'\n'.join(sorted(strings))
+        string = u'\n'.join(sorted(strings)) + '\n'
         output.write(string)
 

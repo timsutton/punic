@@ -78,7 +78,7 @@ class Punic(object):
         # cartfile = Cartfile()
         # cartfile.read((self.root_path / 'Cartfile'))
 
-        for platform, project, scheme in self.scheme_walker(configuration, platforms, checkout = False):
+        for platform, project, scheme in self.scheme_walker(configuration, platforms, fetch = False):
             with timeit(project.path.name):
                 platform_build_path = self.build_path / platform.output_directory_name
                 logging.info('#' * 80)
@@ -129,7 +129,7 @@ class Punic(object):
 
     def clean(self, configuration, platforms):
         logging.info("#### Cleaning")
-        for platform, project, scheme in self.scheme_walker(configuration, platforms, checkout = False):
+        for platform, project, scheme in self.scheme_walker(configuration, platforms, fetch = False):
             for sdk in platform.sdks:
                 command = xcode.xcodebuild(project = project.path, command = 'clean', scheme = scheme, sdk = sdk, configuration = configuration)
                 run(command, echo = True)
@@ -162,24 +162,29 @@ class Punic(object):
             if not checkout_path.exists():
                 raise Exception('No checkout at path: {}'.format(checkout_path))
 
-            carthage_symlink_path = checkout_path / 'Carthage'
+            # Make a Carthage/Build symlink inside checked out project.
+            carthage_path = checkout_path / 'Carthage'
+            if not carthage_path.exists():
+                carthage_path.mkdir()
+
+            carthage_symlink_path = carthage_path / 'Build'
             if carthage_symlink_path.exists():
                 carthage_symlink_path.unlink()
             os.symlink(str(self.punic_path), str(carthage_symlink_path ))
 
-            project_paths = checkout_path.glob("*.xcodeproj")
 
             def make_identifier(project_path):
                 rev = project.repo.revparse_single(revision).id
                 identifier = '{},{}'.format(str(rev), project_path.relative_to(self.checkouts_path))
                 return identifier
 
+            project_paths = checkout_path.glob("*.xcodeproj")
             projects = [xcode.Project(self, project_path, make_identifier(project_path)) for project_path in project_paths]
             all_projects += projects
         return all_projects
 
-    def scheme_walker(self, configuration, platforms, checkout):
-        projects = self.xcode_projects(checkout = checkout)
+    def scheme_walker(self, configuration, platforms, fetch):
+        projects = self.xcode_projects(fetch = fetch)
         for platform in platforms:
             platform_build_path = self.build_path / platform.output_directory_name
             if not platform_build_path.exists():
@@ -188,7 +193,7 @@ class Punic(object):
                 schemes = [scheme for scheme in project.schemes if
                            platform.sdks[0] in project.build_settings(scheme).get('SUPPORTED_PLATFORMS', '').split(' ')]
                 schemes = [scheme for scheme in schemes if
-                           project.build_settings(scheme)['PACKAGE_TYPE'] == 'com.apple.package-type.wrapper.framework']
+                           project.build_settings(scheme).get('PACKAGE_TYPE') == 'com.apple.package-type.wrapper.framework']
                 for scheme in schemes:
                     yield platform, project, scheme
 
@@ -204,7 +209,7 @@ class Punic(object):
             self.all_repositories[identifier] = repository
             return repository
 
-    def dependencies_for_project_and_tag(self, identifier, tag, fetch):
+    def dependencies_for_project_and_tag(self, identifier, tag, fetch = True):
         repository = self.repository_for_identifier(identifier, fetch = fetch)
         specifications = repository.specifications_for_tag(tag)
 
