@@ -22,11 +22,7 @@ def main(context, echo, verbose):
         context.obj = punic
 
     logging.basicConfig(format='%(message)s', level= logging.DEBUG if verbose else logging.INFO)
-
-    if echo:
-        logging.debug("# Echo enabled")
-        punic.echo = True
-
+    punic.echo = echo
 
 
 @main.command()
@@ -97,7 +93,7 @@ def clean(context, configuration, platform, xcode, caches):
             logging.info('# Cleaning {repo_cache_directory}'.format(**punic.__dict__))
             shutil.rmtree(str(punic.repo_cache_directory))
         logging.info('# Cleaning run cache')
-        punic.cacheable_runner.reset()
+        punic.runner.reset()
 
 
 def parse_platforms(s):

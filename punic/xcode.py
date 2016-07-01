@@ -32,7 +32,7 @@ class XcodeProject(object):
     @mproperty
     def info(self):
         command = xcodebuild(project=self.path, command='-list')
-        output = self.punic.cacheable_runner.run(cache_key=self.identifier, command=command)
+        output = self.punic.runner.run(cache_key=self.identifier, command=command)
         targets, configurations, schemes = parse_info(output)
         return targets, configurations, schemes
 
@@ -46,7 +46,7 @@ class XcodeProject(object):
             arguments = dict()
         command = xcodebuild(project=self.path, command='-showBuildSettings', scheme=scheme, target=target,
                              configuration=configuration, sdk=sdk, arguments=arguments)
-        output = self.punic.cacheable_runner.run(cache_key=self.identifier, command=command)
+        output = self.punic.runner.run(cache_key=self.identifier, command=command)
         return parse_build_settings(output)
 
     def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None, temp_symroot = False):

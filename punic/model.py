@@ -52,7 +52,7 @@ class Punic(object):
         self.root_project = self.repository_for_identifier(root_project_identifier)
 
     @mproperty
-    def cacheable_runner(self):
+    def runner(self):
         runner = CacheableRunner(path=self.library_directory / "cache.shelf")
         runner.echo = self.echo
         return runner
