@@ -39,6 +39,10 @@ See https://github.com/Carthage/Carthage for usage information
 
 Punic supports Carthage `Cartfile` and `Cartfile.resolved` files.
 
+## Caveat!!!
+
+Punic is very immature right now and probably is not ready for production use. Use at your own peril.
+
 ## Unsupported Carthage Features
 
 * `carthage archive`
