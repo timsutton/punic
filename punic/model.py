@@ -170,7 +170,7 @@ class Punic(object):
             carthage_symlink_path = carthage_path / 'Build'
             if carthage_symlink_path.exists():
                 carthage_symlink_path.unlink()
-            os.symlink(str(self.punic_path), str(carthage_symlink_path ))
+            os.symlink(str(self.build_path), str(carthage_symlink_path ))
 
 
             def make_identifier(project_path):
