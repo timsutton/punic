@@ -41,20 +41,88 @@ Punic supports Carthage `Cartfile` and `Cartfile.resolved` files.
 
 ## Caveat!!!
 
-Punic is very immature right now and probably is not ready for production use. Use at your own peril.
+Punic can be considered an early preview release and probably is not ready for production use. Use at your own peril.
 
 ## Differences between Punic & Carthage
 
 Aside from differences of implementation one of the fundamental differences is that Carthage always runs `xcodebuild clean` before building dependencies. Punic deliberately does not perform this clean step and provides an explicit `punic clean` command. The goal of this is to not force collaborators to sit through long clean builds when very little has changed. This can provide dramatic speed ups to a users workflow (during testing builds that can take Carthage 20-25 minutes to build on top-end hardware take less than a minute to do a 'dirty' build.)
 
-* `carthage archive`
-* `carthage copy-frameworks`
-* `carthage outdated`
-* `carthage fetch`
-
-Most command line switches, including but not limited to `--use-ssh` and `--use-submodule`. Also Punic does not support (either creating or using) pre-built binary archives.
-
 Punic only supports "github" style dependency specifications and does not support the use of branch names in version specifications.
+
+A complete list of Carthage compatibility as of version 0.16.2 of Carthage follows:
+
+| Command/Switch                  | Status                             |
+| ---------------                 | ---------------------------------- |
+| archive                         | Unimplemented. Note 1              |
+| bootstrap                       | Implemented                        |
+| bootstrap / --configuration     | Implemented                        |
+| bootstrap / --platform          | Implemented                        |
+| bootstrap / --derived-data      | Unimplemented                      |
+| bootstrap / --verbose           | Unimplemented                      |
+| bootstrap / --no-checkout       | Unimplemented                      |
+| bootstrap / --no-build          | Unimplemented                      |
+| bootstrap / --use-ssh           | Unimplemented                      |
+| bootstrap / --use-submodules    | Unimplemented                      |
+| bootstrap / --no-use-binaries   | Unimplemented. Note 1              |
+| bootstrap / --color             | Unimplemented                      |
+| bootstrap / --project-directory | Unimplemented                      |
+| bootstrap / [dependencies]      | Unimplemented                      |
+| build                           | Implemented                        |
+| build / --configuration         | Implemented                        |
+| build / --platform              | Implemented                        |
+| build / --derived-data          | Unimplemented                      |
+| build / --no-skip-current       | Unimplemented                      |
+| build / --color                 | Unimplemented                      |
+| build / --project-directory     | Unimplemented                      |
+| build / [dependencies]          | Unimplemented                      |
+| checkout                        | Implemented                        |
+| checkout / --use-ssh            | Unimplemented                      |
+| checkout / --use-submodules     | Unimplemented                      |
+| checkout / --no-use-binaries    | Unimplemented. Note 1              |
+| checkout / --color              | Unimplemented                      |
+| checkout / --project-directory  | Unimplemented                      |
+| checkout / [dependencies]       | Unimplemented                      |
+| copy-frameworks                 | Unimplemented                      |
+| fetch                           | Unimplemented                      |
+| fetch / --color                 | Unimplemented                      |
+| outdated                        | Unimplemented                      |
+| outdated / --use-ssh            | Unimplemented                      |
+| outdated / --verbose            | Unimplemented                      |
+| outdated / --color              | Unimplemented                      |
+| outdated / --project-directory  | Unimplemented                      |
+| update                          | Implemented                        |
+| update / --configuration        | Implemented                        |
+| update / --platform             | Implemented                        |
+| update / --derived-data         | Unimplemented                      |
+| update / --verbose              | Unimplemented                      |
+| update / --no-checkout          | Unimplemented                      |
+| update / --no-build             | Unimplemented                      |
+| update / --use-ssh              | Unimplemented                      |
+| update / --use-submodules       | Unimplemented                      |
+| update / --no-use-binaries      | Unimplemented. Note 1              |
+| update / --color                | Unimplemented                      |
+| update / --project-directory    | Unimplemented                      |
+| update / [dependencies]         | Unimplemented                      |
+
+### Notes:
+
+1. Binary archives will not be supported until Swift supports a non-fragile ABI.
+
+## Roadmap
+
+The current roadmap for Punic is as follows (in rough order of priority):
+
+- [ ] `copy-frameworks` subcommand.
+- [ ] Support branch style Cartfile specifications.
+- [ ] Run on travis
+- [ ] Reliability. Punic needs to be tested against as many other Cartfiles as possible and needs to reliably produce the same build order
+- [ ] Support `build` subcommand's `--no-skip-current` switch
+- [ ] `fetch` subcommand
+- [ ] Support specifying target dependencies at command line. (This is relatively low priority because incremental Punic builds are much much quicker than slow carthage clean builds.)
+- [ ] Support `Cartfile.private` functionality
+- [ ] Replace Cartfiles with a better, more expressive file format (yaml? toml?).
+- [ ] Add a `migrate` subcommand that can migrate Cartfiles to the new format.
+- [ ] Allow specification of platforms in new style config file. Cache xcodeproject and scheme info in new style build artifact files (replacing .resolved)
 
 ## Frequently Answer Questions
 
