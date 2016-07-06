@@ -18,8 +18,9 @@ def run(command, cwd=None, echo=True):
         with work_directory(cwd):
             if isinstance(command, basestring):
                 command = shlex.split(command)
-            if echo:
+            else:
                 command = [str(command) for command in command]
+            if echo:
                 logging.info(' '.join(command))
             return subprocess.check_output(command)
 
