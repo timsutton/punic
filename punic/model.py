@@ -27,10 +27,6 @@ from copy import copy
 class Punic(object):
     def __init__(self, root_path = None):
 
-        # root_path: (Path)
-
-        self.echo = False
-
         if not root_path:
             root_path = Path.cwd()
 
@@ -45,6 +41,8 @@ class Punic(object):
         self.build_path = self.punic_path / 'Build'
         self.checkouts_path = self.punic_path / 'Checkouts'
 
+        runner.cache_path = self.library_directory / "cache.shelf"
+
         root_project_identifier = ProjectIdentifier(project_name=self.root_path.name)
 
         self.all_repositories = {
@@ -53,11 +51,6 @@ class Punic(object):
 
         self.root_project = self.repository_for_identifier(root_project_identifier)
 
-    @mproperty
-    def runner(self):
-        runner = CacheableRunner(path=self.library_directory / "cache.shelf")
-        runner.echo = self.echo
-        return runner
 
     def resolve(self):
         logging.debug("#### Resolving")
@@ -132,7 +125,7 @@ class Punic(object):
                     logging.debug('# Lipoing')
                     executable_paths = [product.executable_path for product in products.values()]
                     command = ['/usr/bin/xcrun', 'lipo', '-create'] + executable_paths + ['-output', output_product.executable_path]
-                    run(command, echo = self.echo)
+                    runner.run(command)
                     mtime = executable_paths[0].stat().st_mtime
                     os.utime(str(output_product.executable_path), (mtime, mtime))
 
@@ -155,7 +148,7 @@ class Punic(object):
 
                 logging.debug('# Producing dSYM files')
                 command = ['/usr/bin/xcrun', 'dsymutil', str(output_product.executable_path), '-o', str(output_product.target_build_dir / (output_product.executable_name + '.dSYM'))]
-                run(command, echo = self.echo)
+                runner.run(command)
 
                 ########################################################################################################
 
@@ -166,7 +159,7 @@ class Punic(object):
         for platform, project, scheme in self.scheme_walker(configuration, platforms, fetch = False):
             for sdk in platform.sdks:
                 command = xcodebuild(project = project.path, command = 'clean', scheme = scheme, sdk = sdk, configuration = configuration)
-                run(command, echo = self.echo)
+                runner.run(command)
 
     def xcode_projects(self, fetch = False):
 
@@ -306,7 +299,7 @@ class Repository(object):
         if not self.path.exists():
             with work_directory(str(self.path.parent)):
                 logging.debug('# Cloning: {}'.format(self))
-                run('git clone --recursive "{}"'.format(self.identifier.remote_url), echo = self.punic.echo)
+                runner.run('git clone --recursive "{}"'.format(self.identifier.remote_url))
                 logging.debug('# Cloned: {}'.format(self))
         else:
             with work_directory(str(self.path)):

@@ -76,7 +76,7 @@ class Specification(object):
 
     @classmethod
     def cartfile_string(cls, string):
-        """
+        """Foo bar
         >>> Specification.cartfile_string('github 'foo/bar'').spec
         'github 'foo/bar''
         >>> Specification.cartfile_string('github 'foo/bar' 'master'').version

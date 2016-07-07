@@ -8,6 +8,7 @@ import click
 from punic.types import *
 from punic.utilities import *
 from punic.model import *
+from punic.runner import *
 
 
 @click.group()
@@ -22,7 +23,7 @@ def main(context, echo, verbose):
         context.obj = punic
 
     logging.basicConfig(format='%(message)s', level= logging.DEBUG if verbose else logging.INFO)
-    punic.echo = echo
+    runner.echo = echo
 
 
 @main.command()
