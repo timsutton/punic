@@ -5,7 +5,7 @@ import re
 
 from pathlib2 import Path
 
-from punic.types import Specification
+from punic.basic_types import Specification
 
 class Cartfile(object):
     def __init__(self, specifications = None):

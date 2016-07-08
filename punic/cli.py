@@ -5,7 +5,7 @@ import logging
 
 import click
 
-from punic.types import *
+from punic.basic_types import *
 from punic.utilities import *
 from punic.model import *
 from punic.runner import *

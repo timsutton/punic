@@ -3,6 +3,8 @@ __all__ = ['SemanticVersion', 'Specification', 'Platform', 'Tag', 'ProjectIdenti
            'VersionOperator', 'VersionPredicate']
 
 import re
+import urlparse
+from pathlib2 import Path
 
 from flufl.enum import Enum
 
@@ -28,44 +30,73 @@ class SemanticVersion(object):
         match = re.match('(?:v)?(\d+)(?:\.(\d+)(?:\.(\d+))?)?', s)
         return True if match else False
 
-    def __init__(self, major, minor, revision):
-        self.major = major
-        self.minor = minor
-        self.revision = revision
+    def __init__(self, major, minor, patch = None, identifiers = None):
+        self.major = major if major else 0
+        self.minor = minor if minor else 0
+        self.patch = patch if patch else 0
+        self.identifiers = identifiers if identifiers else []
 
     @property
     def value(self):
         # TODO: Lazy
-        return self.major * 1000000 + self.minor * 1000 + self.revision
+        return self.major * 1000000 + self.minor * 1000 + self.patch
 
     @property
     def components(self):
-        return self.major, self.minor, self.revision
+        return [self.major, self.minor, self.patch]
 
     def __repr__(self):
-        return '{}.{}.{}'.format(*self.components)
+        components = [self.major, self.minor] + ([self.patch] if self.patch else [])
+        components = [str(component) for component in components]
+        return '.'.join(components)
 
     def __cmp__(self, other):
-        # TODO: Lazy
-        return cmp(self.value, other.value)
+        """
+        >>> SemanticVersion.string('1') == SemanticVersion.string('1')
+        True
+        >>> SemanticVersion.string('1') == SemanticVersion.string('1.0')
+        True
+        >>> SemanticVersion.string('1') == SemanticVersion.string('1.0.0')
+        True
+        >>> SemanticVersion.string('1') != SemanticVersion.string('1')
+        False
+        >>> SemanticVersion.string('1') < SemanticVersion.string('2')
+        True
+        >>> SemanticVersion.string('1') <= SemanticVersion.string('2')
+        True
+        >>> SemanticVersion.string('1.1') > SemanticVersion.string('1.0')
+        True
+        """
+        return cmp(self.components, other.components)
 
     def __hash__(self):
-        return hash(self.value)
+        return hash(self.major * 1000000)  ^ hash(self.minor * 10000) ^ hash(self.patch * 100)
 
     @classmethod
     def string(cls, s):
+        """
+        >>> SemanticVersion.string('1')
+        1.0
+        >>> SemanticVersion.string('1.2')
+        1.2
+        >>> SemanticVersion.string('1.2.3')
+        1.2.3
+
+        # >>> SemanticVersion.string('1.0-foo')
+        # 1.0-foo
+        """
         match = re.match('(?:v)?(\d+)(?:\.(\d+)(?:\.(\d+))?)?', s)
         if not match:
             raise Exception('"{}" not a semantic version.'.format(s))
         groups = match.groups()
         major = int(groups[0])
-        minor = int(groups[1]) if groups[1] else 0
-        revision = int(groups[2]) if groups[2] else 0
-        return SemanticVersion(major=major, minor=minor, revision=revision)
+        minor = int(groups[1]) if groups[1] else None
+        patch = int(groups[2]) if groups[2] else None
+        return SemanticVersion(major=major, minor=minor, patch=patch)
 
     @property
     def next_major(self):
-        return SemanticVersion(major=self.major + 1, minor=0, revision=0)
+        return SemanticVersion(major=self.major + 1, minor=0, patch=0)
 
 
 class Specification(object):
@@ -76,52 +107,87 @@ class Specification(object):
 
     @classmethod
     def cartfile_string(cls, string):
-        """Foo bar
-        >>> Specification.cartfile_string('github 'foo/bar'').spec
-        'github 'foo/bar''
-        >>> Specification.cartfile_string('github 'foo/bar' 'master'').version
-        'master'
-        >>> Specification.cartfile_string('github 'foo/bar' 'master'').origin
-        'github 'foo/bar''
-        >>> Specification.cartfile_string('github 'foo/bar' 'master'').spec
-        'github 'foo/bar' 'master''
-        >>> Specification.cartfile_string('github 'foo/bar' >= 1.0').spec
-        'github 'foo/bar' >= 1.0'
-        >>> Specification.cartfile_string('github 'schwa/SwiftUtilities' 'jwight/swift2'').name
-        'SwiftUtilities'
-        >>> Specification.cartfile_string('github 'schwa/SwiftUtilities' 'jwight/swift2'').version
-        'jwight/swift2'
+        """
+        >>> Specification.cartfile_string('github "foo/bar"')
+        github "foo/bar"
+        >>> Specification.cartfile_string('github "foo/bar" "master"').predicate
+        "master"
+        >>> Specification.cartfile_string('github "foo/bar" "master"').identifier
+        foo/bar
+        >>> Specification.cartfile_string('github "foo/bar" "master"')
+        github "foo/bar" "master"
+        >>> Specification.cartfile_string('github "foo/bar" >= 1.0').predicate
+        >= 1.0
+        >>> Specification.cartfile_string('github "schwa/SwiftUtilities" "jwight/swift2"').identifier
+        schwa/SwiftUtilities
+        >>> Specification.cartfile_string('github "schwa/SwiftUtilities" "jwight/swift2"').predicate
+        "jwight/swift2"
+        >>> Specification.cartfile_string('file:///Users/example/Project').identifier
+        file:///Users/example/Project
+        >>> Specification.cartfile_string('file:///Users/example/Project').identifier.project_name
+        'Project'
         """
 
-        match = re.match(r'^(github\s+"(([^/]+)/(.+?))")(?:\s+(.+)?)?', string)
+        match = re.match(r'^(?P<address>github\s+"[^/]+/(?:.+?)")(?:\s+(?P<predicate>.+)?)?', string)
         if not match:
-            raise Exception('Bad spec {}'.format(string))
+            match = re.match(r'^(?P<address>file:///.+)(?:\s+(?P<predicate>.+)?)?', string)
+            if not match:
+                raise Exception('Bad spec {}'.format(string))
 
-        remote_url = 'git@github.com:{}.git'.format(match.group(2))
-        team_name = match.group(3)
-        project_name = match.group(4)
-
-        identifier = ProjectIdentifier(team_name=team_name, project_name=project_name, remote_url=remote_url)
-        predicate = VersionPredicate(match.group(5))
+        identifier = ProjectIdentifier.string(match.group('address'))
+        predicate = VersionPredicate(match.group('predicate'))
         specification = Specification(identifier = identifier, predicate = predicate)
         specification.raw_string = string
 
         return specification
 
     def __repr__(self):
-        return 'github "{identifier}" {predicate}'.format(**self.__dict__)
+        return 'github "{identifier}" {predicate}'.format(**self.__dict__).strip()
 
 
 class ProjectIdentifier(object):
+
+    @classmethod
+    def string(cls, string):
+        """
+        >>> ProjectIdentifier.string('github "foo/bar"')
+        foo/bar
+        >>> ProjectIdentifier.string('github "foo/bar"').team_name
+        'foo'
+        >>> ProjectIdentifier.string('github "foo/bar"').project_name
+        'bar'
+        >>> ProjectIdentifier.string('file:///example')
+        file:///example
+        >>> ProjectIdentifier.string('file:///example').remote_url
+        'file:///example'
+        """
+
+        match = re.match(r'^github\s+"(?P<team_name>.+)/(?P<project_name>.+)"', string)
+        if match:
+            team_name = match.group('team_name')
+            project_name = match.group('project_name')
+            remote_url = 'git@github.com:{}/{}.git'.format(team_name, project_name)
+            return ProjectIdentifier(team_name=team_name, project_name=project_name, remote_url=remote_url)
+        else:
+            match = re.match(r'file:///.+', string)
+            if not match:
+                raise Exception('Bad project identifier: {}'.format(string))
+            remote_url = match.group(0)
+
+            path = Path(urlparse.urlparse(remote_url).path)
+            project_name = path.name
+
+            return ProjectIdentifier(project_name = project_name, remote_url=remote_url)
+
     def __init__(self, team_name=None, project_name=None, remote_url=None):
         self.team_name = team_name
         self.project_name = project_name
         self.remote_url = remote_url
 
-        if not team_name:
-            self.identifier = self.project_name
-        else:
+        if team_name and project_name:
             self.identifier = "{}/{}".format(self.team_name, self.project_name)
+        else:
+            self.identifier = self.remote_url
 
     def __repr__(self):
         return self.identifier
@@ -148,11 +214,11 @@ class VersionPredicate(object):
     def __init__(self, string):
         """
         >>> VersionPredicate('"master"')
-        'master'
+        "master"
         >>> VersionPredicate('>= 1.0')
         >= 1.0
-        >>> VersionPredicate('~= 1.0')
-        ~= 1.0
+        >>> VersionPredicate('~> 1.0')
+        ~> 1.0
         >>> VersionPredicate('== 1.0')
         == 1.0
         """
@@ -224,3 +290,8 @@ Platform.all = [
     Platform(name = 'macOS', nickname = 'Mac', sdks = ['macosx'], output_directory_name = 'Mac'),
     # TODO add watchos and tvos
 ]
+
+if __name__ == "__main__":
+    print('Yo')
+    import doctest
+    doctest.testmod()

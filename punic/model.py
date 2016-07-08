@@ -14,7 +14,7 @@ from memoize import mproperty
 
 from punic.utilities import *
 from punic.xcode import *
-from punic.types import *
+from punic.basic_types import *
 from punic.runner import *
 from punic.resolver import *
 from punic.config import *
