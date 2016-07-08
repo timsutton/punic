@@ -57,6 +57,9 @@ class CacheableRunner(object):
 
         except subprocess.CalledProcessError, e:
             # raise Exception("command failed: {}".format(command))
+            print e.output
+
+
             raise e
 
 
