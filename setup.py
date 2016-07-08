@@ -11,7 +11,16 @@ setup(
     author_email='jwight@mac.com',
     description='Clean room python implementation of a subset of Carthage functionality',
     packages=['punic'],
-    install_requires=['click', 'pathlib2', 'networkx', 'pygit2', 'flufl.enum', 'pydotplus', 'memoize'],
+    install_requires=[
+        'click',
+        'pathlib2',
+        'networkx',
+        'pygit2',
+        'flufl.enum',
+        'pydotplus',
+        'memoize',
+        'blessings',
+        ],
     entry_points='''
         [console_scripts]
         punic=punic.cli:main
