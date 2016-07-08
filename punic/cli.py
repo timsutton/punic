@@ -14,6 +14,7 @@ from punic.runner import *
 @click.group()
 @click.option('--echo', default=False, is_flag=True)
 @click.option('--verbose', default=False, is_flag=True)
+# @click.option('--timing', default=False, is_flag=True) # TODO
 @click.pass_context
 def main(context, echo, verbose):
     if context.obj:
@@ -28,21 +29,23 @@ def main(context, echo, verbose):
 
 @main.command()
 @click.pass_context
+#@click.option('--fetch,--no-fetch', default=Trye, is_flag=True) # TODO
 def resolve(context):
     punic = context.obj
     punic.resolve()
 
 
 @main.command()
+@click.pass_context
 @click.option('--configuration', default=None)
 @click.option('--platform', default=None)
-@click.pass_context
-def update(context, configuration, platform):
+@click.argument('deps', nargs=-1)
+def update(context, configuration, platform, deps):
     punic = context.obj
     with timeit('update'):
         platforms = parse_platforms(platform)
         punic.resolve()
-        punic.build(configuration=configuration, platforms=platforms)
+        punic.build(configuration=configuration, platforms=platforms, dependencies = deps)
 
 
 @main.command()
@@ -54,34 +57,36 @@ def checkout(context):
 
 
 @main.command()
+@click.pass_context
 @click.option('--configuration', default=None)
 @click.option('--platform', default=None)
-@click.pass_context
-def build(context, configuration, platform):
+@click.argument('deps', nargs=-1)
+def build(context, configuration, platform, deps):
     punic = context.obj
     with timeit('build'):
         platforms = parse_platforms(platform)
-        punic.build(configuration=configuration, platforms=platforms)
+        punic.build(configuration=configuration, platforms=platforms, dependencies = deps)
 
 
 @main.command()
+@click.pass_context
 @click.option('--configuration', default=None)
 @click.option('--platform', default=None)
-@click.pass_context
-def bootstrap(context, configuration, platform):
+@click.argument('deps', nargs=-1)
+def bootstrap(context, configuration, platform, deps):
     punic = context.obj
     with timeit('bootstrap'):
         platforms = parse_platforms(platform)
         punic.fetch()
-        punic.build(configuration=configuration, platforms= platforms)
+        punic.build(configuration=configuration, platforms= platforms, dependencies = deps)
 
 
 @main.command()
+@click.pass_context
 @click.option('--configuration', default=None)
 @click.option('--platform', default=None)
 @click.option('--xcode/--no-xcode', default=True, is_flag=True)
 @click.option('--caches', default=False, is_flag=True)
-@click.pass_context
 def clean(context, configuration, platform, xcode, caches):
     punic = context.obj
     if xcode:
@@ -95,11 +100,6 @@ def clean(context, configuration, platform, xcode, caches):
             shutil.rmtree(str(punic.repo_cache_directory))
         logging.info('# Cleaning run cache')
         punic.runner.reset()
-
-# archive
-# copy-frameworks
-# outdated
-# version
 
 def parse_platforms(s):
     if not s:

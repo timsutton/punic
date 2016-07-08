@@ -83,13 +83,18 @@ class Punic(object):
                     'CARTHAGE': 'YES',
                 }
 
-    def build(self, configuration, platforms):
+    def build(self, configuration, platforms, dependencies):
         # TODO: This code needs a major refactoring and clean-up.
 
         if not self.build_path.exists():
             self.build_path.mkdir(parents = True)
 
-        for platform, project, scheme in self.scheme_walker(configuration, platforms, fetch = False):
+        filtered_dependencies = self.ordered_dependencies(fetch = False, filter = dependencies)
+
+        projects = self.xcode_projects(dependencies = filtered_dependencies , fetch = False)
+
+        for platform, project, scheme in self.scheme_walker(projects = projects, configuration = configuration, platforms = platforms):
+
             with timeit(project.path.name):
                 logging.debug('#' * 80)
                 logging.debug('# Building {} {}'.format(project.path.name, scheme))
@@ -156,27 +161,32 @@ class Punic(object):
 
     def clean(self, configuration, platforms):
         logging.debug("#### Cleaning")
-        for platform, project, scheme in self.scheme_walker(configuration, platforms, fetch = False):
+
+        for platform, project, scheme in self.scheme_walker(configuration = configuration, platforms = platforms):
             for sdk in platform.sdks:
                 command = xcodebuild(project = project.path, command = 'clean', scheme = scheme, sdk = sdk, configuration = configuration)
                 runner.run(command)
 
-    def xcode_projects(self, fetch = False):
-
-        if not self.build_path.exists():
-            self.build_path.mkdir(parents = True)
-
-        all_projects = []
-
+    def ordered_dependencies(self, fetch = False, filter = None):
         cartfile = Cartfile()
         cartfile.read(self.root_path / 'Cartfile.resolved')
-
         dependencies = [(spec.identifier, Tag(spec.predicate.value)) for spec in cartfile.specifications]
-
         resolver = Resolver(self)
-        build_order = resolver.resolve_versions(dependencies, fetch = fetch)
+        resolved_dependencies = resolver.resolve_versions(dependencies, fetch = fetch)
 
-        for (identifier, tag) in build_order:
+        resolved_dependencies = [dependency for dependency in resolved_dependencies if dependency[0].matches(filter)]
+
+        return resolved_dependencies
+
+    def xcode_projects(self, dependencies = None, fetch = False):
+        if not self.build_path.exists():
+            self.build_path.mkdir(parents = True)
+        all_projects = []
+
+        if not dependencies:
+            dependencies = self.ordered_dependencies()
+
+        for (identifier, tag) in dependencies:
             project = self.repository_for_identifier(identifier)
 
             revision = tag.tag
@@ -215,8 +225,11 @@ class Punic(object):
             all_projects += projects
         return all_projects
 
-    def scheme_walker(self, configuration, platforms, fetch):
-        projects = self.xcode_projects(fetch = fetch)
+    def scheme_walker(self, projects = None, configuration = None, platforms = None):
+
+        if not projects:
+            projects = self.xcode_projects(fetch=False)
+
         for platform in platforms:
             platform_build_path = self.build_path / platform.output_directory_name
             if not platform_build_path.exists():

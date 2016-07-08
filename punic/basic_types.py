@@ -202,6 +202,16 @@ class ProjectIdentifier(object):
         return hash(self.identifier)
 
 
+    def matches(self, filter=None):
+        if not filter:
+            return True
+
+        if self.project_name in filter:
+            return True
+
+        return False
+
+
 class VersionOperator(Enum):
     commitish = 'commit-ish'
     any = '<any>'
