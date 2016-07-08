@@ -99,7 +99,7 @@ def clean(context, configuration, platform, xcode, caches):
             logging.info('# Cleaning {repo_cache_directory}'.format(**punic.__dict__))
             shutil.rmtree(str(punic.repo_cache_directory))
         logging.info('# Cleaning run cache')
-        punic.runner.reset()
+        runner.reset()
 
 def parse_platforms(s):
     if not s:
