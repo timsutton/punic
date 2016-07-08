@@ -184,7 +184,7 @@ class Punic(object):
         all_projects = []
 
         if not dependencies:
-            dependencies = self.ordered_dependencies()
+            dependencies = self.ordered_dependencies(fetch = fetch)
 
         for (identifier, tag) in dependencies:
             project = self.repository_for_identifier(identifier)
@@ -288,7 +288,8 @@ class Repository(object):
 
     @mproperty
     def repo(self):
-        assert self.path.exists()
+        if not self.path.exists():
+            raise Exception("Not such path: {}".format(self.path))
         return pygit2.Repository(str(self.path))
 
     @mproperty
