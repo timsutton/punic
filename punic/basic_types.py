@@ -4,12 +4,14 @@ __all__ = ['SemanticVersion', 'Specification', 'Platform', 'Tag', 'ProjectIdenti
 
 import re
 import urlparse
-from pathlib2 import Path
 
+from pathlib2 import Path
+from memoize import mproperty
 from flufl.enum import Enum
 
 class Tag(object):
     def __init__(self, string):
+        assert string
         self.tag = string
         self.semantic_version = SemanticVersion.string(self.tag)
 
@@ -184,10 +186,14 @@ class ProjectIdentifier(object):
         self.project_name = project_name
         self.remote_url = remote_url
 
-        if team_name and project_name:
-            self.identifier = "{}/{}".format(self.team_name, self.project_name)
+    @mproperty
+    def identifier(self):
+        if self.team_name and self.project_name:
+            return "{}/{}".format(self.team_name, self.project_name)
+        elif self.remote_url:
+            return self.remote_url
         else:
-            self.identifier = self.remote_url
+            return '<unnamed>'
 
     def __repr__(self):
         return self.identifier
