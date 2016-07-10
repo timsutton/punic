@@ -15,15 +15,17 @@ def dump(stream, graph, node, depth=0):
 
 
 class Resolver(object):
-    def __init__(self, punic):
+    def __init__(self, punic, fetch = True):
         self.punic = punic
         self.root = (self.punic.root_project.identifier, None)
+        self.fetch = fetch
 
     def build_graph(self, filter=None):
         def populate_graph(graph, parent, parent_version, filter=None, depth=0):
             graph.add_node((parent, parent_version))
             for child, child_versions in self.punic.dependencies_for_project_and_tag(parent,
-                                                                                     parent_version.tag if parent_version else None):
+                                                                                     parent_version.tag if parent_version else None
+                                                                                     , fetch = self.fetch):
                 for child_version in child_versions:
                     if filter and filter(child, child_version) == False:
                         continue
@@ -101,10 +103,14 @@ class Resolver(object):
 
         #        nx.drawing.nx_pydot.write_dot(resolved_graph, '/Users/schwa/Desktop/dependencioes.dot')
 
+        return graph
+
+    def resolve_build_order(self):
+        graph = self.resolve()
         logging.debug('# Topologicalling sorting graph')
         build_order = topological_sort(graph, reverse=True)
-
         return build_order
+
 
     def resolve_versions(self, dependencies, fetch = False):
         # type: (ProjectIdentifier, Tag) -> [ProjectIdentifier, Tag]

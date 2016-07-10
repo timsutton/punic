@@ -53,7 +53,7 @@ class CacheableRunner(object):
 
                 if real_echo:
                     logging.info(' '.join(command))
-                return subprocess.check_output(command)
+                return subprocess.check_output(command, stderr = subprocess.STDOUT)
 
         except subprocess.CalledProcessError, e:
             # raise Exception("command failed: {}".format(command))

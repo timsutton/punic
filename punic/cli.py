@@ -29,10 +29,11 @@ def main(context, echo, verbose):
 
 @main.command()
 @click.pass_context
-#@click.option('--fetch,--no-fetch', default=Trye, is_flag=True) # TODO
-def resolve(context):
-    punic = context.obj
-    punic.resolve()
+@click.option('--fetch/--no-fetch', default=True, is_flag=True) # TODO
+def resolve(context, fetch):
+    with timeit('resolve'):
+        punic = context.obj
+        punic.resolve(fetch = fetch)
 
 
 @main.command()
@@ -101,23 +102,52 @@ def clean(context, configuration, platform, xcode, caches):
         logging.info('# Cleaning run cache')
         runner.reset()
 
+
+@main.command()
+@click.pass_context
+@click.option('--fetch/--no-fetch', default=True, is_flag=True) # TODO
+def graph(context, fetch):
+    with timeit('graph'):
+        punic = context.obj
+        graph = punic.graph(fetch = fetch)
+
+        import networkx as nx
+
+        nx.drawing.nx_pydot.write_dot(graph, '/Users/schwa/Desktop/graph.dot')
+        runner.run('dot /Users/schwa/Desktop/graph.dot -o/Users/schwa/Desktop/graph.png -Tpng')
+        #runner.run('open /Users/schwa/Desktop/graph.png')
+
+        # from fabulous import image
+        # print image.Image('/Users/schwa/Desktop/graph.png')
+
+        # import matplotlib.pyplot as plt
+        # pos = nx.spring_layout(graph)
+        # nx.draw_networkx_nodes(graph, pos, nodelist=graph, node_color='r', alpha=0.2)
+        # nx.draw_networkx_edges(graph, pos, nodelist=graph, edge_color='k', alpha=0.2, arrows = False)
+        # nx.draw_networkx_labels(graph, pos, font_size = 9)
+        #
+        # plt.savefig("/Users/schwa/Desktop/graph.png")
+        # runner.run('open /Users/schwa/Desktop/graph.png')
+
+        # from networkx.drawing.nx_pydot import write_dot
+        # write_dot(graph,'/Users/schwa/Desktop/file.dot')
+
 def parse_platforms(s):
     if not s:
         return Platform.all
     else:
         return [Platform.platform_for_nickname(platform.strip()) for platform in s.split(',')]
 
-
 if __name__ == '__main__':
     import sys
     import os
     import shlex
 
-    os.chdir('/Users/schwa/Desktop/3dr-Site-Scan-iOS')
+    os.chdir('/Users/schwa/Projects/3dr-Site-Scan-iOS')
 
     # sys.argv = shlex.split('{} --verbose --echo clean'.format(sys.argv[0]))
     # sys.argv = shlex.split('{} --verbose --echo build --platform=iOS --configuration=Debug'.format(sys.argv[0]))
-    sys.argv = shlex.split('{} --verbose --echo build --platform=iOS --configuration=Debug'.format(sys.argv[0]))
+    sys.argv = shlex.split('{} --verbose --echo graph --no-fetch'.format(sys.argv[0]))
 
     punic = Punic()
 

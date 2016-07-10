@@ -52,9 +52,11 @@ class Punic(object):
         self.root_project = self.repository_for_identifier(root_project_identifier)
 
 
-    def resolve(self):
-        logging.debug("#### Resolving")
-        build_order = Resolver(self).resolve()
+    def resolve(self, fetch,):
+        logging.debug("#### Resolving {}".format(fetch))
+
+        resolver = Resolver(punic = self, fetch = fetch)
+        build_order = resolver.resolve_build_order()
 
         for index, value in enumerate(build_order):
             dependency, version = value
@@ -65,6 +67,16 @@ class Punic(object):
 
         cartfile = Cartfile(specifications = specifications)
         cartfile.write((self.root_path / 'Cartfile.resolved').open('w'))
+
+    def graph(self, fetch = True):
+        logging.debug("#### Resolving {}".format(fetch))
+
+        resolver = Resolver(punic = self, fetch = fetch)
+        return resolver.resolve()
+
+
+
+
 
     def fetch(self):
         logging.debug("#### Fetching")
@@ -173,9 +185,7 @@ class Punic(object):
         dependencies = [(spec.identifier, Tag(spec.predicate.value)) for spec in cartfile.specifications]
         resolver = Resolver(self)
         resolved_dependencies = resolver.resolve_versions(dependencies, fetch = fetch)
-
         resolved_dependencies = [dependency for dependency in resolved_dependencies if dependency[0].matches(filter)]
-
         return resolved_dependencies
 
     def xcode_projects(self, dependencies = None, fetch = False):
@@ -306,21 +316,20 @@ class Repository(object):
     def checkout(self, revision):
         # type: (String)
         logging.debug('# Checking out {} @ revision {}'.format(self, revision))
-        rev = self.repo.revparse_single(revision)
-        self.repo.checkout_tree(rev, strategy=pygit2.GIT_CHECKOUT_FORCE)
+        #rev = self.repo.revparse_single(revision)
+        #self.repo.checkout_tree(rev, strategy=pygit2.GIT_CHECKOUT_FORCE)
+        with work_directory(str(self.path)):
+            runner.run('git checkout {}'.format(revision))
 
     def fetch(self):
         if not self.path.exists():
             with work_directory(str(self.path.parent)):
                 logging.debug('# Cloning: {}'.format(self))
                 runner.run('git clone --recursive "{}"'.format(self.identifier.remote_url))
-                logging.debug('# Cloned: {}'.format(self))
         else:
             with work_directory(str(self.path)):
                 logging.debug('# Fetching: {}'.format(self))
-                command = 'git fetch'
-                command = shlex.split(command)
-                subprocess.check_output(command)
+                runner.run('git fetch')
 
     def specifications_for_tag(self, tag):
         # type: (Tag) -> [Specification]
@@ -338,6 +347,8 @@ class Repository(object):
         if 'Cartfile' not in rev.tree:
             return []
         else:
+
+#           runner.run('git show {}:Cartfile'.format(tag))
             cartfile = rev.tree['Cartfile']
             blob = self.repo[cartfile.id]
             cartfile = Cartfile()
