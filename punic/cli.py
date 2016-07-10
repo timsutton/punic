@@ -12,8 +12,8 @@ from punic.runner import *
 
 
 @click.group()
-@click.option('--echo', default=False, is_flag=True)
-@click.option('--verbose', default=False, is_flag=True)
+@click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
+@click.option('--verbose', default=False, is_flag=True, help="""Verbose logging.""")
 # @click.option('--timing', default=False, is_flag=True) # TODO
 @click.pass_context
 def main(context, echo, verbose):
@@ -29,8 +29,12 @@ def main(context, echo, verbose):
 
 @main.command()
 @click.pass_context
-@click.option('--fetch/--no-fetch', default=True, is_flag=True) # TODO
+@click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 def resolve(context, fetch):
+    """Resolve dependencies and output `Carthage.resolved` file.
+
+    This subcommand does not build dependencies. Use this sub-command when a dependency has changed and you just want to update `Cartfile.resolved`.
+    """
     with timeit('resolve'):
         punic = context.obj
         punic.resolve(fetch = fetch)
@@ -38,10 +42,13 @@ def resolve(context, fetch):
 
 @main.command()
 @click.pass_context
-@click.option('--configuration', default=None)
-@click.option('--platform', default=None)
+@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--platform', default=None, help="""Platform to build. Comma seperated list.""")
 @click.argument('deps', nargs=-1)
 def update(context, configuration, platform, deps):
+    """Resolve & build dependencies.
+
+    """
     punic = context.obj
     with timeit('update'):
         platforms = parse_platforms(platform)
@@ -52,6 +59,8 @@ def update(context, configuration, platform, deps):
 @main.command()
 @click.pass_context
 def checkout(context):
+    """Checkout dependencies
+    """
     punic = context.obj
     with timeit('fetch'):
         punic.fetch()
@@ -59,10 +68,12 @@ def checkout(context):
 
 @main.command()
 @click.pass_context
-@click.option('--configuration', default=None)
-@click.option('--platform', default=None)
+@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--platform', default=None, help="""Platform to build. Comma seperated list.""")
 @click.argument('deps', nargs=-1)
 def build(context, configuration, platform, deps):
+    """Build dependencies
+    """
     punic = context.obj
     with timeit('build'):
         platforms = parse_platforms(platform)
@@ -71,10 +82,12 @@ def build(context, configuration, platform, deps):
 
 @main.command()
 @click.pass_context
-@click.option('--configuration', default=None)
-@click.option('--platform', default=None)
+@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--platform', default=None, help="""Platform to build. Comma seperated list.""")
 @click.argument('deps', nargs=-1)
 def bootstrap(context, configuration, platform, deps):
+    """Fetch & build dependencies
+    """
     punic = context.obj
     with timeit('bootstrap'):
         platforms = parse_platforms(platform)
@@ -84,11 +97,13 @@ def bootstrap(context, configuration, platform, deps):
 
 @main.command()
 @click.pass_context
-@click.option('--configuration', default=None)
-@click.option('--platform', default=None)
-@click.option('--xcode/--no-xcode', default=True, is_flag=True)
-@click.option('--caches', default=False, is_flag=True)
+@click.option('--configuration', default=None, help="""Dependency configurations to clean. Usually 'Release' or 'Debug'.""")
+@click.option('--platform', default=None, help="""Platform to clean. Comma seperated list.""")
+@click.option('--xcode/--no-xcode', default=True, is_flag=True, help="""Clean xcode projects.""")
+@click.option('--caches', default=False, is_flag=True, help="""Clean the global punic carthage files.""")
 def clean(context, configuration, platform, xcode, caches):
+    """Clean project & punic environment.
+    """
     punic = context.obj
     if xcode:
         logging.info('# Cleaning Xcode projects'.format(**punic.__dict__))
@@ -105,8 +120,9 @@ def clean(context, configuration, platform, xcode, caches):
 
 @main.command()
 @click.pass_context
-@click.option('--fetch/--no-fetch', default=True, is_flag=True) # TODO
+@click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 def graph(context, fetch):
+    """Output resolved dependency graph"""
     with timeit('graph'):
         punic = context.obj
         graph = punic.graph(fetch = fetch)
