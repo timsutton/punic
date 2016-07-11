@@ -4,5 +4,4 @@ flufl.enum
 memoize
 networkx
 pathlib2
-pydotplus
 pygit2

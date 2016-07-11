@@ -37,31 +37,37 @@ class CacheableRunner(object):
             # TODO: Reopen
 
 
-    def run_(self, command, cwd=None, echo=None):
+    def run_(self, args, cwd=None, echo=None):
         try:
             if not cwd:
                 cwd = os.getcwd()
             with work_directory(cwd):
-                if isinstance(command, basestring):
-                    command = shlex.split(command)
-                else:
-                    command = [str(command) for command in command]
+                args = self.convert_args(args)
 
                 real_echo = self.echo
                 if echo != None:
                     real_echo = echo
 
                 if real_echo:
-                    logging.info(' '.join(command))
-                return subprocess.check_output(command, stderr = subprocess.STDOUT)
+                    logging.info(' '.join(args))
+                return subprocess.check_output(args, stderr = subprocess.STDOUT)
 
         except subprocess.CalledProcessError, e:
-            # raise Exception("command failed: {}".format(command))
             print e.output
-
-
             raise e
 
+    def convert_args(self, args):
+        if isinstance(args, basestring):
+            args = shlex.split(args)
+        else:
+            args = [str(args) for args in args]
+        return args
+
+    def can_run(self, args):
+        args = self.convert_args(args)
+        popen = subprocess.Popen(['/usr/bin/env', 'which', args[0]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return_code = popen.wait()
+        return True if return_code == 0 else False
 
     def run(self, *args, **kwargs):
         if 'cache_key' in kwargs and 'command' in kwargs:

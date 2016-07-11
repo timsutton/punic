@@ -129,24 +129,15 @@ def graph(context, fetch):
 
         import networkx as nx
 
-        nx.drawing.nx_pydot.write_dot(graph, '/Users/schwa/Desktop/graph.dot')
-        runner.run('dot /Users/schwa/Desktop/graph.dot -o/Users/schwa/Desktop/graph.png -Tpng')
-        #runner.run('open /Users/schwa/Desktop/graph.png')
+        logging.info('# Writing graph file to "{}".'.format(os.getcwd()))
+        nx.drawing.nx_pydot.write_dot(graph, 'graph.dot')
 
-        # from fabulous import image
-        # print image.Image('/Users/schwa/Desktop/graph.png')
-
-        # import matplotlib.pyplot as plt
-        # pos = nx.spring_layout(graph)
-        # nx.draw_networkx_nodes(graph, pos, nodelist=graph, node_color='r', alpha=0.2)
-        # nx.draw_networkx_edges(graph, pos, nodelist=graph, edge_color='k', alpha=0.2, arrows = False)
-        # nx.draw_networkx_labels(graph, pos, font_size = 9)
-        #
-        # plt.savefig("/Users/schwa/Desktop/graph.png")
-        # runner.run('open /Users/schwa/Desktop/graph.png')
-
-        # from networkx.drawing.nx_pydot import write_dot
-        # write_dot(graph,'/Users/schwa/Desktop/file.dot')
+        command = 'dot graph.dot -ograph.png -Tpng'
+        if runner.can_run(command):
+            logging.info('# Rendering dot file to png file.')
+            runner.run(command)
+        else:
+            logging.warning('# graphviz not installed. Cannot convert graph to a png.')
 
 def parse_platforms(s):
     if not s:

@@ -17,7 +17,6 @@ setup(
         'networkx',
         'pygit2',
         'flufl.enum',
-        'pydotplus',
         'memoize',
         'blessings',
         ],
