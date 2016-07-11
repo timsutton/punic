@@ -56,6 +56,9 @@ class Punic(object):
 
         self.root_project = self.repository_for_identifier(root_project_identifier)
 
+    def version_check(self):
+        pass
+
 
     def resolve(self, fetch):
         logging.debug("#### Resolving {}".format(fetch))
@@ -109,14 +112,10 @@ class Punic(object):
         for platform, project, scheme in self.scheme_walker(projects = projects, configuration = configuration, platforms = platforms):
 
             with timeit(project.path.name):
-                logging.debug('#' * 80)
-                logging.debug('# Building {} {}'.format(project.path.name, scheme))
-
-                ########################################################################################################
 
                 products = dict()
                 for sdk in platform.sdks:
-                    logging.debug('# Building {} {} {} {}'.format(project.path.name, scheme, sdk, configuration))
+                    logging.info('# Building {} {} {} {}'.format(project.path.name, scheme, sdk, configuration))
                     product = project.build(scheme=scheme, configuration=configuration, sdk=sdk, arguments=self.xcode_arguments, temp_symroot = False)
                     products[sdk] = product
 
@@ -181,15 +180,27 @@ class Punic(object):
                 runner.run(command)
 
     def ordered_dependencies(self, fetch = False, filter = None):
+        # type: (bool, [str]) -> [(ProjectIdentifier, Revision)]
+
         cartfile = Cartfile()
         cartfile.read(self.root_path / 'Cartfile.resolved')
-        dependencies = [(spec.identifier, Revision(repository = None, revision = spec.predicate.value, revision_type=Revision.Type.tag)) for spec in cartfile.specifications]
+
+        def predicate_to_revision(predicate):
+            # type: (VersionPredicate) -> Revision
+
+            if predicate.operator == VersionOperator.commitish:
+                return Revision(repository=None, revision=predicate.value, revision_type=Revision.Type.other)
+            else:
+                raise Exception("Cannot convert predicate to revision: {}".format(predicate))
+
+        dependencies = [(spec.identifier, predicate_to_revision(spec.predicate)) for spec in cartfile.specifications]
         resolver = Resolver(self)
         resolved_dependencies = resolver.resolve_versions(dependencies, fetch = fetch)
         resolved_dependencies = [dependency for dependency in resolved_dependencies if dependency[0].matches(filter)]
         return resolved_dependencies
 
     def xcode_projects(self, dependencies = None, fetch = False):
+
         if not self.build_path.exists():
             self.build_path.mkdir(parents = True)
         all_projects = []
@@ -197,11 +208,9 @@ class Punic(object):
         if not dependencies:
             dependencies = self.ordered_dependencies(fetch = fetch)
 
-        for (identifier, tag) in dependencies:
+        for (identifier, revision) in dependencies:
             project = self.repository_for_identifier(identifier)
-
-            revision = tag.revision
-
+            revision = revision.revision
             checkout_path = self.checkouts_path / project.path.name
 
             if fetch:
@@ -266,8 +275,10 @@ class Punic(object):
             return repository
 
     def dependencies_for_project_and_tag(self, identifier, tag, fetch = True):
+        # type: (ProjectIdentifier, Revision, bool) -> [ProjectIdentifier, [Revision]]
+
         repository = self.repository_for_identifier(identifier, fetch = fetch)
-        specifications = repository.specifications_for_tag(tag)
+        specifications = repository.specifications_for_revision(tag)
 
         def make(specification):
             repository = self.repository_for_identifier(specification.identifier, fetch = fetch)
@@ -278,7 +289,6 @@ class Punic(object):
                 tags.sort()
 
             assert len(tags)
-
             return repository.identifier, tags
 
         return [make(specification) for specification in specifications]

@@ -29,13 +29,11 @@ class Resolver(object):
                         continue
                     graph.add_edge((parent, parent_version), (child, child_version))
                     populate_graph(graph, child, child_version, filter=filter, depth=depth + 1)
-
         graph = DiGraph()
         populate_graph(graph, self.punic.root_project.identifier, None, filter=filter)
         return graph
 
     def resolve(self):
-
         for dependency, revisions in self.punic.dependencies_for_project_and_tag(self.punic.root_project.identifier, None, fetch = self.fetch):
             logging.debug('# {} {}'.format(dependency, revisions))
 

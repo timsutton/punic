@@ -67,17 +67,17 @@ class Repository(object):
                 logging.debug('# Fetching: {}'.format(self))
                 runner.run('git fetch')
 
-    def specifications_for_tag(self, tag):
-        # type: (Tag) -> [Specification]
+    def specifications_for_revision(self, revision):
+        # type: (Revision) -> [Specification]
 
         # logging.debug('Getting cartfile from tag {} of {}'.format(tag, self))
 
-        if tag == None and self == self.punic.root_project:
+        if revision == None and self == self.punic.root_project:
             cartfile = Cartfile()
             cartfile.read(self.path / "Cartfile")
             return cartfile.specifications
 
-        rev = self.repo.revparse_single(tag)
+        rev = self.repo.revparse_single(revision)
         if not hasattr(rev, 'tree'):
             rev = rev.get_object()
         if 'Cartfile' not in rev.tree:

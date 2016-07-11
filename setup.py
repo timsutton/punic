@@ -19,6 +19,7 @@ setup(
         'flufl.enum',
         'memoize',
         'blessings',
+        'requests,'
         ],
     entry_points='''
         [console_scripts]

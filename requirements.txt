@@ -5,3 +5,4 @@ memoize
 networkx
 pathlib2
 pygit2
+requests

@@ -2,9 +2,11 @@ __author__ = 'Jonathan Wight <jwight@mac.com>'
 
 import shutil
 import logging
+import os
 
 import click
 
+import punic
 from punic.basic_types import *
 from punic.utilities import *
 from punic.model import *
@@ -22,8 +24,8 @@ def main(context, echo, verbose):
     else:
         punic = Punic()
         context.obj = punic
-
-    logging.basicConfig(format='%(message)s', level= logging.DEBUG if verbose else logging.INFO)
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(format='%(message)s', level = level)
     runner.echo = echo
 
 
@@ -76,8 +78,9 @@ def checkout(context):
 def build(context, configuration, platform, fetch, deps):
     """Build dependencies
     """
-    punic = context.obj
     with timeit('build'):
+        logging.info("# Build")
+        punic = context.obj
         platforms = parse_platforms(platform)
         punic.build(configuration=configuration, platforms=platforms, dependencies = deps, fetch = fetch)
 
@@ -141,6 +144,13 @@ def graph(context, fetch):
         else:
             logging.warning('# graphviz not installed. Cannot convert graph to a png.')
 
+@main.command()
+@click.pass_context
+def version(context):
+    print punic.__version__
+
+
+
 def parse_platforms(s):
     if not s:
         return Platform.all
@@ -154,7 +164,7 @@ if __name__ == '__main__':
 
     os.chdir('/Users/schwa/Desktop/3dr-Site-Scan-iOS')
 
-    sys.argv = shlex.split('{} --verbose resolve --no-fetch'.format(sys.argv[0]))
+    sys.argv = shlex.split('{} --verbose build --no-fetch --platform iOS --configuration Debug'.format(sys.argv[0]))
 
     punic = Punic()
 
