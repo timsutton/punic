@@ -1,4 +1,4 @@
-__author__ = 'schwa'
+__author__ = 'Jonathan Wight <jwight@mac.com>'
 __all__ = ['work_directory', 'timeit']
 
 import contextlib

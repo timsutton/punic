@@ -1,4 +1,4 @@
-__author__ = 'schwa'
+__author__ = 'Jonathan Wight <jwight@mac.com>'
 __all__ = ['SemanticVersion', 'Specification', 'Platform', 'Tag', 'ProjectIdentifier',
            'VersionOperator', 'VersionPredicate']
 
