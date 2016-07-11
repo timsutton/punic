@@ -1,17 +1,15 @@
 __author__ = 'Jonathan Wight <jwight@mac.com>'
 __all__ = ['Punic']
 
-import re
-import shlex
-import subprocess
 import logging
 import os
 import shutil
+from copy import copy
 
 from pathlib2 import Path
-import pygit2
-from memoize import mproperty
+import requests
 
+import punic
 from punic.utilities import *
 from punic.xcode import *
 from punic.basic_types import *
@@ -19,8 +17,6 @@ from punic.runner import *
 from punic.resolver import *
 from punic.config import *
 from punic.repository import *
-
-from copy import copy
 
 ########################################################################################################################
 
@@ -40,11 +36,7 @@ class Punic(object):
             self.repo_cache_directory.mkdir(parents=True)
         self.punic_path = self.root_path / 'Carthage'
         self.build_path = self.punic_path / 'Build'
-        # if not self.build_path.exists():
-        #     self.build_path.mkdir(parents = True)
         self.checkouts_path = self.punic_path / 'Checkouts'
-        # if not self.checkouts_path.exists():
-        #     self.checkouts_path.mkdir(parents = True)
 
         runner.cache_path = self.library_directory / "cache.shelf"
 
@@ -56,8 +48,22 @@ class Punic(object):
 
         self.root_project = self.repository_for_identifier(root_project_identifier)
 
-    def version_check(self):
-        pass
+        try:
+            logging.debug('# Checking punic version')
+            current_version, latest_version = self.versions()
+            logging.debug('# Current version: {}, latest version: {}'.format(current_version, latest_version))
+            if current_version < latest_version:
+                logging.warn('# You are using version {}, version {} is available. Use `pip install -U http://github.com/schwa/punic` to update to latest version.'.format(current_version, latest_version))
+        except Exception, e:
+            logging.error('# Failed to check versions: {}'.format(e))
+
+    def versions(self):
+        current_version = SemanticVersion.string(punic.__version__)
+        # TODO: Is this the best URL?
+        result = requests.get('https://raw.githubusercontent.com/schwa/punic/develop/VERSION', timeout=0.2)
+        latest_version = SemanticVersion.string(result.text.strip())
+
+        return current_version, latest_version
 
 
     def resolve(self, fetch):

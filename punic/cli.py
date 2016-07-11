@@ -19,14 +19,18 @@ from punic.runner import *
 # @click.option('--timing', default=False, is_flag=True) # TODO
 @click.pass_context
 def main(context, echo, verbose):
-    if context.obj:
-        punic = context.obj
-    else:
-        punic = Punic()
-        context.obj = punic
+
+
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(format='%(message)s', level = level)
     runner.echo = echo
+
+    requests_log = logging.getLogger("requests.packages.urllib3")
+    requests_log.setLevel(logging.WARNING)
+    requests_log.propagate = True
+
+    punic = Punic()
+    context.obj = punic
 
 
 @main.command()
@@ -166,6 +170,4 @@ if __name__ == '__main__':
 
     sys.argv = shlex.split('{} --verbose build --no-fetch --platform iOS --configuration Debug'.format(sys.argv[0]))
 
-    punic = Punic()
-
-    main(obj=punic)
+    main()
