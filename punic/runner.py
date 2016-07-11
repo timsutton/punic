@@ -37,20 +37,20 @@ class CacheableRunner(object):
             # TODO: Reopen
 
 
-    def run_(self, args, cwd=None, echo=None):
+    def run_(self, command, cwd=None, echo=None):
         try:
             if not cwd:
                 cwd = os.getcwd()
             with work_directory(cwd):
-                args = self.convert_args(args)
+                command = self.convert_args(command)
 
                 real_echo = self.echo
                 if echo != None:
                     real_echo = echo
 
                 if real_echo:
-                    logging.info(' '.join(args))
-                return subprocess.check_output(args, stderr = subprocess.STDOUT)
+                    logging.info(' '.join(command))
+                return subprocess.check_output(command, stderr = subprocess.STDOUT)
 
         except subprocess.CalledProcessError, e:
             print e.output
