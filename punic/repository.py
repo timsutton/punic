@@ -2,7 +2,6 @@ __all__ = ['Repository', 'Revision']
 
 import affirm
 
-from memoize import mproperty
 from flufl.enum import Enum
 import re
 import logging
@@ -124,12 +123,15 @@ class Revision(object):
         if self.semantic_version and other.semantic_version and Revision.always_use_is_ancestor == False:
             return cmp(self.semantic_version, other.semantic_version)
         else:
-            # print 'FALLBACK'
             with work_directory(self.repository.path):
                 if self.sha == other.sha:
                     result = 0
                 else:
                     result = 1 if runner.result('git merge-base --is-ancestor "{}" "{}"'.format(other.sha, self.sha)) else -1
+
+                    # TODO: just because X is not ancestor of Y doesn't mean Y is an ancestor of X
+                    # if result == -1:
+                    #     assert runner.result('git merge-base --is-ancestor "{}" "{}"'.format(self, other))
                 return result
 
 

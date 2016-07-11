@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     os.chdir('/Users/schwa/Desktop/3dr-Site-Scan-iOS')
 
-    sys.argv = shlex.split('{} --verbose build --platform iOS --configuration Debug'.format(sys.argv[0]))
+    sys.argv = shlex.split('{} --verbose resolve --no-fetch'.format(sys.argv[0]))
 
     punic = Punic()
 

@@ -290,7 +290,3 @@ Platform.all = [
     # TODO add watchos and tvos
 ]
 
-if __name__ == "__main__":
-    print('Yo')
-    import doctest
-    doctest.testmod()
