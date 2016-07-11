@@ -23,9 +23,7 @@ class Resolver(object):
     def build_graph(self, filter=None):
         def populate_graph(graph, parent, parent_version, filter=None, depth=0):
             graph.add_node((parent, parent_version))
-            for child, child_versions in self.punic.dependencies_for_project_and_tag(parent,
-                                                                                     parent_version.tag if parent_version else None
-                                                                                     , fetch = self.fetch):
+            for child, child_versions in self.punic.dependencies_for_project_and_tag(parent, parent_version.revision if parent_version else None, fetch = self.fetch):
                 for child_version in child_versions:
                     if filter and filter(child, child_version) == False:
                         continue
