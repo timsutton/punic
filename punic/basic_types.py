@@ -1,5 +1,5 @@
 __author__ = 'Jonathan Wight <jwight@mac.com>'
-__all__ = ['SemanticVersion', 'Specification', 'Platform', 'Revision', 'ProjectIdentifier',
+__all__ = ['SemanticVersion', 'Specification', 'Platform', 'ProjectIdentifier',
            'VersionOperator', 'VersionPredicate']
 
 import re
@@ -8,34 +8,6 @@ import urlparse
 from pathlib2 import Path
 from memoize import mproperty
 from flufl.enum import Enum
-import affirm
-
-class Revision(object):
-
-    class Type(Enum):
-        tag = 'tag'
-        other = 'other'
-
-    def __init__(self, revision, revision_type):
-        self.revision = revision
-        self.revision_type = revision_type
-        self.semantic_version = (SemanticVersion.string(self.revision) if self.revision_type == Revision.Type.tag else None)
-
-        # TODO: Work around
-        if SemanticVersion.is_semantic(self.revision):
-            self.semantic_version = SemanticVersion.string(self.revision)
-
-    def __repr__(self):
-        return str(self.revision)
-
-    def __cmp__(self, other):
-#        print self.revision_type, other.revision_type
-#        assert self.revision_type == Revision.Type.tag and other.revision_type == Revision.Type.tag
-        assert self.semantic_version and other.semantic_version
-        return cmp(self.semantic_version, other.semantic_version)
-
-    def __hash__(self):
-        return hash(self.revision)
 
 # TODO: Doesn't support full semvar.org spec
 class SemanticVersion(object):
