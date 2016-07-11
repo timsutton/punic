@@ -112,18 +112,18 @@ class Specification(object):
         """
         >>> Specification.cartfile_string('github "foo/bar"')
         github "foo/bar"
-        >>> Specification.cartfile_string('github "foo/bar" "master"').predicate
-        "master"
         >>> Specification.cartfile_string('github "foo/bar" "master"').identifier
         foo/bar
+        >>> Specification.cartfile_string('github "foo/bar" "master"').predicate
+        "master"
         >>> Specification.cartfile_string('github "foo/bar" "master"')
         github "foo/bar" "master"
         >>> Specification.cartfile_string('github "foo/bar" >= 1.0').predicate
         >= 1.0
-        >>> Specification.cartfile_string('github "schwa/SwiftUtilities" "jwight/swift2"').identifier
-        schwa/SwiftUtilities
-        >>> Specification.cartfile_string('github "schwa/SwiftUtilities" "jwight/swift2"').predicate
-        "jwight/swift2"
+        >>> Specification.cartfile_string('github "ReactiveX/RxSwift" "some/branch"').identifier
+        ReactiveX/RxSwift
+        >>> Specification.cartfile_string('github "ReactiveX/RxSwift" "some/branch"').predicate
+        "some/branch"
         >>> Specification.cartfile_string('file:///Users/example/Project').identifier
         file:///Users/example/Project
         >>> Specification.cartfile_string('file:///Users/example/Project').identifier.project_name

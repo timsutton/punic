@@ -101,8 +101,6 @@ class Resolver(object):
 
         ################################################################################################################
 
-        #        nx.drawing.nx_pydot.write_dot(resolved_graph, '/Users/schwa/Desktop/dependencioes.dot')
-
         return graph
 
     def resolve_build_order(self):
