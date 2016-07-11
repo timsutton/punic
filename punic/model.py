@@ -60,9 +60,9 @@ class Punic(object):
 
         for index, value in enumerate(build_order):
             dependency, version = value
-            logging.debug('# {} {} {}'.format(index + 1, dependency, version.tag if version else ''))
+            logging.debug('# {} {} {}'.format(index + 1, dependency, version.revision if version else ''))
 
-        specifications = [Specification(identifier = dependency, predicate = VersionPredicate('"{}"'.format(version.tag))) for dependency, version in build_order[:-1]]
+        specifications = [Specification(identifier = dependency, predicate = VersionPredicate('"{}"'.format(version.revision))) for dependency, version in build_order[:-1]]
         logging.debug("# Saving Cartfile.resolved")
 
         cartfile = Cartfile(specifications = specifications)
@@ -73,10 +73,6 @@ class Punic(object):
 
         resolver = Resolver(punic = self, fetch = fetch)
         return resolver.resolve()
-
-
-
-
 
     def fetch(self):
         logging.debug("#### Fetching")
@@ -182,7 +178,7 @@ class Punic(object):
     def ordered_dependencies(self, fetch = False, filter = None):
         cartfile = Cartfile()
         cartfile.read(self.root_path / 'Cartfile.resolved')
-        dependencies = [(spec.identifier, Tag(spec.predicate.value)) for spec in cartfile.specifications]
+        dependencies = [(spec.identifier, Revision(spec.predicate.value, revision_type=Revision.Type.tag)) for spec in cartfile.specifications]
         resolver = Resolver(self)
         resolved_dependencies = resolver.resolve_versions(dependencies, fetch = fetch)
         resolved_dependencies = [dependency for dependency in resolved_dependencies if dependency[0].matches(filter)]
@@ -270,7 +266,14 @@ class Punic(object):
 
         def make(specification):
             repository = self.repository_for_identifier(specification.identifier, fetch = fetch)
-            tags = repository.tags_for_predicate(specification.predicate)
+            tags = repository.revisions_for_predicate(specification.predicate)
+
+            # TODO
+            # if specification.predicate.operator == VersionOperator.commitish:
+            #     print specification
+            #     tags.append(Revision(specification.predicate.value, revision_type=Revision.Type.other))
+            # assert len(tags)
+
             return repository.identifier, tags
 
         return [make(specification) for specification in specifications]
@@ -310,7 +313,7 @@ class Repository(object):
         regex = re.compile(r'^refs/tags/(.+)')
         refs = [ref for ref in refs if regex.match(ref)]
         refs = [regex.match(ref).group(1) for ref in refs]
-        tags = [Tag(ref) for ref in refs if SemanticVersion.is_semantic(ref)]
+        tags = [Revision(ref, revision_type = Revision.Type.tag) for ref in refs if SemanticVersion.is_semantic(ref)]
         return sorted(tags)
 
     def checkout(self, revision):
@@ -334,7 +337,7 @@ class Repository(object):
     def specifications_for_tag(self, tag):
         # type: (Tag) -> [Specification]
 
-        #logging.debug('Getting cartfile from tag {} of {}'.format(tag, self))
+        logging.debug('Getting cartfile from tag {} of {}'.format(tag, self))
 
         if tag == None and self == self.punic.root_project:
             cartfile = Cartfile()
@@ -347,7 +350,6 @@ class Repository(object):
         if 'Cartfile' not in rev.tree:
             return []
         else:
-
 #           runner.run('git show {}:Cartfile'.format(tag))
             cartfile = rev.tree['Cartfile']
             blob = self.repo[cartfile.id]
@@ -355,7 +357,7 @@ class Repository(object):
             cartfile.read(blob.data)
             return cartfile.specifications
 
-    def tags_for_predicate(self, predicate):
+    def revisions_for_predicate(self, predicate):
         # type: (VersionPredicate) -> [Tag]
         return [tag for tag in self.tags if predicate.test(tag.semantic_version)]
 

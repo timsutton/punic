@@ -150,11 +150,9 @@ if __name__ == '__main__':
     import os
     import shlex
 
-    os.chdir('/Users/schwa/Projects/3dr-Site-Scan-iOS')
+    os.chdir('/Users/schwa/Desktop/3dr-Site-Scan-iOS')
 
-    # sys.argv = shlex.split('{} --verbose --echo clean'.format(sys.argv[0]))
-    # sys.argv = shlex.split('{} --verbose --echo build --platform=iOS --configuration=Debug'.format(sys.argv[0]))
-    sys.argv = shlex.split('{} --verbose --echo graph --no-fetch'.format(sys.argv[0]))
+    sys.argv = shlex.split('{} --verbose --echo resolve --no-fetch'.format(sys.argv[0]))
 
     punic = Punic()
 
