@@ -36,6 +36,9 @@ class Resolver(object):
 
     def resolve(self):
 
+        # for dependency in self.punic.dependencies_for_project_and_tag(self.punic.root_project.identifier, None, fetch = self.fetch):
+        #     logging.debug(dependency)
+
         logging.debug('# Building universal graph')
 
         # Build a graph up of _all_ version of _all_ dependencies
