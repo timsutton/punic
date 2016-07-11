@@ -12,14 +12,15 @@ setup(
     description='Clean room python implementation of a subset of Carthage functionality',
     packages=['punic'],
     install_requires=[
+        'blessings',
         'click',
-        'pathlib2',
-        'networkx',
-        'pygit2',
         'flufl.enum',
         'memoize',
-        'blessings',
-        'requests,'
+        'networkx',
+        'pathlib2',
+        'pureyaml',
+        'pygit2',
+        'requests',
         ],
     entry_points='''
         [console_scripts]
