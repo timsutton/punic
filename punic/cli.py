@@ -5,13 +5,14 @@ import logging
 import os
 
 import click
+from pathlib2 import Path
 
 import punic
 from punic.basic_types import *
 from punic.utilities import *
 from punic.model import *
 from punic.runner import *
-
+from punic.config import *
 
 @click.group()
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
@@ -19,16 +20,12 @@ from punic.runner import *
 # @click.option('--timing', default=False, is_flag=True) # TODO
 @click.pass_context
 def main(context, echo, verbose):
-
-
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(format='%(message)s', level = level)
     runner.echo = echo
-
     requests_log = logging.getLogger("requests.packages.urllib3")
     requests_log.setLevel(logging.WARNING)
     requests_log.propagate = True
-
     punic = Punic()
     context.obj = punic
 
@@ -42,6 +39,7 @@ def resolve(context, fetch):
     This subcommand does not build dependencies. Use this sub-command when a dependency has changed and you just want to update `Cartfile.resolved`.
     """
     with timeit('resolve'):
+        logging.info("# Resolve")
         punic = context.obj
         punic.resolve(fetch = fetch)
 
@@ -58,9 +56,18 @@ def update(context, configuration, platform, fetch, deps):
     """
     punic = context.obj
     with timeit('update'):
+        logging.info("# Update")
         platforms = parse_platforms(platform)
+
+        if configuration:
+            punic.config.configuration = configuration
+        if platform:
+            punic.config.platforms = parse_platforms(platform)
+        punic.config.dump()
+
+
         punic.resolve(fetch = fetch)
-        punic.build(configuration=configuration, platforms=platforms, dependencies = deps)
+        punic.build(dependencies = deps, fetch = fetch)
 
 
 @main.command()
@@ -68,8 +75,9 @@ def update(context, configuration, platform, fetch, deps):
 def checkout(context):
     """Checkout dependencies
     """
-    punic = context.obj
     with timeit('fetch'):
+        logging.info("# Checkout")
+        punic = context.obj
         punic.fetch()
 
 
@@ -85,8 +93,14 @@ def build(context, configuration, platform, fetch, deps):
     with timeit('build'):
         logging.info("# Build")
         punic = context.obj
-        platforms = parse_platforms(platform)
-        punic.build(configuration=configuration, platforms=platforms, dependencies = deps, fetch = fetch)
+
+        if configuration:
+            punic.config.configuration = configuration
+        if platform:
+            punic.config.platforms = parse_platforms(platform)
+        punic.config.dump()
+
+        punic.build(dependencies = deps, fetch = fetch)
 
 
 @main.command()
@@ -97,11 +111,18 @@ def build(context, configuration, platform, fetch, deps):
 def bootstrap(context, configuration, platform, deps):
     """Fetch & build dependencies
     """
-    punic = context.obj
     with timeit('bootstrap'):
-        platforms = parse_platforms(platform)
+        logging.info("# Bootstrap")
+        punic = context.obj
+
+        if configuration:
+            punic.config.configuration = configuration
+        if platform:
+            punic.config.platforms = parse_platforms(platform)
+        punic.config.dump()
+
         punic.fetch()
-        punic.build(configuration=configuration, platforms= platforms, dependencies = deps)
+        punic.build(dependencies = deps, fetch = True)
 
 
 @main.command()
@@ -113,6 +134,7 @@ def bootstrap(context, configuration, platform, deps):
 def clean(context, configuration, platform, xcode, caches):
     """Clean project & punic environment.
     """
+    logging.info("# Clean")
     punic = context.obj
     if xcode:
         logging.info('# Cleaning Xcode projects'.format(**punic.__dict__))
@@ -133,6 +155,7 @@ def clean(context, configuration, platform, xcode, caches):
 def graph(context, fetch):
     """Output resolved dependency graph"""
     with timeit('graph'):
+        logging.info("# Graph")
         punic = context.obj
         graph = punic.graph(fetch = fetch)
 
@@ -153,14 +176,6 @@ def graph(context, fetch):
 def version(context):
     print punic.__version__
 
-
-
-def parse_platforms(s):
-    if not s:
-        return Platform.all
-    else:
-        return [Platform.platform_for_nickname(platform.strip()) for platform in s.split(',')]
-
 if __name__ == '__main__':
     import sys
     import os
@@ -168,6 +183,6 @@ if __name__ == '__main__':
 
     os.chdir('/Users/schwa/Desktop/3dr-Site-Scan-iOS')
 
-    sys.argv = shlex.split('{} --verbose build --no-fetch --platform iOS --configuration Debug'.format(sys.argv[0]))
+    sys.argv = shlex.split('{} --verbose bootstrap'.format(sys.argv[0]))
 
     main()

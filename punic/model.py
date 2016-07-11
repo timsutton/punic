@@ -27,6 +27,8 @@ class Punic(object):
         if not root_path:
             root_path = Path.cwd()
 
+        self.config = Config()
+
         self.root_path = root_path  # type: Path
         self.library_directory = Path(os.path.expanduser('~/Library/io.schwa.Punic'))
         if not self.library_directory.exists():
@@ -55,20 +57,18 @@ class Punic(object):
             if current_version < latest_version:
                 logging.warn('# You are using version {}, version {} is available. Use `pip install -U http://github.com/schwa/punic` to update to latest version.'.format(current_version, latest_version))
         except Exception, e:
-            logging.error('# Failed to check versions: {}'.format(e))
+            logging.debug('# Failed to check versions: {}'.format(e))
 
     def versions(self):
         current_version = SemanticVersion.string(punic.__version__)
         # TODO: Is this the best URL?
-        result = requests.get('https://raw.githubusercontent.com/schwa/punic/develop/VERSION', timeout=0.2)
+        result = requests.get('https://raw.githubusercontent.com/schwa/punic/develop/VERSION', timeout=0.3)
         latest_version = SemanticVersion.string(result.text.strip())
 
         return current_version, latest_version
 
 
     def resolve(self, fetch):
-        logging.debug("#### Resolving {}".format(fetch))
-
         resolver = Resolver(punic = self, fetch = fetch)
         build_order = resolver.resolve_build_order()
 
@@ -83,14 +83,10 @@ class Punic(object):
         cartfile.write((self.root_path / 'Cartfile.resolved').open('w'))
 
     def graph(self, fetch = True):
-        logging.debug("#### Resolving {}".format(fetch))
-
         resolver = Resolver(punic = self, fetch = fetch)
         return resolver.resolve()
 
     def fetch(self):
-        logging.debug("#### Fetching")
-
         # TODO: FIXME
         for project in self.xcode_projects(fetch = True):
             pass
@@ -105,8 +101,10 @@ class Punic(object):
                     'CARTHAGE': 'YES',
                 }
 
-    def build(self, configuration, platforms, dependencies, fetch):
+    def build(self, dependencies, fetch):
         # TODO: This code needs a major refactoring and clean-up.
+
+        configuration, platforms = self.config.configuration, self.config.platforms
 
         if not self.build_path.exists():
             self.build_path.mkdir(parents = True)

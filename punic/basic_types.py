@@ -1,6 +1,6 @@
 __author__ = 'Jonathan Wight <jwight@mac.com>'
 __all__ = ['SemanticVersion', 'Specification', 'Platform', 'ProjectIdentifier',
-           'VersionOperator', 'VersionPredicate']
+           'VersionOperator', 'VersionPredicate', 'parse_platforms']
 
 import re
 import urlparse
@@ -284,9 +284,18 @@ class Platform(object):
                 return platform
         return None
 
+    def __repr__(self):
+        return self.nickname
+
 Platform.all = [
     Platform(name = 'iOS', nickname = 'iOS', sdks = ['iphoneos', 'iphonesimulator'], output_directory_name = 'iOS'),
     Platform(name = 'macOS', nickname = 'Mac', sdks = ['macosx'], output_directory_name = 'Mac'),
     # TODO add watchos and tvos
 ]
 
+
+def parse_platforms(s):
+    if not s:
+        return Platform.all
+    else:
+        return [Platform.platform_for_nickname(platform.strip()) for platform in s.split(',')]
