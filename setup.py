@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='punic',
-    version='0.0.2',
+    version='0.0.3',
     url='http://github.com/schwa/punic',
     license='MIT',
     author='Jonathan Wight',
@@ -12,6 +12,7 @@ setup(
     description='Clean room python implementation of a subset of Carthage functionality',
     packages=['punic'],
     install_requires=[
+        'affirm',
         'blessings',
         'click',
         'flufl.enum',
