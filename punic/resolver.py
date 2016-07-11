@@ -36,8 +36,8 @@ class Resolver(object):
 
     def resolve(self):
 
-        # for dependency in self.punic.dependencies_for_project_and_tag(self.punic.root_project.identifier, None, fetch = self.fetch):
-        #     logging.debug(dependency)
+        for dependency, revisions in self.punic.dependencies_for_project_and_tag(self.punic.root_project.identifier, None, fetch = self.fetch):
+            logging.debug('# {} {}'.format(dependency, revisions))
 
         logging.debug('# Building universal graph')
 
@@ -119,7 +119,7 @@ class Resolver(object):
         for identifier, version in dependencies:
             parent = (identifier, version)
             graph.add_node(parent)
-            for dependency, _ in self.punic.dependencies_for_project_and_tag(identifier=identifier, tag=version.tag, fetch = fetch):
+            for dependency, _ in self.punic.dependencies_for_project_and_tag(identifier=identifier, tag=version.revision, fetch = fetch):
                 version = versions_for_identifier[dependency]
                 child = (dependency, version)
                 graph.add_edge(parent, child)

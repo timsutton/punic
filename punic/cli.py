@@ -44,15 +44,16 @@ def resolve(context, fetch):
 @click.pass_context
 @click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma seperated list.""")
+@click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
-def update(context, configuration, platform, deps):
+def update(context, configuration, platform, fetch, deps):
     """Resolve & build dependencies.
 
     """
     punic = context.obj
     with timeit('update'):
         platforms = parse_platforms(platform)
-        punic.resolve()
+        punic.resolve(fetch = fetch)
         punic.build(configuration=configuration, platforms=platforms, dependencies = deps)
 
 
@@ -70,14 +71,15 @@ def checkout(context):
 @click.pass_context
 @click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma seperated list.""")
+@click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
-def build(context, configuration, platform, deps):
+def build(context, configuration, platform, fetch, deps):
     """Build dependencies
     """
     punic = context.obj
     with timeit('build'):
         platforms = parse_platforms(platform)
-        punic.build(configuration=configuration, platforms=platforms, dependencies = deps)
+        punic.build(configuration=configuration, platforms=platforms, dependencies = deps, fetch = fetch)
 
 
 @main.command()
@@ -152,7 +154,7 @@ if __name__ == '__main__':
 
     os.chdir('/Users/schwa/Desktop/3dr-Site-Scan-iOS')
 
-    sys.argv = shlex.split('{} --verbose --echo resolve --no-fetch'.format(sys.argv[0]))
+    sys.argv = shlex.split('{} --verbose build --platform iOS --configuration Debug'.format(sys.argv[0]))
 
     punic = Punic()
 

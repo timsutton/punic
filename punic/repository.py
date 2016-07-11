@@ -47,7 +47,7 @@ class Repository(object):
         regex = re.compile(r'^refs/tags/(.+)')
         refs = [ref for ref in refs if regex.match(ref)]
         refs = [regex.match(ref).group(1) for ref in refs]
-        tags = [Revision(ref, revision_type = Revision.Type.tag) for ref in refs if SemanticVersion.is_semantic(ref)]
+        tags = [Revision(repository = self, revision = ref, revision_type = Revision.Type.tag) for ref in refs if SemanticVersion.is_semantic(ref)]
         return sorted(tags)
 
     def checkout(self, revision):
@@ -71,7 +71,7 @@ class Repository(object):
     def specifications_for_tag(self, tag):
         # type: (Tag) -> [Specification]
 
-        logging.debug('Getting cartfile from tag {} of {}'.format(tag, self))
+        # logging.debug('Getting cartfile from tag {} of {}'.format(tag, self))
 
         if tag == None and self == self.punic.root_project:
             cartfile = Cartfile()
@@ -100,27 +100,40 @@ class Repository(object):
 
 class Revision(object):
 
+    always_use_is_ancestor = False
+
     class Type(Enum):
         tag = 'tag'
         other = 'other'
 
-    def __init__(self, revision, revision_type):
+    def __init__(self, repository, revision, revision_type):
+        self.repository = repository
         self.revision = revision
         self.revision_type = revision_type
         self.semantic_version = (SemanticVersion.string(self.revision) if self.revision_type == Revision.Type.tag else None)
 
-        # TODO: Work around
-        if SemanticVersion.is_semantic(self.revision):
-            self.semantic_version = SemanticVersion.string(self.revision)
+    @mproperty
+    def sha(self):
+        with work_directory(self.repository.path):
+            return runner.run('git rev-parse "{}"'.format(self.revision), echo = False).strip()
 
     def __repr__(self):
         return str(self.revision)
 
     def __cmp__(self, other):
-#        print self.revision_type, other.revision_type
-#        assert self.revision_type == Revision.Type.tag and other.revision_type == Revision.Type.tag
-        assert self.semantic_version and other.semantic_version
-        return cmp(self.semantic_version, other.semantic_version)
+        if self.semantic_version and other.semantic_version and Revision.always_use_is_ancestor == False:
+            return cmp(self.semantic_version, other.semantic_version)
+        else:
+            # print 'FALLBACK'
+            with work_directory(self.repository.path):
+                if self.sha == other.sha:
+                    result = 0
+                else:
+                    result = 1 if runner.result('git merge-base --is-ancestor "{}" "{}"'.format(other.sha, self.sha)) else -1
+                return result
+
+
+
 
     def __hash__(self):
         return hash(self.revision)

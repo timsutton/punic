@@ -40,7 +40,11 @@ class Punic(object):
             self.repo_cache_directory.mkdir(parents=True)
         self.punic_path = self.root_path / 'Carthage'
         self.build_path = self.punic_path / 'Build'
+        # if not self.build_path.exists():
+        #     self.build_path.mkdir(parents = True)
         self.checkouts_path = self.punic_path / 'Checkouts'
+        # if not self.checkouts_path.exists():
+        #     self.checkouts_path.mkdir(parents = True)
 
         runner.cache_path = self.library_directory / "cache.shelf"
 
@@ -53,7 +57,7 @@ class Punic(object):
         self.root_project = self.repository_for_identifier(root_project_identifier)
 
 
-    def resolve(self, fetch,):
+    def resolve(self, fetch):
         logging.debug("#### Resolving {}".format(fetch))
 
         resolver = Resolver(punic = self, fetch = fetch)
@@ -92,7 +96,7 @@ class Punic(object):
                     'CARTHAGE': 'YES',
                 }
 
-    def build(self, configuration, platforms, dependencies):
+    def build(self, configuration, platforms, dependencies, fetch):
         # TODO: This code needs a major refactoring and clean-up.
 
         if not self.build_path.exists():
@@ -100,7 +104,7 @@ class Punic(object):
 
         filtered_dependencies = self.ordered_dependencies(fetch = False, filter = dependencies)
 
-        projects = self.xcode_projects(dependencies = filtered_dependencies , fetch = False)
+        projects = self.xcode_projects(dependencies = filtered_dependencies, fetch = fetch)
 
         for platform, project, scheme in self.scheme_walker(projects = projects, configuration = configuration, platforms = platforms):
 
@@ -179,7 +183,7 @@ class Punic(object):
     def ordered_dependencies(self, fetch = False, filter = None):
         cartfile = Cartfile()
         cartfile.read(self.root_path / 'Cartfile.resolved')
-        dependencies = [(spec.identifier, Revision(spec.predicate.value, revision_type=Revision.Type.tag)) for spec in cartfile.specifications]
+        dependencies = [(spec.identifier, Revision(repository = None, revision = spec.predicate.value, revision_type=Revision.Type.tag)) for spec in cartfile.specifications]
         resolver = Resolver(self)
         resolved_dependencies = resolver.resolve_versions(dependencies, fetch = fetch)
         resolved_dependencies = [dependency for dependency in resolved_dependencies if dependency[0].matches(filter)]
@@ -196,7 +200,7 @@ class Punic(object):
         for (identifier, tag) in dependencies:
             project = self.repository_for_identifier(identifier)
 
-            revision = tag.tag
+            revision = tag.revision
 
             checkout_path = self.checkouts_path / project.path.name
 
@@ -269,11 +273,11 @@ class Punic(object):
             repository = self.repository_for_identifier(specification.identifier, fetch = fetch)
             tags = repository.revisions_for_predicate(specification.predicate)
 
-            # TODO
-            # if specification.predicate.operator == VersionOperator.commitish:
-            #     print specification
-            #     tags.append(Revision(specification.predicate.value, revision_type=Revision.Type.other))
-            # assert len(tags)
+            if specification.predicate.operator == VersionOperator.commitish:
+                tags.append(Revision(repository=repository, revision=specification.predicate.value, revision_type=Revision.Type.other))
+                tags.sort()
+
+            assert len(tags)
 
             return repository.identifier, tags
 

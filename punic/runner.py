@@ -36,6 +36,11 @@ class CacheableRunner(object):
             self.cache_path.unlink()
             # TODO: Reopen
 
+    def result(self, command):
+        command = self.convert_args(command)
+        popen = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return_code = popen.wait()
+        return return_code
 
     def run_(self, command, cwd=None, echo=None):
         try:
