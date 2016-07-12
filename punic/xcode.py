@@ -5,6 +5,7 @@ import re
 import shlex
 import tempfile
 import logging
+import os
 
 from pathlib2 import Path
 from memoize import mproperty
@@ -16,6 +17,9 @@ class XcodeProject(object):
         self.punic = punic
         self.path = path
         self.identifier = identifier
+
+        #os.environ['DEVELOPER_DIR'] = '/Applications/Xcode.app/Contents/Developer'
+
 
     @property
     def targets(self):
