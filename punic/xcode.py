@@ -38,14 +38,12 @@ class Xcode(object):
     @mproperty
     def version(self):
         output = self.check_call(['xcodebuild', '-version'], env = {'DEVELOPER_DIR': str(self.developer_dir_path)})
-        logger.info(output)
         match = re.match(r'^Xcode (?P<version>.+)\nBuild version (?P<build>.+)', output)
         return SemanticVersion.string(match.groupdict()['version'])
 
     def call(self, command, **kwargs):
         command = runner.convert_args(command)
         command = ['/usr/bin/xcrun'] + command
-        logger.info(command)
         result = runner.run(command, **kwargs)
         return result
 
