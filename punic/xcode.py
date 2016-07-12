@@ -1,4 +1,5 @@
-__author__ = 'Jonathan Wight <jwight@mac.com>'
+from __future__ import division, absolute_import, print_function
+
 __all__ = ['XcodeProject', 'xcodebuild', 'uuids_from_binary', 'BuildProduct']
 
 import re
@@ -8,7 +9,7 @@ import tempfile
 from pathlib2 import Path
 from memoize import mproperty
 
-from punic.runner import *
+from .runner import *
 
 
 class XcodeProject(object):

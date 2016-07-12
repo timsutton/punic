@@ -1,12 +1,13 @@
-__author__ = 'Jonathan Wight <jwight@mac.com>'
-__all__ = ['Resolver']
+from __future__ import division, absolute_import, print_function
 
+__all__ = ['Resolver']
 
 from collections import defaultdict
 
 from networkx import (DiGraph, dfs_preorder_nodes, topological_sort, number_of_nodes, number_of_edges)
 
-from punic.logger import *
+from .logger import *
+
 
 def dump(stream, graph, node, depth=0):
     count = len(graph.predecessors(node))
@@ -25,8 +26,8 @@ class Resolver(object):
     def build_graph(self, dependency_filter=None):
         # type: ([str]) -> DiGraph
 
-        # TODO: Probably dont need to pass dependency_filter to populate_graph
-        def populate_graph(graph, parent, parent_version, dependency_filter=None, depth=0):
+        # TODO: Probably don't need to pass dependency_filter to populate_graph
+        def populate_graph(graph, parent, parent_version, depth=0):
             graph.add_node((parent, parent_version))
             for child, child_versions in self.punic.dependencies_for_project_and_tag(parent,
                                                                                      parent_version.revision if parent_version else None,
@@ -35,11 +36,10 @@ class Resolver(object):
                     if dependency_filter and dependency_filter(child, child_version) == False:
                         continue
                     graph.add_edge((parent, parent_version), (child, child_version))
-                    populate_graph(graph, child, child_version, dependency_filter=dependency_filter, depth=depth + 1)
+                    populate_graph(graph, child, child_version, depth=depth + 1)
 
         graph = DiGraph()
-        populate_graph(graph=graph, parent=self.punic.root_project.identifier, parent_version=None,
-                       dependency_filter=dependency_filter)
+        populate_graph(graph=graph, parent=self.punic.root_project.identifier, parent_version=None)
         return graph
 
     def resolve(self):
@@ -79,8 +79,8 @@ class Resolver(object):
                 for dependency, version in graph.successors(node):
                     mini[dependency].add(version)
                 for dependency, versions in mini.items():
-                    all = all_dependencies[dependency]
-                    difference = all.difference(versions)
+                    some = all_dependencies[dependency]
+                    difference = some.difference(versions)
                     for version in difference:
                         graph.remove_node((dependency, version))
                         all_dependencies[dependency].remove(version)

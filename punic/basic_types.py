@@ -1,4 +1,5 @@
-__author__ = 'Jonathan Wight <jwight@mac.com>'
+from __future__ import division, absolute_import, print_function
+
 __all__ = ['SemanticVersion', 'Specification', 'Platform', 'ProjectIdentifier',
            'VersionOperator', 'VersionPredicate', 'parse_platforms']
 

@@ -1,3 +1,5 @@
+from __future__ import division, absolute_import, print_function
+
 __all__ = ['Repository', 'Revision']
 
 import affirm
@@ -7,12 +9,12 @@ import contextlib
 
 from memoize import mproperty
 
-from punic.utilities import *
-from punic.basic_types import *
-from punic.runner import *
-from punic.config import *
-from punic.errors import *
-from punic.logger import *
+from .utilities import *
+from .basic_types import *
+from .runner import *
+from .config import *
+from .errors import *
+from .logger import *
 
 class Repository(object):
     def __init__(self, punic, identifier, repo_path):

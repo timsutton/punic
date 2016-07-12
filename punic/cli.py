@@ -1,4 +1,5 @@
-__author__ = 'Jonathan Wight <jwight@mac.com>'
+from __future__ import division, absolute_import, print_function
+
 
 import shutil
 import os
@@ -7,13 +8,13 @@ import contextlib
 import click
 
 import punic
-from punic.basic_types import *
-from punic.utilities import *
-from punic.model import *
-from punic.runner import *
-from punic.errors import *
-from punic.config import *
-from punic.logger import *
+from .basic_types import *
+from .utilities import *
+from .model import *
+from .runner import *
+from .errors import *
+from .config import *
+from .logger import *
 
 @click.group()
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
@@ -166,7 +167,7 @@ def graph(context, fetch):
 @click.pass_context
 def version(context):
     """Print punic version"""
-    print punic.__version__
+    print(punic.__version__)
 
 
 @contextlib.contextmanager

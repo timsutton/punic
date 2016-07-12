@@ -1,10 +1,12 @@
+from __future__ import division, absolute_import, print_function
+
 __all__ = ['styled']
 
 from HTMLParser import HTMLParser
 
 from blessings import Terminal
 
-from punic.config import config
+from .config import config
 
 term = Terminal()
 
@@ -35,7 +37,7 @@ class MyHTMLParser(HTMLParser):
             self.style_stack.pop()
 
     def handle_data(self, data):
-        if config.color == True:
+        if config.color:
             self.apply()
         self.s += data
 

@@ -1,4 +1,5 @@
-__author__ = 'Jonathan Wight <jwight@mac.com>'
+from __future__ import division, absolute_import, print_function
+
 __all__ = ['Runner', 'runner', 'Result']
 
 import os
@@ -6,12 +7,10 @@ import subprocess
 import shlex
 import shelve
 
-from punic.logger import *
-
 from memoize import mproperty
 
-from punic.utilities import *
-import StringIO
+from .logger import *
+
 
 class Result(object):
     pass
@@ -55,7 +54,7 @@ class Runner(object):
 
     def can_run(self, args):
         args = self.convert_args(args)
-        result  = self.run(['/usr/bin/env', 'which', args[0]], echo = False)
+        result = self.run(['/usr/bin/env', 'which', args[0]], echo = False)
         return True if result.return_code == 0 else False
 
     def check_run(self, *args, **kwargs):

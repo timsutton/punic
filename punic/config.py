@@ -1,4 +1,5 @@
-__author__ = 'Jonathan Wight <jwight@mac.com>'
+from __future__ import division, absolute_import, print_function
+
 __all__ = ['Cartfile', 'Config', 'config']
 
 import re
@@ -6,8 +7,9 @@ import re
 from pathlib2 import Path
 import pureyaml
 
-from punic.basic_types import *
-from punic.logger import *
+from .basic_types import *
+from .logger import *
+
 
 class Cartfile(object):
     def __init__(self, specifications=None):
@@ -38,7 +40,6 @@ class Config(object):
         self.color = False
 
         self.read(Path('punic.yaml'))
-
 
     def read(self, path):
         # type: (Path)
@@ -83,5 +84,6 @@ class Config(object):
     @platforms.setter
     def platforms(self, platforms):
         self.defaults['platforms'] = platforms
+
 
 config = Config()

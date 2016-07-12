@@ -1,5 +1,4 @@
-__author__ = 'Jonathan Wight <jwight@mac.com>'
-
+from __future__ import print_function
 import os
 import subprocess
 import re
@@ -22,7 +21,7 @@ def main():
 
         framework_name = os.path.splitext(os.path.split(input_path)[1])[0]
 
-        print "# Copying framework {}".format(framework_name)
+        print("# Copying framework {}".format(framework_name))
 
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
@@ -51,13 +50,13 @@ def main():
 
         # For each invalid architecture strip it from framework
         for architecture in excluded_architectures:
-            print "# Stripping {} from {}".format(architecture, framework_name)
+            print("# Stripping {} from {}".format(architecture, framework_name))
             output = subprocess.check_output(
                 ["/usr/bin/xcrun", "lipo", "-remove", architecture, "-output", binary_path, binary_path])
-            print output
+            print(output)
 
         # Resign framework
-        print "# Resigning {} with {}".format(framework_name, expanded_identity)
+        print("# Resigning {} with {}".format(framework_name, expanded_identity))
         # noinspection PyUnusedLocal
         result = subprocess.check_call(["/usr/bin/xcrun", "codesign", "--force", "--sign", expanded_identity,
                                         "--preserve-metadata=identifier,entitlements", binary_path])

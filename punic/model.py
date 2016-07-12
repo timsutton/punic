@@ -1,4 +1,5 @@
-__author__ = 'Jonathan Wight <jwight@mac.com>'
+from __future__ import division, absolute_import, print_function
+
 __all__ = ['Punic']
 
 import os
@@ -9,14 +10,14 @@ from pathlib2 import Path
 import requests
 
 import punic
-from punic.utilities import *
-from punic.xcode import *
-from punic.basic_types import *
-from punic.runner import *
-from punic.resolver import *
-from punic.config import *
-from punic.repository import *
-from punic.logger import *
+from .utilities import *
+from .xcode import *
+from .basic_types import *
+from .runner import *
+from .resolver import *
+from .config import *
+from .repository import *
+from .logger import *
 
 ########################################################################################################################
 
@@ -60,7 +61,7 @@ class Punic(object):
                 logger.warn(
                     'You are using version <rev>{}</rev>, version <rev>{}</rev> is available. Use `pip install -U http://github.com/schwa/punic` to update to latest version.'.format(
                         current_version, latest_version), styled=True)
-        except Exception, e:
+        except Exception as e:
             logger.debug('<error>Failed to check versions: <rev>{}</rev></error>'.format(e))
 
     def versions(self):
