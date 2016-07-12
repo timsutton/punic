@@ -1,5 +1,3 @@
 
-
-
 class RepositoryNotClonedError(Exception):
     pass

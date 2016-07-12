@@ -14,6 +14,7 @@ from punic.runner import *
 from punic.config import *
 from punic.errors import *
 
+
 class Repository(object):
     def __init__(self, punic, identifier, repo_path):
         self.punic = punic
@@ -41,7 +42,8 @@ class Repository(object):
         with self.work_directory():
             result = runner.run2('git tag')
             tags = result.stdout.read().split('\n')
-            tags = [Revision(repository = self, revision = tag, revision_type = Revision.Type.tag) for tag in tags if SemanticVersion.is_semantic(tag)]
+            tags = [Revision(repository=self, revision=tag, revision_type=Revision.Type.tag) for tag in tags if
+                    SemanticVersion.is_semantic(tag)]
             return sorted(tags)
 
     def rev_parse(self, s):
@@ -101,11 +103,11 @@ class Repository(object):
         with work_directory(self.path):
             yield
 
+
 ########################################################################################################################
 
 
 class Revision(object):
-
     always_use_is_ancestor = False
 
     class Type(Enum):
@@ -116,12 +118,13 @@ class Revision(object):
         self.repository = repository
         self.revision = revision
         self.revision_type = revision_type
-        self.semantic_version = (SemanticVersion.string(self.revision) if self.revision_type == Revision.Type.tag else None)
+        self.semantic_version = (
+        SemanticVersion.string(self.revision) if self.revision_type == Revision.Type.tag else None)
 
     @mproperty
     def sha(self):
         with work_directory(self.repository.path):
-            return runner.run('git rev-parse "{}"'.format(self.revision), echo = False).strip()
+            return runner.run('git rev-parse "{}"'.format(self.revision), echo=False).strip()
 
     def __repr__(self):
         return str(self.revision)
@@ -134,7 +137,8 @@ class Revision(object):
                 if self.sha == other.sha:
                     result = 0
                 else:
-                    result = 1 if runner.result('git merge-base --is-ancestor "{}" "{}"'.format(other.sha, self.sha)) else -1
+                    result = 1 if runner.result(
+                        'git merge-base --is-ancestor "{}" "{}"'.format(other.sha, self.sha)) else -1
 
                     # TODO: just because X is not ancestor of Y doesn't mean Y is an ancestor of X
                     # if result == -1:

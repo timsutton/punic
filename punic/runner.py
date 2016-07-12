@@ -17,9 +17,7 @@ class Result(object):
 
 
 class Runner(object):
-
-
-    def __init__(self, cache_path = None):
+    def __init__(self, cache_path=None):
         self.cache_path = cache_path
         self.echo = False
 
@@ -60,7 +58,7 @@ class Runner(object):
 
                 if real_echo:
                     logging.info(' '.join(command))
-                return subprocess.check_output(command, stderr = subprocess.STDOUT)
+                return subprocess.check_output(command, stderr=subprocess.STDOUT)
 
         except subprocess.CalledProcessError, e:
             print e.output
@@ -84,7 +82,6 @@ class Runner(object):
         popen = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         return_code = popen.wait()
-
 
         result = Result()
         result.return_code = return_code
@@ -112,5 +109,6 @@ class Runner(object):
         else:
             result = self.run_(*args, **kwargs)
             return result
+
 
 runner = Runner()

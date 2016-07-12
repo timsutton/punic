@@ -6,6 +6,7 @@ from collections import defaultdict
 
 from networkx import (DiGraph, dfs_preorder_nodes, topological_sort, number_of_nodes, number_of_edges)
 
+
 def dump(stream, graph, node, depth=0):
     count = len(graph.predecessors(node))
 
@@ -15,7 +16,7 @@ def dump(stream, graph, node, depth=0):
 
 
 class Resolver(object):
-    def __init__(self, punic, fetch = True):
+    def __init__(self, punic, fetch=True):
         self.punic = punic
         self.root = (self.punic.root_project.identifier, None)
         self.fetch = fetch
@@ -26,19 +27,24 @@ class Resolver(object):
         # TODO: Probably dont need to pass dependency_filter to populate_graph
         def populate_graph(graph, parent, parent_version, dependency_filter=None, depth=0):
             graph.add_node((parent, parent_version))
-            for child, child_versions in self.punic.dependencies_for_project_and_tag(parent, parent_version.revision if parent_version else None, fetch = self.fetch):
+            for child, child_versions in self.punic.dependencies_for_project_and_tag(parent,
+                                                                                     parent_version.revision if parent_version else None,
+                                                                                     fetch=self.fetch):
                 for child_version in child_versions:
                     if dependency_filter and dependency_filter(child, child_version) == False:
                         continue
                     graph.add_edge((parent, parent_version), (child, child_version))
                     populate_graph(graph, child, child_version, dependency_filter=dependency_filter, depth=depth + 1)
+
         graph = DiGraph()
-        populate_graph(graph, self.punic.root_project.identifier, None, dependency_filter=dependency_filter)
+        populate_graph(graph=graph, parent=self.punic.root_project.identifier, parent_version=None,
+                       dependency_filter=dependency_filter)
         return graph
 
     def resolve(self):
         # type: () -> DiGraph
-        for dependency, revisions in self.punic.dependencies_for_project_and_tag(self.punic.root_project.identifier, None, fetch = self.fetch):
+        for dependency, revisions in self.punic.dependencies_for_project_and_tag(self.punic.root_project.identifier,
+                                                                                 None, fetch=self.fetch):
             logging.debug('# {} {}'.format(dependency, revisions))
 
         logging.debug('# Building universal graph')
@@ -46,7 +52,8 @@ class Resolver(object):
         # Build a graph up of _all_ version of _all_ dependencies
         graph = self.build_graph()
 
-        logging.debug('# Universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logging.debug(
+            '# Universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         # Build a dictionary of all versions of all dependencies
         all_dependencies = defaultdict(set)
@@ -89,7 +96,8 @@ class Resolver(object):
         prune_1()
         prune_2()
 
-        logging.debug('# Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logging.debug(
+            '# Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         ################################################################################################################
 
@@ -100,7 +108,8 @@ class Resolver(object):
 
         graph = self.build_graph(dependency_filter=lambda child, child_version: (child, child_version) in dependencies)
 
-        logging.debug('# Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logging.debug(
+            '# Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         ################################################################################################################
 
@@ -113,8 +122,7 @@ class Resolver(object):
         build_order = topological_sort(graph, reverse=True)
         return build_order
 
-
-    def resolve_versions(self, dependencies, fetch = False):
+    def resolve_versions(self, dependencies, fetch=False):
         # type: (ProjectIdentifier, Revision) -> [ProjectIdentifier, Tag]
         """Given an array of project identifier/version pairs work out the build order"""
         graph = DiGraph()
@@ -122,7 +130,8 @@ class Resolver(object):
         for identifier, version in dependencies:
             parent = (identifier, version)
             graph.add_node(parent)
-            for dependency, _ in self.punic.dependencies_for_project_and_tag(identifier=identifier, tag=version.revision, fetch = fetch):
+            for dependency, _ in self.punic.dependencies_for_project_and_tag(identifier=identifier,
+                                                                             tag=version.revision, fetch=fetch):
                 version = versions_for_identifier[dependency]
                 child = (dependency, version)
                 graph.add_edge(parent, child)

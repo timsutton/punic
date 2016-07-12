@@ -9,6 +9,7 @@ from pathlib2 import Path
 from memoize import mproperty
 from flufl.enum import Enum
 
+
 # TODO: Doesn't support full http://semvar.org spec
 class SemanticVersion(object):
     @classmethod
@@ -17,7 +18,7 @@ class SemanticVersion(object):
         match = re.match('(?:v)?(\d+)(?:\.(\d+)(?:\.(\d+))?)?', s)
         return True if match else False
 
-    def __init__(self, major, minor, patch = None, identifiers = None):
+    def __init__(self, major, minor, patch=None, identifiers=None):
         self.major = major if major else 0
         self.minor = minor if minor else 0
         self.patch = patch if patch else 0
@@ -57,7 +58,7 @@ class SemanticVersion(object):
         return cmp(self.components, other.components)
 
     def __hash__(self):
-        return hash(self.major * 1000000)  ^ hash(self.minor * 10000) ^ hash(self.patch * 100)
+        return hash(self.major * 1000000) ^ hash(self.minor * 10000) ^ hash(self.patch * 100)
 
     @classmethod
     def string(cls, s):
@@ -126,7 +127,7 @@ class Specification(object):
 
         identifier = ProjectIdentifier.string(match.group('address'))
         predicate = VersionPredicate(match.group('predicate'))
-        specification = Specification(identifier = identifier, predicate = predicate)
+        specification = Specification(identifier=identifier, predicate=predicate)
         specification.raw_string = string
 
         return specification
@@ -136,7 +137,6 @@ class Specification(object):
 
 
 class ProjectIdentifier(object):
-
     @classmethod
     def string(cls, string):
         # type: (str) -> ProjectIdentifier
@@ -168,7 +168,7 @@ class ProjectIdentifier(object):
             path = Path(urlparse.urlparse(remote_url).path)
             project_name = path.name
 
-            return ProjectIdentifier(project_name = project_name, remote_url=remote_url)
+            return ProjectIdentifier(project_name=project_name, remote_url=remote_url)
 
     def __init__(self, team_name=None, project_name=None, remote_url=None):
         self.team_name = team_name
@@ -296,9 +296,10 @@ class Platform(object):
     def __repr__(self):
         return self.nickname
 
+
 Platform.all = [
-    Platform(name = 'iOS', nickname = 'iOS', sdks = ['iphoneos', 'iphonesimulator'], output_directory_name = 'iOS'),
-    Platform(name = 'macOS', nickname = 'Mac', sdks = ['macosx'], output_directory_name = 'Mac'),
+    Platform(name='iOS', nickname='iOS', sdks=['iphoneos', 'iphonesimulator'], output_directory_name='iOS'),
+    Platform(name='macOS', nickname='Mac', sdks=['macosx'], output_directory_name='Mac'),
     # TODO add watchos and tvos
 ]
 

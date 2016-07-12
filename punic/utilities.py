@@ -6,6 +6,7 @@ import os
 import logging
 import time
 
+
 @contextlib.contextmanager
 def work_directory(path):
     # type: (Path)
@@ -16,6 +17,7 @@ def work_directory(path):
     yield
     os.chdir(saved_wd)
 
+
 @contextlib.contextmanager
 def timeit(task=None):
     # type: (str)
@@ -23,8 +25,3 @@ def timeit(task=None):
     yield
     end = time.time()
     logging.debug('# {} {}'.format(task if task else '<unnamed task>', end - start))
-
-
-
-
-

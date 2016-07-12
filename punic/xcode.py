@@ -10,14 +10,14 @@ from memoize import mproperty
 
 from punic.runner import *
 
+
 class XcodeProject(object):
     def __init__(self, punic, path, identifier):
         self.punic = punic
         self.path = path
         self.identifier = identifier
 
-        #os.environ['DEVELOPER_DIR'] = '/Applications/Xcode.app/Contents/Developer'
-
+        # os.environ['DEVELOPER_DIR'] = '/Applications/Xcode.app/Contents/Developer'
 
     @property
     def targets(self):
@@ -51,7 +51,7 @@ class XcodeProject(object):
         output = runner.run(cache_key=self.identifier, command=command)
         return parse_build_settings(output)
 
-    def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None, temp_symroot = False):
+    def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None, temp_symroot=False):
 
         if not arguments:
             arguments = dict()
@@ -68,6 +68,7 @@ class XcodeProject(object):
                                              arguments=arguments)
 
         return BuildProduct.build_settings(build_settings)
+
 
 ########################################################################################################################
 
@@ -128,6 +129,7 @@ def parse_info(string):
 
     return targets, configurations, schemes
 
+
 ########################################################################################################################
 
 class BuildProduct(object):
@@ -138,7 +140,8 @@ class BuildProduct(object):
         product.full_product_name = build_settings['FULL_PRODUCT_NAME']  # 'Example.framework'
         product.product_name = build_settings['PRODUCT_NAME']  # 'Example'
         product.executable_name = build_settings['EXECUTABLE_NAME']  # 'Example'
-        product.target_build_dir = Path(build_settings['TARGET_BUILD_DIR'])  # ~/Library/Developer/Xcode/DerivedData/Example-<random>/Build/Products/<configuration>-<sdk>
+        product.target_build_dir = Path(build_settings[
+                                            'TARGET_BUILD_DIR'])  # ~/Library/Developer/Xcode/DerivedData/Example-<random>/Build/Products/<configuration>-<sdk>
         return product
 
     @classmethod
@@ -148,7 +151,7 @@ class BuildProduct(object):
         matches = (match.groups() for match in matches if match)
         build_settings = dict(matches)
 
-        product = BuildProduct.build_settings(build_settings = build_settings )
+        product = BuildProduct.build_settings(build_settings=build_settings)
         return product
 
     def __init__(self):
@@ -192,12 +195,14 @@ def parse_build_settings(string):
     matches = (match.groups() for match in matches if match)
     return dict(matches)
 
+
 ########################################################################################################################
 
 def uuids_from_binary(path):
     command = ['/usr/bin/xcrun', 'dwarfdump', '--uuid', path]
     output = runner.run(command)
     lines = output.splitlines()
-    matches = [re.match(r'^UUID: ([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}) \((.+)\) (.+)$', line) for line in lines]
+    matches = [re.match(r'^UUID: ([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}) \((.+)\) (.+)$', line)
+               for line in lines]
     uuids = [match.group(1) for match in matches]
     return uuids

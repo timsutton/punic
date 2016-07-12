@@ -14,6 +14,7 @@ from punic.model import *
 from punic.runner import *
 from punic.errors import *
 
+
 @click.group()
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
 @click.option('--verbose', default=False, is_flag=True, help="""Verbose logging.""")
@@ -21,7 +22,7 @@ from punic.errors import *
 @click.pass_context
 def main(context, echo, verbose):
     level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(format='%(message)s', level = level)
+    logging.basicConfig(format='%(message)s', level=level)
     runner.echo = echo
     requests_log = logging.getLogger("requests.packages.urllib3")
     requests_log.setLevel(logging.WARNING)
@@ -42,12 +43,13 @@ def resolve(context, fetch):
         with error_handling():
             logging.info("# Resolve")
             punic = context.obj
-            punic.resolve(fetch = fetch)
+            punic.resolve(fetch=fetch)
 
 
 @main.command()
 @click.pass_context
-@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--configuration', default=None,
+              help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
@@ -58,8 +60,9 @@ def update(context, configuration, platform, fetch, deps):
             logging.info("# Update")
             punic = context.obj
             punic.config.update(configuration=configuration, platform=platform)
-            punic.resolve(fetch = fetch)
-            punic.build(dependencies = deps, fetch = fetch)
+            punic.resolve(fetch=fetch)
+            punic.build(dependencies=deps, fetch=fetch)
+
 
 @main.command()
 @click.pass_context
@@ -74,7 +77,8 @@ def checkout(context):
 
 @main.command()
 @click.pass_context
-@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--configuration', default=None,
+              help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
@@ -85,12 +89,13 @@ def build(context, configuration, platform, fetch, deps):
             logging.info("# Build")
             punic = context.obj
             punic.config.update(configuration=configuration, platform=platform)
-            punic.build(dependencies = deps, fetch = fetch)
+            punic.build(dependencies=deps, fetch=fetch)
 
 
 @main.command()
 @click.pass_context
-@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--configuration', default=None,
+              help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.argument('deps', nargs=-1)
 def bootstrap(context, configuration, platform, deps):
@@ -101,12 +106,13 @@ def bootstrap(context, configuration, platform, deps):
             punic = context.obj
             punic.config.update(configuration=configuration, platform=platform)
             punic.fetch()
-            punic.build(dependencies = deps, fetch = True)
+            punic.build(dependencies=deps, fetch=True)
 
 
 @main.command()
 @click.pass_context
-@click.option('--configuration', default=None, help="""Dependency configurations to clean. Usually 'Release' or 'Debug'.""")
+@click.option('--configuration', default=None,
+              help="""Dependency configurations to clean. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to clean. Comma separated list.""")
 @click.option('--xcode/--no-xcode', default=True, is_flag=True, help="""Clean xcode projects.""")
 @click.option('--caches', default=False, is_flag=True, help="""Clean the global punic carthage files.""")
@@ -117,7 +123,7 @@ def clean(context, configuration, platform, xcode, caches):
     if xcode:
         logging.info('# Cleaning Xcode projects'.format(**punic.__dict__))
         platforms = parse_platforms(platform)
-        punic.clean(configuration=configuration, platforms= platforms)
+        punic.clean(configuration=configuration, platforms=platforms)
 
     if caches:
         if punic.repo_cache_directory.exists():
@@ -136,7 +142,7 @@ def graph(context, fetch):
         with error_handling():
             logging.info("# Graph")
             punic = context.obj
-            graph = punic.graph(fetch = fetch)
+            graph = punic.graph(fetch=fetch)
 
             import networkx as nx
 
@@ -150,11 +156,14 @@ def graph(context, fetch):
             else:
                 logging.warning('# graphviz not installed. Cannot convert graph to a png.')
 
+
+# noinspection PyUnusedLocal
 @main.command()
 @click.pass_context
 def version(context):
     """Print punic version"""
     print punic.__version__
+
 
 @contextlib.contextmanager
 def error_handling():

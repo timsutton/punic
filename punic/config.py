@@ -9,8 +9,9 @@ import pureyaml
 
 from punic.basic_types import *
 
+
 class Cartfile(object):
-    def __init__(self, specifications = None):
+    def __init__(self, specifications=None):
         self.specifications = specifications if specifications else []
 
     def read(self, source):
@@ -19,13 +20,15 @@ class Cartfile(object):
         if isinstance(source, Path):
             source = source.open().read()
         lines = [line.rstrip() for line in source.splitlines()]
-        self.specifications = [Specification.cartfile_string(line) for line in lines if re.match(r'^github .+', str(line))]
+        self.specifications = [Specification.cartfile_string(line) for line in lines if
+                               re.match(r'^github .+', str(line))]
 
     def write(self, destination):
         # type: (File)
         strings = [str(specification) for specification in self.specifications]
         string = u'\n'.join(sorted(strings)) + '\n'
         destination.write(string)
+
 
 class Config(object):
     def __init__(self):
@@ -57,7 +60,7 @@ class Config(object):
         for k, v in self.defaults.items():
             logging.debug('# \t{}: {}'.format(k, v))
 
-    def update(self, configuration = None, platform = None):
+    def update(self, configuration=None, platform=None):
         # type: (str, string) -> bool
         if configuration:
             self.configuration = configuration
@@ -79,4 +82,3 @@ class Config(object):
     @platforms.setter
     def platforms(self, platforms):
         self.defaults['platforms'] = platforms
-
