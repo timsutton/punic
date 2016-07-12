@@ -125,17 +125,26 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 
 The current roadmap for Punic is as follows (in rough order of priority):
 
+- [X] Support branch style Cartfile specifications.
 - [ ] `copy-frameworks` subcommand.
-- [ ] Support branch style Cartfile specifications.
 - [ ] Run on travis
 - [ ] Reliability. Punic needs to be tested against as many other Cartfiles as possible and needs to reliably produce the same build order
 - [ ] Support `build` subcommand's `--no-skip-current` switch
 - [ ] `fetch` subcommand
 - [ ] Support specifying target dependencies at command line. (This is relatively low priority because incremental Punic builds are much much quicker than slow carthage clean builds.)
 - [ ] Support `Cartfile.private` functionality
-- [ ] Replace Cartfiles with a better, more expressive file format (yaml? toml?).
+- [ ] Replace Cartfiles with a better, more expressive file format (yaml? toml?). Partially done.
 - [ ] Add a `migrate` subcommand that can migrate Cartfiles to the new format.
-- [ ] Allow specification of platforms in new style config file. Cache xcodeproject and scheme info in new style build artifact files (replacing .resolved)
+- [X] Allow specification of default platforms and configurations in new style config file (`punic.yaml`)
+- [ ] Cache xcodeproject and scheme info in new style build artifact files (replacing .resolved)
+
+## New Features
+
+TODO: Discuss differences between punic and carthage here.
+
+## Configuration
+
+TODO: Discuss `punic.yaml` here.
 
 ## Frequently Answer Questions
 
