@@ -162,7 +162,7 @@ class Punic(object):
                     executable_paths = [product.executable_path for product in products.values()]
                     command = ['/usr/bin/xcrun', 'lipo', '-create'] + executable_paths + ['-output',
                                                                                           output_product.executable_path]
-                    runner.run(command, check=True)
+                    runner.check_run(command)
                     mtime = executable_paths[0].stat().st_mtime
                     os.utime(str(output_product.executable_path), (mtime, mtime))
 
@@ -186,7 +186,7 @@ class Punic(object):
                 logging.debug('# Producing dSYM files')
                 command = ['/usr/bin/xcrun', 'dsymutil', str(output_product.executable_path), '-o',
                            str(output_product.target_build_dir / (output_product.executable_name + '.dSYM'))]
-                runner.run(command, check=True)
+                runner.check_run(command)
 
                 ########################################################################################################
 
@@ -200,7 +200,7 @@ class Punic(object):
             for sdk in platform.sdks:
                 command = xcodebuild(project=project.path, command='clean', scheme=scheme, sdk=sdk,
                                      configuration=configuration)
-                runner.run(command, check=True)
+                runner.check_run(command)
 
     def ordered_dependencies(self, fetch=False, name_filter=None):
         # type: (bool, [str]) -> [(ProjectIdentifier, Revision)]

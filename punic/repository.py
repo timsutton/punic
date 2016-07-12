@@ -40,8 +40,8 @@ class Repository(object):
         # type: () -> [Tag]
 
         with self.work_directory():
-            result = runner.run('git tag', check=True)
-            tags = result.stdout.split('\n')
+            output = runner.check_run('git tag')
+            tags = output.split('\n')
             tags = [Revision(repository=self, revision=tag, revision_type=Revision.Type.tag) for tag in tags if
                     SemanticVersion.is_semantic(tag)]
             return sorted(tags)
@@ -49,24 +49,24 @@ class Repository(object):
     def rev_parse(self, s):
         # type: (str) -> str
         with self.work_directory():
-            result = runner.run('git rev-parse {}'.format(s), check=True)
-            return result.stdout.strip()
+            output = runner.check_run('git rev-parse {}'.format(s))
+            return output.strip()
 
     def checkout(self, revision):
         # type: (str)
         logging.debug('# Checking out {} @ revision {}'.format(self, revision))
         with self.work_directory():
-            runner.run('git checkout {}'.format(revision), check = True)
+            runner.check_run('git checkout {}'.format(revision))
 
     def fetch(self):
         if not self.path.exists():
             with work_directory(str(self.path.parent)):
                 logging.debug('# Cloning: {}'.format(self))
-                runner.run('git clone --recursive "{}"'.format(self.identifier.remote_url), check=True)
+                runner.check_run('git clone --recursive "{}"'.format(self.identifier.remote_url))
         else:
             with self.work_directory():
                 logging.debug('# Fetching: {}'.format(self))
-                runner.run('git fetch', check=True)
+                runner.check_run('git fetch')
 
     def specifications_for_revision(self, revision):
         # type: (str) -> [Specification]
@@ -125,8 +125,8 @@ class Revision(object):
     @mproperty
     def sha(self):
         with work_directory(self.repository.path):
-            result = runner.run('git rev-parse "{}"'.format(self.revision), echo=False, check=True)
-            return result.stdout.strip()
+            output = runner.check_run('git rev-parse "{}"'.format(self.revision), echo=False)
+            return output.strip()
 
     def __repr__(self):
         return str(self.revision)

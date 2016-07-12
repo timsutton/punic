@@ -57,6 +57,11 @@ class Runner(object):
         result  = self.run(['/usr/bin/env', 'which', args[0]], echo = False)
         return True if result.return_code == 0 else False
 
+    def check_run(self, *args, **kwargs):
+        kwargs['check'] = True
+        result = self.run(*args, **kwargs)
+        return result.stdout
+
     def run(self, command, cwd = None, echo = None, cache_key = None, check = False):
         args = self.convert_args(command)
 
