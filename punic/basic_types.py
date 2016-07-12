@@ -9,7 +9,7 @@ from pathlib2 import Path
 from memoize import mproperty
 from flufl.enum import Enum
 
-# TODO: Doesn't support full semvar.org spec
+# TODO: Doesn't support full http://semvar.org spec
 class SemanticVersion(object):
     @classmethod
     def is_semantic(cls, s):

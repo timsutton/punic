@@ -107,7 +107,7 @@ class Resolver(object):
     def resolve_build_order(self):
         # type: () -> [(ProjectIdentifier, Revision)]
         graph = self.resolve()
-        logging.debug('# Topologicalling sorting graph')
+        logging.debug('# Topologically sorting graph')
         build_order = topological_sort(graph, reverse=True)
         return build_order
 

@@ -38,7 +38,7 @@ def main(context, echo, verbose):
 def resolve(context, fetch):
     """Resolve dependencies and output `Carthage.resolved` file.
 
-    This subcommand does not build dependencies. Use this sub-command when a dependency has changed and you just want to update `Cartfile.resolved`.
+    This sub-command does not build dependencies. Use this sub-command when a dependency has changed and you just want to update `Cartfile.resolved`.
     """
     with timeit('resolve'):
         with error_handling():
@@ -50,7 +50,7 @@ def resolve(context, fetch):
 @main.command()
 @click.pass_context
 @click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
-@click.option('--platform', default=None, help="""Platform to build. Comma seperated list.""")
+@click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
 def update(context, configuration, platform, fetch, deps):
@@ -77,7 +77,7 @@ def checkout(context):
 @main.command()
 @click.pass_context
 @click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
-@click.option('--platform', default=None, help="""Platform to build. Comma seperated list.""")
+@click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
 def build(context, configuration, platform, fetch, deps):
@@ -93,7 +93,7 @@ def build(context, configuration, platform, fetch, deps):
 @main.command()
 @click.pass_context
 @click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
-@click.option('--platform', default=None, help="""Platform to build. Comma seperated list.""")
+@click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.argument('deps', nargs=-1)
 def bootstrap(context, configuration, platform, deps):
     """Fetch & build dependencies."""
@@ -109,7 +109,7 @@ def bootstrap(context, configuration, platform, deps):
 @main.command()
 @click.pass_context
 @click.option('--configuration', default=None, help="""Dependency configurations to clean. Usually 'Release' or 'Debug'.""")
-@click.option('--platform', default=None, help="""Platform to clean. Comma seperated list.""")
+@click.option('--platform', default=None, help="""Platform to clean. Comma separated list.""")
 @click.option('--xcode/--no-xcode', default=True, is_flag=True, help="""Clean xcode projects.""")
 @click.option('--caches', default=False, is_flag=True, help="""Clean the global punic carthage files.""")
 def clean(context, configuration, platform, xcode, caches):

@@ -150,7 +150,7 @@ class Punic(object):
                 ########################################################################################################
 
                 if len(products) > 1:
-                    logging.debug('# Lipoing')
+                    logging.debug('# Lipo-ing')
                     executable_paths = [product.executable_path for product in products.values()]
                     command = ['/usr/bin/xcrun', 'lipo', '-create'] + executable_paths + ['-output', output_product.executable_path]
                     runner.run(command)
@@ -244,7 +244,7 @@ class Punic(object):
             carthage_symlink_path = carthage_path / 'Build'
             if carthage_symlink_path.exists():
                 carthage_symlink_path.unlink()
-            logging.debug('# Symlinking: {} {}'.format(self.build_path, carthage_symlink_path))
+            logging.debug('# Creating symlink: {} {}'.format(self.build_path, carthage_symlink_path))
             assert self.build_path.exists()
             os.symlink(str(self.build_path), str(carthage_symlink_path))
 
