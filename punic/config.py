@@ -14,12 +14,15 @@ class Cartfile(object):
         self.specifications = specifications if specifications else []
 
     def read(self, input):
+        # type: (Path)
+
         if isinstance(input, Path):
             input = input.open().read()
         lines = [line.rstrip() for line in input.splitlines()]
         self.specifications = [Specification.cartfile_string(line) for line in lines if re.match(r'^github .+', str(line))]
 
     def write(self, output):
+        # type: (File)
         strings = [str(specification) for specification in self.specifications]
         string = u'\n'.join(sorted(strings)) + '\n'
         output.write(string)
@@ -34,6 +37,7 @@ class Config(object):
         self.read(Path('punic.yaml'))
 
     def read(self, path):
+        # type: (Path)
 
         if not path.exists():
             return
@@ -54,6 +58,7 @@ class Config(object):
             logging.debug('# \t{}: {}'.format(k, v))
 
     def update(self, configuration = None, platform = None):
+        # type: (str, string) -> bool
         if configuration:
             self.configuration = configuration
         if platform:
@@ -67,11 +72,9 @@ class Config(object):
     def configuration(self, configuration):
         self.defaults['configuration'] = configuration
 
-
     @property
     def platforms(self):
         return self.defaults['platforms']
-
 
     @platforms.setter
     def platforms(self, platforms):

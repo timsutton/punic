@@ -13,6 +13,7 @@ from flufl.enum import Enum
 class SemanticVersion(object):
     @classmethod
     def is_semantic(cls, s):
+        # type: (str) -> bool
         match = re.match('(?:v)?(\d+)(?:\.(\d+)(?:\.(\d+))?)?', s)
         return True if match else False
 
@@ -60,6 +61,7 @@ class SemanticVersion(object):
 
     @classmethod
     def string(cls, s):
+        # type: (str) -> SemanticVersion
         """
         >>> SemanticVersion.string('1')
         1.0
@@ -82,6 +84,7 @@ class SemanticVersion(object):
 
     @property
     def next_major(self):
+        # type: () -> SemanticVersion
         return SemanticVersion(major=self.major + 1, minor=0, patch=0)
 
 
@@ -93,6 +96,7 @@ class Specification(object):
 
     @classmethod
     def cartfile_string(cls, string):
+        # type: (str) -> Specification
         """
         >>> Specification.cartfile_string('github "foo/bar"')
         github "foo/bar"
@@ -135,6 +139,7 @@ class ProjectIdentifier(object):
 
     @classmethod
     def string(cls, string):
+        # type: (str) -> ProjectIdentifier
         """
         >>> ProjectIdentifier.string('github "foo/bar"')
         foo/bar
@@ -192,6 +197,8 @@ class ProjectIdentifier(object):
         return hash(self.identifier)
 
     def matches(self, filter=None):
+        # type: ([str]) -> bool
+
         if not filter:
             return True
 
@@ -259,6 +266,7 @@ class VersionPredicate(object):
             return '~> {}'.format(self.value)
 
     def test(self, version):
+        # type: (SemanticVersion) -> bool
         if self.operator == VersionOperator.any:
             return True
         elif self.operator == VersionOperator.equals:
@@ -279,6 +287,7 @@ class Platform(object):
 
     @classmethod
     def platform_for_nickname(cls, nickname):
+        # type: (str) -> Platform
         for platform in cls.all:
             if platform.nickname.lower() == nickname.lower():
                 return platform
@@ -295,6 +304,7 @@ Platform.all = [
 
 
 def parse_platforms(s):
+    # type: (str) -> [Platform]
     if not s:
         return Platform.all
     else:

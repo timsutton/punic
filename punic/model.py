@@ -60,6 +60,8 @@ class Punic(object):
             logging.debug('# Failed to check versions: {}'.format(e))
 
     def versions(self):
+        # type: () -> (SemanticVersion, SemanticVersion)
+
         current_version = SemanticVersion.string(punic.__version__)
         # TODO: Is this the best URL?
         result = requests.get('https://raw.githubusercontent.com/schwa/punic/develop/VERSION', timeout=0.3)
@@ -69,6 +71,7 @@ class Punic(object):
 
 
     def resolve(self, fetch):
+        # type: (bool)
         resolver = Resolver(punic = self, fetch = fetch)
         build_order = resolver.resolve_build_order()
 
@@ -83,16 +86,19 @@ class Punic(object):
         cartfile.write((self.root_path / 'Cartfile.resolved').open('w'))
 
     def graph(self, fetch = True):
+        # type: (bool) -> DiGraph
         resolver = Resolver(punic = self, fetch = fetch)
         return resolver.resolve()
 
     def fetch(self):
+        # type: ()
         # TODO: FIXME
         for project in self.xcode_projects(fetch = True):
             pass
 
     @property
     def xcode_arguments(self):
+        # type: () -> dict
         return {
                     'ONLY_ACTIVE_ARCH': 'NO',
                     'BITCODE_GENERATION_MODE': 'bitcode',
@@ -102,6 +108,7 @@ class Punic(object):
                 }
 
     def build(self, dependencies, fetch):
+        # type: ([str], bool)
         # TODO: This code needs a major refactoring and clean-up.
 
         configuration, platforms = self.config.configuration, self.config.platforms
@@ -176,6 +183,7 @@ class Punic(object):
 #            exit(0)
 
     def clean(self, configuration, platforms):
+        # type: (str, str) -> DiGraph
         logging.debug("#### Cleaning")
 
         for platform, project, scheme in self.scheme_walker(configuration = configuration, platforms = platforms):
@@ -204,6 +212,7 @@ class Punic(object):
         return resolved_dependencies
 
     def xcode_projects(self, dependencies = None, fetch = False):
+        # type: ([(ProjectIdentifier, Revision)]) -> [XcodeProject]
 
         if not self.build_path.exists():
             self.build_path.mkdir(parents = True)
@@ -250,6 +259,7 @@ class Punic(object):
         return all_projects
 
     def scheme_walker(self, projects = None, configuration = None, platforms = None):
+        # type: ([XcodeProject], str, [Platform]) -> (str, XcodeProject, str)
 
         if not projects:
             projects = self.xcode_projects(fetch=False)

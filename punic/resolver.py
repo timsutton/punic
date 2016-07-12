@@ -21,6 +21,7 @@ class Resolver(object):
         self.fetch = fetch
 
     def build_graph(self, filter=None):
+        # type: ([str]) -> DiGraph
         def populate_graph(graph, parent, parent_version, filter=None, depth=0):
             graph.add_node((parent, parent_version))
             for child, child_versions in self.punic.dependencies_for_project_and_tag(parent, parent_version.revision if parent_version else None, fetch = self.fetch):
@@ -34,6 +35,7 @@ class Resolver(object):
         return graph
 
     def resolve(self):
+        # type: () -> DiGraph
         for dependency, revisions in self.punic.dependencies_for_project_and_tag(self.punic.root_project.identifier, None, fetch = self.fetch):
             logging.debug('# {} {}'.format(dependency, revisions))
 
@@ -103,6 +105,7 @@ class Resolver(object):
         return graph
 
     def resolve_build_order(self):
+        # type: () -> [(ProjectIdentifier, Revision)]
         graph = self.resolve()
         logging.debug('# Topologicalling sorting graph')
         build_order = topological_sort(graph, reverse=True)
@@ -110,7 +113,7 @@ class Resolver(object):
 
 
     def resolve_versions(self, dependencies, fetch = False):
-        # type: (ProjectIdentifier, Tag) -> [ProjectIdentifier, Tag]
+        # type: (ProjectIdentifier, Revision) -> [ProjectIdentifier, Tag]
         """Given an array of project identifier/version pairs work out the build order"""
         graph = DiGraph()
         versions_for_identifier = dict(dependencies)

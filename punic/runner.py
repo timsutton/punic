@@ -1,5 +1,5 @@
 __author__ = 'Jonathan Wight <jwight@mac.com>'
-__all__ = ['CacheableRunner', 'runner', 'Result']
+__all__ = ['Runner', 'runner', 'Result']
 
 import os
 import subprocess
@@ -16,7 +16,7 @@ class Result(object):
     pass
 
 
-class CacheableRunner(object):
+class Runner(object):
 
 
     def __init__(self, cache_path = None):
@@ -43,10 +43,8 @@ class CacheableRunner(object):
             # TODO: Reopen
 
     def result(self, command):
-        command = self.convert_args(command)
-        popen = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return_code = popen.wait()
-        return return_code
+        result = self.run2(command)
+        return result.result_code
 
     def run_(self, command, cwd=None, echo=None):
         try:
@@ -114,4 +112,4 @@ class CacheableRunner(object):
             result = self.run_(*args, **kwargs)
             return result
 
-runner = CacheableRunner()
+runner = Runner()

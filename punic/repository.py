@@ -45,11 +45,12 @@ class Repository(object):
             return sorted(tags)
 
     def rev_parse(self, s):
+        # type: (str) -> str
         with self.work_directory():
             return runner.run('git rev-parse {}'.format(s)).strip()
 
     def checkout(self, revision):
-        # type: (String)
+        # type: (str)
         logging.debug('# Checking out {} @ revision {}'.format(self, revision))
         with self.work_directory():
             runner.run('git checkout {}'.format(revision))
@@ -139,9 +140,6 @@ class Revision(object):
                     # if result == -1:
                     #     assert runner.result('git merge-base --is-ancestor "{}" "{}"'.format(self, other))
                 return result
-
-
-
 
     def __hash__(self):
         return hash(self.revision)

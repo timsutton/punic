@@ -9,6 +9,8 @@ import re
 
 @contextlib.contextmanager
 def work_directory(path):
+    # type: (Path)
+
     path = str(path)
     saved_wd = os.getcwd()
     os.chdir(path)
@@ -17,6 +19,7 @@ def work_directory(path):
 
 @contextlib.contextmanager
 def timeit(task=None):
+    # type: (str)
     start = time.time()
     yield
     end = time.time()
