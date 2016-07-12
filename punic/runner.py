@@ -11,6 +11,11 @@ from memoize import mproperty
 
 from .logger import *
 
+from itertools import (chain, imap)
+
+def flatmap(f, items):
+    return chain.from_iterable(imap(f, items))
+
 
 class Result(object):
     pass
@@ -45,12 +50,14 @@ class Runner(object):
         result = self.run(command)
         return result.return_code
 
-    def convert_args(self, args):
-        if isinstance(args, basestring):
-            args = shlex.split(args)
+    @staticmethod
+    def convert_args(args):
+        if isinstance(args, list) or isinstance(args, tuple):
+            return [str(arg) for arg in args]
+        elif isinstance(args, basestring):
+            return shlex.split(args)
         else:
-            args = [str(args) for args in args]
-        return args
+            return [str(args)]
 
     def can_run(self, args):
         args = self.convert_args(args)
@@ -62,7 +69,7 @@ class Runner(object):
         result = self.run(*args, **kwargs)
         return result.stdout
 
-    def run(self, command, cwd = None, echo = None, cache_key = None, check = False):
+    def run(self, command, cwd = None, echo = None, cache_key = None, check = False, env = None):
         args = self.convert_args(command)
 
         if echo == True or self.echo == True:
@@ -70,6 +77,7 @@ class Runner(object):
             logger.echo(' '.join(args))
 
         if cache_key and self.shelf:
+            #assert not env # TODO
             key = '{}{}'.format(cache_key, ' '.join(command))
             if key in self.shelf:
                 # logger.debug('CACHE HIT: {}'.format(key))
@@ -83,12 +91,14 @@ class Runner(object):
         stdout = subprocess.PIPE
         stderr = subprocess.PIPE if not check else subprocess.STDOUT
 
-        popen = subprocess.Popen(args, cwd = cwd, stdout=stdout, stderr=stderr)
+        popen = subprocess.Popen(args, cwd = cwd, stdout=stdout, stderr=stderr, env = env)
         stdout, stderr = popen.communicate()
         return_code = popen.returncode
 
         if check and return_code != 0:
             # TODO
+            print(stderr)
+            print(stdout)
             raise Exception('OOPS')
 
         if cache_key:

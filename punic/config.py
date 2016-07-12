@@ -1,34 +1,12 @@
 from __future__ import division, absolute_import, print_function
 
-__all__ = ['Cartfile', 'Config', 'config']
-
-import re
+__all__ = ['Config', 'config']
 
 from pathlib2 import Path
 import pureyaml
 
 from .basic_types import *
 from .logger import *
-
-
-class Cartfile(object):
-    def __init__(self, specifications=None):
-        self.specifications = specifications if specifications else []
-
-    def read(self, source):
-        # type: (Path)
-
-        if isinstance(source, Path):
-            source = source.open().read()
-        lines = [line.rstrip() for line in source.splitlines()]
-        self.specifications = [Specification.cartfile_string(line) for line in lines if
-                               re.match(r'^github .+', str(line))]
-
-    def write(self, destination):
-        # type: (File)
-        strings = [str(specification) for specification in self.specifications]
-        string = u'\n'.join(sorted(strings)) + '\n'
-        destination.write(string)
 
 
 class Config(object):
@@ -38,6 +16,7 @@ class Config(object):
             'platforms': [],
         }
         self.color = False
+        self.xcode = None
 
         self.read(Path('punic.yaml'))
 

@@ -18,6 +18,7 @@ from .resolver import *
 from .config import *
 from .repository import *
 from .logger import *
+from .cartfile import *
 
 ########################################################################################################################
 
@@ -268,7 +269,7 @@ class Punic(object):
                 return identifier
 
             project_paths = checkout_path.glob("*.xcodeproj")
-            projects = [XcodeProject(self, project_path, make_identifier(project_path)) for project_path in
+            projects = [XcodeProject(self, config.xcode, project_path, make_identifier(project_path)) for project_path in
                         project_paths]
             all_projects += projects
         return all_projects

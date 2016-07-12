@@ -1,6 +1,6 @@
 from __future__ import division, absolute_import, print_function
 
-__all__ = ['XcodeProject', 'xcodebuild', 'uuids_from_binary', 'BuildProduct']
+__all__ = ['Xcode', 'XcodeProject', 'uuids_from_binary', 'BuildProduct']
 
 import re
 import shlex
@@ -10,11 +10,60 @@ from pathlib2 import Path
 from memoize import mproperty
 
 from .runner import *
+from .logger import *
+from .semantic_version import *
 
+class Xcode(object):
+    all_xcodes = None
+    default_xcode = None
+
+    @classmethod
+    def default(cls):
+        if not Xcode.default_xcode:
+            Xcode.find_all()
+        return Xcode.default_xcode
+
+    @classmethod
+    def find_all(cls):
+        output = runner.check_run('/usr/bin/mdfind \'kMDItemCFBundleIdentifier="com.apple.dt.Xcode" and kMDItemContentType="com.apple.application-bundle"\'')
+        xcodes = [Xcode(Path(path)) for path in output.strip().split("\n")]
+        Xcode.all_xcodes = dict([(xcode.version, xcode) for xcode in xcodes])
+        default_developer_dir_path = Path(runner.check_run(['xcode-select', '-p']).strip())
+        Xcode.default_xcode = [xcode for version, xcode in Xcode.all_xcodes.items() if xcode.developer_dir_path == default_developer_dir_path][0]
+
+    def __init__(self, path):
+        self.path = path
+        self.developer_dir_path = self.path / 'Contents/Developer'
+
+    @mproperty
+    def version(self):
+        output = self.check_call(['xcodebuild', '-version'], env = {'DEVELOPER_DIR': str(self.developer_dir_path)})
+        logger.info(output)
+        match = re.match(r'^Xcode (?P<version>.+)\nBuild version (?P<build>.+)', output)
+        return SemanticVersion.string(match.groupdict()['version'])
+
+    def call(self, command, **kwargs):
+        command = runner.convert_args(command)
+        command = ['/usr/bin/xcrun'] + command
+        logger.info(command)
+        result = runner.run(command, **kwargs)
+        return result
+
+    def check_call(self, command, **kwargs):
+        command = runner.convert_args(command)
+        command = ['/usr/bin/xcrun'] + command
+        result = runner.check_run(command, **kwargs)
+        return result
+
+    def __repr__(self):
+        return '{} ({})'.format(self.path, self.version)
+
+########################################################################################################################
 
 class XcodeProject(object):
-    def __init__(self, punic, path, identifier):
+    def __init__(self, punic, xcode, path, identifier):
         self.punic = punic
+        self.xcode = xcode if xcode else Xcode.default()
         self.path = path
         self.identifier = identifier
 
@@ -34,60 +83,41 @@ class XcodeProject(object):
 
     @mproperty
     def info(self):
-        command = xcodebuild(project=self.path, command='-list')
-        output = runner.check_run(cache_key=self.identifier, command=command)
+        output = self.check_call(subcommand='-list', cache_key=self.identifier)
         targets, configurations, schemes = parse_info(output)
         return targets, configurations, schemes
 
-    @mproperty
-    def base_command(self):
-        command = 'xcodebuild -project "{}"'.format(self.path.name)
-        return shlex.split(command)
-
     def build_settings(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None):
-        if not arguments:
-            arguments = dict()
-        command = xcodebuild(project=self.path, command='-showBuildSettings', scheme=scheme, target=target,
-                             configuration=configuration, sdk=sdk, arguments=arguments)
-        output = runner.check_run(cache_key=self.identifier, command=command)
+        output = self.check_call(subcommand='-showBuildSettings', scheme=scheme, target=target, configuration=configuration, sdk=sdk, arguments=arguments, cache_key=self.identifier)
         return parse_build_settings(output)
 
     def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None, temp_symroot=False):
-
         if not arguments:
             arguments = dict()
-
         if temp_symroot:
             symroot = tempfile.mkdtemp()
             arguments['SYMROOT'] = symroot
 
-        command = xcodebuild(project=self.path, command='build', scheme=scheme, target=target,
-                             configuration=configuration, sdk=sdk, arguments=arguments)
-        runner.check_run(command)
+        self.check_call(subcommand='build', scheme=scheme, target=target, configuration=configuration, sdk=sdk, arguments=arguments)
 
-        build_settings = self.build_settings(scheme=scheme, target=target, configuration=configuration, sdk=sdk,
-                                             arguments=arguments)
+        build_settings = self.build_settings(scheme=scheme, target=target, configuration=configuration, sdk=sdk, arguments=arguments)
 
         return BuildProduct.build_settings(build_settings)
 
+    def check_call(self, subcommand, scheme=None, target=None, configuration=None, sdk=None, jobs=None, arguments=None, **kwargs):
+        if not arguments:
+            arguments = dict()
 
-########################################################################################################################
-
-def xcodebuild(project, command, scheme=None, target=None, configuration=None, sdk=None, jobs=None, arguments=None):
-    if not arguments:
-        arguments = dict()
-
-    command = ['/usr/bin/xcrun', 'xcodebuild'] \
-              + ['-project', str(project)] \
-              + (['-scheme', scheme] if scheme else []) \
-              + (['-target', target] if target else []) \
-              + (['-configuration', configuration] if configuration else []) \
-              + (['-sdk', sdk] if sdk else []) \
-              + (['-jobs', str(jobs)] if jobs else []) \
-              + ['{}={}'.format(key, value) for key, value in arguments.items()] \
-              + [command]
-    return command
-
+        command = ['xcodebuild'] \
+                  + ['-project', str(self.path)] \
+                  + (['-scheme', scheme] if scheme else []) \
+                  + (['-target', target] if target else []) \
+                  + (['-configuration', configuration] if configuration else []) \
+                  + (['-sdk', sdk] if sdk else []) \
+                  + (['-jobs', str(jobs)] if jobs else []) \
+                  + ['{}={}'.format(key, value) for key, value in arguments.items()] \
+                  + [subcommand]
+        return self.xcode.check_call(command, **kwargs)
 
 ########################################################################################################################
 

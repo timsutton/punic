@@ -15,6 +15,7 @@ from .runner import *
 from .config import *
 from .errors import *
 from .logger import *
+from .cartfile import *
 
 class Repository(object):
     def __init__(self, punic, identifier, repo_path):
