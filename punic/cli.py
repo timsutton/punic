@@ -174,6 +174,7 @@ def graph(context, fetch):
 @main.command()
 @click.pass_context
 def version(context):
+    """Print punic version"""
     print punic.__version__
 
 if __name__ == '__main__':
