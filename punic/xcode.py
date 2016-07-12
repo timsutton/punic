@@ -89,13 +89,9 @@ class XcodeProject(object):
         output = self.check_call(subcommand='-showBuildSettings', scheme=scheme, target=target, configuration=configuration, sdk=sdk, arguments=arguments, cache_key=self.identifier)
         return parse_build_settings(output)
 
-    def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None, temp_symroot=False):
+    def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None):
         if not arguments:
             arguments = dict()
-        if temp_symroot:
-            symroot = tempfile.mkdtemp()
-            arguments['SYMROOT'] = symroot
-
         try:
             self.check_call(subcommand='build', scheme=scheme, target=target, configuration=configuration, sdk=sdk, arguments=arguments)
         except CalledProcessError as e:

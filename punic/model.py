@@ -137,8 +137,7 @@ class Punic(object):
                 for sdk in platform.sdks:
                     logger.info('<sub>Building</sub> <ref>{}</ref> {} {} {}'.format(project.path.name, scheme, sdk,
                                                                                     configuration))
-                    product = project.build(scheme=scheme, configuration=configuration, sdk=sdk,
-                                            arguments=self.xcode_arguments, temp_symroot=False)
+                    product = project.build(scheme=scheme, configuration=configuration, sdk=sdk, arguments=self.xcode_arguments)
                     products[sdk] = product
 
                 ########################################################################################################
