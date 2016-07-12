@@ -20,18 +20,20 @@ class Resolver(object):
         self.root = (self.punic.root_project.identifier, None)
         self.fetch = fetch
 
-    def build_graph(self, filter=None):
+    def build_graph(self, dependency_filter=None):
         # type: ([str]) -> DiGraph
-        def populate_graph(graph, parent, parent_version, filter=None, depth=0):
+
+        # TODO: Probably dont need to pass dependency_filter to populate_graph
+        def populate_graph(graph, parent, parent_version, dependency_filter=None, depth=0):
             graph.add_node((parent, parent_version))
             for child, child_versions in self.punic.dependencies_for_project_and_tag(parent, parent_version.revision if parent_version else None, fetch = self.fetch):
                 for child_version in child_versions:
-                    if filter and filter(child, child_version) == False:
+                    if dependency_filter and dependency_filter(child, child_version) == False:
                         continue
                     graph.add_edge((parent, parent_version), (child, child_version))
-                    populate_graph(graph, child, child_version, filter=filter, depth=depth + 1)
+                    populate_graph(graph, child, child_version, dependency_filter=dependency_filter, depth=depth + 1)
         graph = DiGraph()
-        populate_graph(graph, self.punic.root_project.identifier, None, filter=filter)
+        populate_graph(graph, self.punic.root_project.identifier, None, dependency_filter=dependency_filter)
         return graph
 
     def resolve(self):
@@ -96,7 +98,7 @@ class Resolver(object):
 
         ################################################################################################################
 
-        graph = self.build_graph(filter=lambda child, child_version: (child, child_version) in dependencies)
+        graph = self.build_graph(dependency_filter=lambda child, child_version: (child, child_version) in dependencies)
 
         logging.debug('# Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 

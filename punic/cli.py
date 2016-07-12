@@ -6,14 +6,12 @@ import os
 import contextlib
 
 import click
-from pathlib2 import Path
 
 import punic
 from punic.basic_types import *
 from punic.utilities import *
 from punic.model import *
 from punic.runner import *
-from punic.config import *
 from punic.errors import *
 
 @click.group()

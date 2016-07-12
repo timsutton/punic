@@ -4,8 +4,6 @@ __all__ = ['XcodeProject', 'xcodebuild', 'uuids_from_binary', 'BuildProduct']
 import re
 import shlex
 import tempfile
-import logging
-import os
 
 from pathlib2 import Path
 from memoize import mproperty

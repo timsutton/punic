@@ -13,19 +13,19 @@ class Cartfile(object):
     def __init__(self, specifications = None):
         self.specifications = specifications if specifications else []
 
-    def read(self, input):
+    def read(self, source):
         # type: (Path)
 
-        if isinstance(input, Path):
-            input = input.open().read()
-        lines = [line.rstrip() for line in input.splitlines()]
+        if isinstance(source, Path):
+            source = source.open().read()
+        lines = [line.rstrip() for line in source.splitlines()]
         self.specifications = [Specification.cartfile_string(line) for line in lines if re.match(r'^github .+', str(line))]
 
-    def write(self, output):
+    def write(self, destination):
         # type: (File)
         strings = [str(specification) for specification in self.specifications]
         string = u'\n'.join(sorted(strings)) + '\n'
-        output.write(string)
+        destination.write(string)
 
 class Config(object):
     def __init__(self):

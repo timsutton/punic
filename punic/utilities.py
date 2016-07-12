@@ -5,7 +5,6 @@ import contextlib
 import os
 import logging
 import time
-import re
 
 @contextlib.contextmanager
 def work_directory(path):

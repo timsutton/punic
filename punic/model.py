@@ -116,7 +116,7 @@ class Punic(object):
         if not self.build_path.exists():
             self.build_path.mkdir(parents = True)
 
-        filtered_dependencies = self.ordered_dependencies(fetch = False, filter = dependencies)
+        filtered_dependencies = self.ordered_dependencies(fetch = False, name_filter= dependencies)
 
         projects = self.xcode_projects(dependencies = filtered_dependencies, fetch = fetch)
 
@@ -191,7 +191,7 @@ class Punic(object):
                 command = xcodebuild(project = project.path, command = 'clean', scheme = scheme, sdk = sdk, configuration = configuration)
                 runner.run(command)
 
-    def ordered_dependencies(self, fetch = False, filter = None):
+    def ordered_dependencies(self, fetch = False, name_filter = None):
         # type: (bool, [str]) -> [(ProjectIdentifier, Revision)]
 
         cartfile = Cartfile()
@@ -208,7 +208,7 @@ class Punic(object):
         dependencies = [(spec.identifier, predicate_to_revision(spec.predicate)) for spec in cartfile.specifications]
         resolver = Resolver(self)
         resolved_dependencies = resolver.resolve_versions(dependencies, fetch = fetch)
-        resolved_dependencies = [dependency for dependency in resolved_dependencies if dependency[0].matches(filter)]
+        resolved_dependencies = [dependency for dependency in resolved_dependencies if dependency[0].matches(name_filter)]
         return resolved_dependencies
 
     def xcode_projects(self, dependencies = None, fetch = False):

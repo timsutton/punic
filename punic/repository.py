@@ -72,7 +72,7 @@ class Repository(object):
 
         if revision in self.specifications_cache:
             return self.specifications_cache[revision]
-        elif revision == None and self == self.punic.root_project:
+        elif revision is None and self == self.punic.root_project:
             cartfile = Cartfile()
             cartfile.read(self.path / "Cartfile")
             specifications = cartfile.specifications

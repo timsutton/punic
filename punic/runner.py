@@ -27,6 +27,7 @@ class Runner(object):
     def shelf(self):
         if not self.cache_path:
             return None
+        # noinspection PyBroadException
         try:
             return shelve.open(str(self.cache_path))
         except:
@@ -54,7 +55,7 @@ class Runner(object):
                 command = self.convert_args(command)
 
                 real_echo = self.echo
-                if echo != None:
+                if echo is not None:
                     real_echo = echo
 
                 if real_echo:

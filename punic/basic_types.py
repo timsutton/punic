@@ -196,13 +196,13 @@ class ProjectIdentifier(object):
     def __hash__(self):
         return hash(self.identifier)
 
-    def matches(self, filter=None):
+    def matches(self, name_filter=None):
         # type: ([str]) -> bool
 
-        if not filter:
+        if not name_filter:
             return True
 
-        if self.project_name in filter:
+        if self.project_name in name_filter:
             return True
 
         return False
