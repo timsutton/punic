@@ -3,9 +3,10 @@ __all__ = ['Runner', 'runner', 'Result']
 
 import os
 import subprocess
-import logging
 import shlex
 import shelve
+
+from punic.logger import *
 
 from memoize import mproperty
 
@@ -67,12 +68,12 @@ class Runner(object):
 
         if echo == True or self.echo == True:
             # TODO: Wont properly reproduce command if command is a string
-            logging.info(' '.join(args))
+            logger.echo(' '.join(args))
 
-        if cache_key:
+        if cache_key and self.shelf:
             key = '{}{}'.format(cache_key, ' '.join(command))
             if key in self.shelf:
-                logging.debug('CACHE HIT: {}'.format(key))
+                logger.debug('CACHE HIT: {}'.format(key))
                 return_code, stdout, stderr = self.shelf[key]
                 result = Result()
                 result.return_code = return_code

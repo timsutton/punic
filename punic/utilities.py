@@ -3,9 +3,9 @@ __all__ = ['work_directory', 'timeit']
 
 import contextlib
 import os
-import logging
 import time
 
+from punic.logger import *
 
 @contextlib.contextmanager
 def work_directory(path):
@@ -29,4 +29,4 @@ def timeit(task=None):
     start = time.time()
     yield
     end = time.time()
-    logging.debug('# {} {}'.format(task if task else '<unnamed task>', end - start))
+    logger.debug('{} {}'.format(task if task else '<unnamed task>', end - start))

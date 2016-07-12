@@ -1,9 +1,12 @@
 __all__ = ['styled']
 
+from HTMLParser import HTMLParser
+
 from blessings import Terminal
 
+from punic.config import config
+
 term = Terminal()
-from HTMLParser import HTMLParser
 
 # create a subclass and override the handler methods
 class MyHTMLParser(HTMLParser):
@@ -14,10 +17,11 @@ class MyHTMLParser(HTMLParser):
         self.s = ''
 
         self.styles = {
-            'head': term.blue,
-            'title': term.bold,
-            'version': term.bold,
-            'command': term.red + term.bold,
+            'ref': term.magenta,
+            'rev': term.bold,
+            'cmd': term.cyan + term.underline,
+            'sub': term.cyan,
+            'echo': term.yellow,
         }
 
         self.style_stack = []
@@ -31,7 +35,8 @@ class MyHTMLParser(HTMLParser):
             self.style_stack.pop()
 
     def handle_data(self, data):
-        self.apply()
+        if config.color == True:
+            self.apply()
         self.s += data
 
     def apply(self):

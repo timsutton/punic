@@ -66,7 +66,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | bootstrap / --use-ssh           | Unimplemented                      |
 | bootstrap / --use-submodules    | Unimplemented                      |
 | bootstrap / --no-use-binaries   | Unimplemented. Note 1              |
-| bootstrap / --color             | Unimplemented                      |
+| bootstrap / --color             | Implemented                        |
 | bootstrap / --project-directory | Unimplemented                      |
 | bootstrap / [dependencies]      | Implemented                        |
 | build                           | Implemented                        |
@@ -74,14 +74,14 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | build / --platform              | Implemented                        |
 | build / --derived-data          | Unimplemented                      |
 | build / --no-skip-current       | Unimplemented                      |
-| build / --color                 | Unimplemented                      |
+| build / --color                 | Implemented                        |
 | build / --project-directory     | Unimplemented                      |
 | build / [dependencies]          | Unimplemented                      |
 | checkout                        | Implemented                        |
 | checkout / --use-ssh            | Unimplemented                      |
 | checkout / --use-submodules     | Unimplemented                      |
 | checkout / --no-use-binaries    | Unimplemented. Note 1              |
-| checkout / --color              | Unimplemented                      |
+| checkout / --color              | Implemented                        |
 | checkout / --project-directory  | Unimplemented                      |
 | checkout / [dependencies]       | Implemented                        |
 | copy-frameworks                 | Unimplemented                      |
@@ -90,7 +90,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | outdated                        | Unimplemented                      |
 | outdated / --use-ssh            | Unimplemented                      |
 | outdated / --verbose            | Implemented                        |
-| outdated / --color              | Unimplemented                      |
+| outdated / --color              | Implemented                        |
 | outdated / --project-directory  | Unimplemented                      |
 | update                          | Implemented                        |
 | update / --configuration        | Implemented                        |
@@ -102,7 +102,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | update / --use-ssh              | Unimplemented                      |
 | update / --use-submodules       | Unimplemented                      |
 | update / --no-use-binaries      | Unimplemented. Note 1              |
-| update / --color                | Unimplemented                      |
+| update / --color                | Implemented                        |
 | update / --project-directory    | Unimplemented                      |
 | update / [dependencies]         | Implemented                        |
 

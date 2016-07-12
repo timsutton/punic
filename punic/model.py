@@ -1,7 +1,6 @@
 __author__ = 'Jonathan Wight <jwight@mac.com>'
 __all__ = ['Punic']
 
-import logging
 import os
 import shutil
 from copy import copy
@@ -17,7 +16,7 @@ from punic.runner import *
 from punic.resolver import *
 from punic.config import *
 from punic.repository import *
-
+from punic.logger import *
 
 ########################################################################################################################
 
@@ -28,7 +27,7 @@ class Punic(object):
         if not root_path:
             root_path = Path.cwd()
 
-        self.config = Config()
+        self.config = config
 
         self.root_path = root_path  # type: Path
         self.library_directory = Path(os.path.expanduser('~/Library/io.schwa.Punic'))
@@ -53,15 +52,16 @@ class Punic(object):
         self.root_project = self.repository_for_identifier(root_project_identifier)
 
         try:
-            logging.debug('# Checking punic version')
+            logger.debug('<sub>Checking punic version</sub>')
             current_version, latest_version = self.versions()
-            logging.debug('# Current version: {}, latest version: {}'.format(current_version, latest_version))
+            logger.debug(
+                'Current version: <rev>{}</rev>, latest version: <rev>{}</rev>'.format(current_version, latest_version))
             if current_version < latest_version:
-                logging.warn(
-                    '# You are using version {}, version {} is available. Use `pip install -U http://github.com/schwa/punic` to update to latest version.'.format(
-                        current_version, latest_version))
+                logger.warn(
+                    'You are using version <rev>{}</rev>, version <rev>{}</rev> is available. Use `pip install -U http://github.com/schwa/punic` to update to latest version.'.format(
+                        current_version, latest_version), styled=True)
         except Exception, e:
-            logging.debug('# Failed to check versions: {}'.format(e))
+            logger.debug('<error>Failed to check versions: <rev>{}</rev></error>'.format(e))
 
     def versions(self):
         # type: () -> (SemanticVersion, SemanticVersion)
@@ -80,12 +80,13 @@ class Punic(object):
 
         for index, value in enumerate(build_order):
             dependency, version = value
-            logging.debug('# {} {} {}'.format(index + 1, dependency, version.revision if version else ''))
+            logger.debug(
+                '{} <ref>{}</ref> <rev>{}</rev>'.format(index + 1, dependency, version.revision if version else ''))
 
         specifications = [
             Specification(identifier=dependency, predicate=VersionPredicate('"{}"'.format(version.revision))) for
             dependency, version in build_order[:-1]]
-        logging.debug("# Saving Cartfile.resolved")
+        logger.debug("<sub>Saving</sub> <ref>Cartfile.resolved</ref>")
 
         cartfile = Cartfile(specifications=specifications)
         cartfile.write((self.root_path / 'Cartfile.resolved').open('w'))
@@ -132,7 +133,8 @@ class Punic(object):
 
                 products = dict()
                 for sdk in platform.sdks:
-                    logging.info('# Building {} {} {} {}'.format(project.path.name, scheme, sdk, configuration))
+                    logger.info('<sub>Building</sub> <ref>{}</ref> {} {} {}'.format(project.path.name, scheme, sdk,
+                                                                                    configuration))
                     product = project.build(scheme=scheme, configuration=configuration, sdk=sdk,
                                             arguments=self.xcode_arguments, temp_symroot=False)
                     products[sdk] = product
@@ -150,7 +152,7 @@ class Punic(object):
 
                 ########################################################################################################
 
-                logging.debug('# Copying binary')
+                logger.debug('<sub>Copying binary</sub>')
                 if output_product.product_path.exists():
                     shutil.rmtree(str(output_product.product_path))
                 shutil.copytree(str(device_product.product_path), str(output_product.product_path))
@@ -158,7 +160,7 @@ class Punic(object):
                 ########################################################################################################
 
                 if len(products) > 1:
-                    logging.debug('# Lipo-ing')
+                    logger.debug('<sub>Lipo-ing</sub>')
                     executable_paths = [product.executable_path for product in products.values()]
                     command = ['/usr/bin/xcrun', 'lipo', '-create'] + executable_paths + ['-output',
                                                                                           output_product.executable_path]
@@ -168,7 +170,7 @@ class Punic(object):
 
                 ########################################################################################################
 
-                logging.debug('# Copying swiftmodule files')
+                logger.debug('<sub>Copying swiftmodule files</sub>')
                 for product in products.values():
                     for path in product.module_paths:
                         relative_path = path.relative_to(product.product_path)
@@ -176,14 +178,14 @@ class Punic(object):
 
                 ########################################################################################################
 
-                logging.debug('# Copying bcsymbolmap files')
+                logger.debug('<sub>Copying bcsymbolmap files</sub>')
                 for product in products.values():
                     for path in product.bcsymbolmap_paths:
                         shutil.copy(str(path), str(output_product.target_build_dir))
 
                 ########################################################################################################
 
-                logging.debug('# Producing dSYM files')
+                logger.debug('<sub>Producing dSYM files</sub>')
                 command = ['/usr/bin/xcrun', 'dsymutil', str(output_product.executable_path), '-o',
                            str(output_product.target_build_dir / (output_product.executable_name + '.dSYM'))]
                 runner.check_run(command)
@@ -194,8 +196,6 @@ class Punic(object):
 
     def clean(self, configuration, platforms):
         # type: (str, str) -> DiGraph
-        logging.debug("#### Cleaning")
-
         for platform, project, scheme in self.scheme_walker(platforms=platforms):
             for sdk in platform.sdks:
                 command = xcodebuild(project=project.path, command='clean', scheme=scheme, sdk=sdk,
@@ -240,7 +240,7 @@ class Punic(object):
 
             if fetch:
                 project.checkout(revision)
-                logging.debug('# Copying project to Carthage/Checkouts')
+                logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
                 if checkout_path.exists():
                     shutil.rmtree(str(checkout_path))
                 shutil.copytree(str(project.path), str(checkout_path), ignore=shutil.ignore_patterns('.git'))
@@ -256,7 +256,8 @@ class Punic(object):
             carthage_symlink_path = carthage_path / 'Build'
             if carthage_symlink_path.exists():
                 carthage_symlink_path.unlink()
-            logging.debug('# Creating symlink: {} {}'.format(self.build_path, carthage_symlink_path))
+            logger.debug('<sub>Creating symlink: <ref>{}</ref> <ref>{}</ref></sub>'.format(self.build_path,
+                                                                                           carthage_symlink_path))
             assert self.build_path.exists()
             os.symlink(str(self.build_path), str(carthage_symlink_path))
 

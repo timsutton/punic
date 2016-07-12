@@ -1,11 +1,12 @@
 __author__ = 'Jonathan Wight <jwight@mac.com>'
 __all__ = ['Resolver']
 
-import logging
+
 from collections import defaultdict
 
 from networkx import (DiGraph, dfs_preorder_nodes, topological_sort, number_of_nodes, number_of_edges)
 
+from punic.logger import *
 
 def dump(stream, graph, node, depth=0):
     count = len(graph.predecessors(node))
@@ -45,15 +46,14 @@ class Resolver(object):
         # type: () -> DiGraph
         for dependency, revisions in self.punic.dependencies_for_project_and_tag(self.punic.root_project.identifier,
                                                                                  None, fetch=self.fetch):
-            logging.debug('# {} {}'.format(dependency, revisions))
+            logger.debug('<ref>{}</ref> <rev>{}</rev>'.format(dependency, revisions))
 
-        logging.debug('# Building universal graph')
+        logger.debug('Building universal graph')
 
         # Build a graph up of _all_ version of _all_ dependencies
         graph = self.build_graph()
 
-        logging.debug(
-            '# Universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logger.debug('Universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         # Build a dictionary of all versions of all dependencies
         all_dependencies = defaultdict(set)
@@ -91,13 +91,13 @@ class Resolver(object):
 
         ################################################################################################################
 
-        logging.debug('# Pruning graph')
+        logger.debug('<sub>Pruning graph</sub>')
 
         prune_1()
         prune_2()
 
-        logging.debug(
-            '# Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logger.debug(
+            'Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         ################################################################################################################
 
@@ -108,8 +108,8 @@ class Resolver(object):
 
         graph = self.build_graph(dependency_filter=lambda child, child_version: (child, child_version) in dependencies)
 
-        logging.debug(
-            '# Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logger.debug(
+            'Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         ################################################################################################################
 
@@ -118,7 +118,7 @@ class Resolver(object):
     def resolve_build_order(self):
         # type: () -> [(ProjectIdentifier, Revision)]
         graph = self.resolve()
-        logging.debug('# Topologically sorting graph')
+        logger.debug('<sub>Topologically sorting graph</sub>')
         build_order = topological_sort(graph, reverse=True)
         return build_order
 

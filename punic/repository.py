@@ -3,7 +3,6 @@ __all__ = ['Repository', 'Revision']
 import affirm
 
 from flufl.enum import Enum
-import logging
 import contextlib
 
 from memoize import mproperty
@@ -13,7 +12,7 @@ from punic.basic_types import *
 from punic.runner import *
 from punic.config import *
 from punic.errors import *
-
+from punic.logger import *
 
 class Repository(object):
     def __init__(self, punic, identifier, repo_path):
@@ -54,24 +53,24 @@ class Repository(object):
 
     def checkout(self, revision):
         # type: (str)
-        logging.debug('# Checking out {} @ revision {}'.format(self, revision))
+        logger.debug('Checking out <ref>{}</ref> @ revision <rev>{}</rev>'.format(self, revision))
         with self.work_directory():
             runner.check_run('git checkout {}'.format(revision))
 
     def fetch(self):
         if not self.path.exists():
             with work_directory(str(self.path.parent)):
-                logging.debug('# Cloning: {}'.format(self))
+                logger.debug('<sub>Cloning</sub>: <ref>{}</ref>'.format(self))
                 runner.check_run('git clone --recursive "{}"'.format(self.identifier.remote_url))
         else:
             with self.work_directory():
-                logging.debug('# Fetching: {}'.format(self))
+                logger.debug('<sub>Fetching</sub>: <ref>{}</ref>'.format(self))
                 runner.check_run('git fetch')
 
     def specifications_for_revision(self, revision):
         # type: (str) -> [Specification]
 
-        # logging.debug('Getting cartfile from revision {} of {})'.format(revision, self))
+        # logger.debug('Getting cartfile from revision {} of {})'.format(revision, self))
 
         if revision in self.specifications_cache:
             return self.specifications_cache[revision]
