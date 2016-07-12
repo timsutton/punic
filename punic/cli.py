@@ -66,8 +66,7 @@ def update(context, configuration, platform, fetch, deps):
 @main.command()
 @click.pass_context
 def checkout(context):
-    """Checkout dependencies
-    """
+    """Checkout dependencies."""
     with timeit('fetch'):
         with error_handling():
             logging.info("# Checkout")
@@ -82,8 +81,7 @@ def checkout(context):
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
 def build(context, configuration, platform, fetch, deps):
-    """Build dependencies
-    """
+    """Build dependencies."""
     with timeit('build'):
         with error_handling():
             logging.info("# Build")
@@ -98,8 +96,7 @@ def build(context, configuration, platform, fetch, deps):
 @click.option('--platform', default=None, help="""Platform to build. Comma seperated list.""")
 @click.argument('deps', nargs=-1)
 def bootstrap(context, configuration, platform, deps):
-    """Fetch & build dependencies
-    """
+    """Fetch & build dependencies."""
     with timeit('bootstrap'):
         with error_handling():
             logging.info("# Bootstrap")
@@ -116,8 +113,7 @@ def bootstrap(context, configuration, platform, deps):
 @click.option('--xcode/--no-xcode', default=True, is_flag=True, help="""Clean xcode projects.""")
 @click.option('--caches', default=False, is_flag=True, help="""Clean the global punic carthage files.""")
 def clean(context, configuration, platform, xcode, caches):
-    """Clean project & punic environment.
-    """
+    """Clean project & punic environment."""
     logging.info("# Clean")
     punic = context.obj
     if xcode:

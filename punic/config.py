@@ -30,6 +30,7 @@ class Config(object):
             'configuration': None,
             'platforms': [],
         }
+
         self.read(Path('punic.yaml'))
 
     def read(self, path):
