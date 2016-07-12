@@ -73,20 +73,24 @@ class Runner(object):
 
     def can_run(self, args):
         args = self.convert_args(args)
-        popen = subprocess.Popen(['/usr/bin/env', 'which', args[0]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return_code = popen.wait()
-        return True if return_code == 0 else False
+        result  = self.run2(['/usr/bin/env', 'which', args[0]], echo = False)
+        return True if result.return_code == 0 else False
 
-    def run2(self, command):
+    def run2(self, command, cwd = None, echo = None, cache_key = None):
         args = self.convert_args(command)
-        popen = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+        if echo == True:
+            # TODO: Wont properly reproduce command if command is a string
+            logging.info(' '.join(command))
+
+        with work_directory(cwd):
+            popen = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return_code = popen.wait()
-
         result = Result()
         result.return_code = return_code
         result.stdout = popen.stdout
         result.stderr = popen.stderr
+
         return result
 
     def run(self, *args, **kwargs):
