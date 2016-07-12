@@ -73,7 +73,7 @@ class Runner(object):
         if cache_key and self.shelf:
             key = '{}{}'.format(cache_key, ' '.join(command))
             if key in self.shelf:
-                logger.debug('CACHE HIT: {}'.format(key))
+                # logger.debug('CACHE HIT: {}'.format(key))
                 return_code, stdout, stderr = self.shelf[key]
                 result = Result()
                 result.return_code = return_code

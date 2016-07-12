@@ -1,7 +1,6 @@
 __author__ = 'Jonathan Wight <jwight@mac.com>'
 
 import shutil
-import logging
 import os
 import contextlib
 
