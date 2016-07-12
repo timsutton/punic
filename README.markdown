@@ -13,6 +13,17 @@ $ brew install python2.7 # optional - but generally easiest way to make a sane p
 $ pip install --upgrade git+https://github.com/schwa/punic.git
 ```
 
+*Update!*
+
+Punic is now python 3 compatible too (tested on python 3.5).
+
+```shell
+$ brew install python3
+$ pip3 install --upgrade git+https://github.com/schwa/punic.git
+```
+
+Note: testing primarily occurs with Python 2.7. So until punic gets continuous integration (and more unit tests) it might be safer to run Punic under Python 2.7. But go on; be daring and use Python 3.5!
+
 ## Usage
 
 Punic currently supports a subset of Carthage functionality.
@@ -55,55 +66,55 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 
 | Command/Switch                  | Status                             |
 | ---------------                 | ---------------------------------- |
-| archive                         | Unimplemented. Note 1              |
+| archive                         | Won't implement. Note 1            |
 | bootstrap                       | Implemented                        |
 | bootstrap / --configuration     | Implemented                        |
 | bootstrap / --platform          | Implemented                        |
-| bootstrap / --derived-data      | Unimplemented                      |
+| bootstrap / --derived-data      | _Unimplemented_                    |
 | bootstrap / --verbose           | Implemented                        |
-| bootstrap / --no-checkout       | Unimplemented                      |
-| bootstrap / --no-build          | Unimplemented                      |
-| bootstrap / --use-ssh           | Unimplemented                      |
-| bootstrap / --use-submodules    | Unimplemented                      |
-| bootstrap / --no-use-binaries   | Unimplemented. Note 1              |
+| bootstrap / --no-checkout       | _Unimplemented_                    |
+| bootstrap / --no-build          | _Unimplemented_                    |
+| bootstrap / --use-ssh           | _Unimplemented_                    |
+| bootstrap / --use-submodules    | _Unimplemented_                    |
+| bootstrap / --no-use-binaries   | Won't implement. Note 1            |
 | bootstrap / --color             | Implemented                        |
-| bootstrap / --project-directory | Unimplemented                      |
+| bootstrap / --project-directory | _Unimplemented_                    |
 | bootstrap / [dependencies]      | Implemented                        |
 | build                           | Implemented                        |
 | build / --configuration         | Implemented                        |
 | build / --platform              | Implemented                        |
-| build / --derived-data          | Unimplemented                      |
-| build / --no-skip-current       | Unimplemented                      |
+| build / --derived-data          | _Unimplemented_                    |
+| build / --no-skip-current       | _Unimplemented_                    |
 | build / --color                 | Implemented                        |
-| build / --project-directory     | Unimplemented                      |
-| build / [dependencies]          | Unimplemented                      |
+| build / --project-directory     | _Unimplemented_                    |
+| build / [dependencies]          | _Unimplemented_                    |
 | checkout                        | Implemented                        |
-| checkout / --use-ssh            | Unimplemented                      |
-| checkout / --use-submodules     | Unimplemented                      |
-| checkout / --no-use-binaries    | Unimplemented. Note 1              |
+| checkout / --use-ssh            | _Unimplemented_                    |
+| checkout / --use-submodules     | _Unimplemented_                    |
+| checkout / --no-use-binaries    | Won't implement. Note 1            |
 | checkout / --color              | Implemented                        |
-| checkout / --project-directory  | Unimplemented                      |
+| checkout / --project-directory  | _Unimplemented_                    |
 | checkout / [dependencies]       | Implemented                        |
-| copy-frameworks                 | Unimplemented                      |
-| fetch                           | Unimplemented                      |
-| fetch / --color                 | Unimplemented                      |
-| outdated                        | Unimplemented                      |
-| outdated / --use-ssh            | Unimplemented                      |
-| outdated / --verbose            | Implemented                        |
-| outdated / --color              | Implemented                        |
-| outdated / --project-directory  | Unimplemented                      |
+| copy-frameworks                 | _Unimplemented_                    |
+| fetch                           | _Unimplemented_                    |
+| fetch / --color                 | _Unimplemented_                    |
+| outdated                        | _Unimplemented_                    |
+| outdated / --use-ssh            | _Unimplemented_                    |
+| outdated / --verbose            | _Unimplemented_                    |
+| outdated / --color              | _Unimplemented_                    |
+| outdated / --project-directory  | _Unimplemented_                    |
 | update                          | Implemented                        |
 | update / --configuration        | Implemented                        |
 | update / --platform             | Implemented                        |
-| update / --derived-data         | Unimplemented                      |
+| update / --derived-data         | _Unimplemented_                    |
 | update / --verbose              | Implemented                        |
-| update / --no-checkout          | Unimplemented                      |
-| update / --no-build             | Unimplemented                      |
-| update / --use-ssh              | Unimplemented                      |
-| update / --use-submodules       | Unimplemented                      |
-| update / --no-use-binaries      | Unimplemented. Note 1              |
+| update / --no-checkout          | _Unimplemented_                    |
+| update / --no-build             | _Unimplemented_                    |
+| update / --use-ssh              | _Unimplemented_                    |
+| update / --use-submodules       | _Unimplemented_                    |
+| update / --no-use-binaries      | Won't implement. Note 1            |
 | update / --color                | Implemented                        |
-| update / --project-directory    | Unimplemented                      |
+| update / --project-directory    | _Unimplemented_                    |
 | update / [dependencies]         | Implemented                        |
 
 ### Notes:
