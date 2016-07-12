@@ -42,12 +42,12 @@ class Repository(object):
     def tags(self):
         """Return a list of Tag objects representing git tags. Only tags that are valid semantic versions are returned"""
         # type: () -> [Tag]
-        refs = self.repo.listall_references()
-        regex = re.compile(r'^refs/tags/(.+)')
-        refs = [ref for ref in refs if regex.match(ref)]
-        refs = [regex.match(ref).group(1) for ref in refs]
-        tags = [Revision(repository = self, revision = ref, revision_type = Revision.Type.tag) for ref in refs if SemanticVersion.is_semantic(ref)]
-        return sorted(tags)
+
+        with work_directory(self.path):
+            result = runner.run2('git tag')
+            tags = result.stdout.read().split('\n')
+            tags = [Revision(repository = self, revision = tag, revision_type = Revision.Type.tag) for tag in tags if SemanticVersion.is_semantic(tag)]
+            return sorted(tags)
 
     def checkout(self, revision):
         # type: (String)
