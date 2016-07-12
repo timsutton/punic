@@ -3,6 +3,7 @@ __author__ = 'Jonathan Wight <jwight@mac.com>'
 import shutil
 import logging
 import os
+import contextlib
 
 import click
 from pathlib2 import Path
@@ -13,6 +14,7 @@ from punic.utilities import *
 from punic.model import *
 from punic.runner import *
 from punic.config import *
+from punic.errors import *
 
 @click.group()
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
@@ -39,9 +41,10 @@ def resolve(context, fetch):
     This subcommand does not build dependencies. Use this sub-command when a dependency has changed and you just want to update `Cartfile.resolved`.
     """
     with timeit('resolve'):
-        logging.info("# Resolve")
-        punic = context.obj
-        punic.resolve(fetch = fetch)
+        with error_handling():
+            logging.info("# Resolve")
+            punic = context.obj
+            punic.resolve(fetch = fetch)
 
 
 @main.command()
@@ -51,24 +54,14 @@ def resolve(context, fetch):
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
 def update(context, configuration, platform, fetch, deps):
-    """Resolve & build dependencies.
-
-    """
-    punic = context.obj
+    """Resolve & build dependencies."""
     with timeit('update'):
-        logging.info("# Update")
-        platforms = parse_platforms(platform)
-
-        if configuration:
-            punic.config.configuration = configuration
-        if platform:
-            punic.config.platforms = parse_platforms(platform)
-        punic.config.dump()
-
-
-        punic.resolve(fetch = fetch)
-        punic.build(dependencies = deps, fetch = fetch)
-
+        with error_handling():
+            logging.info("# Update")
+            punic = context.obj
+            punic.config.update(configuration=configuration, platform=platform)
+            punic.resolve(fetch = fetch)
+            punic.build(dependencies = deps, fetch = fetch)
 
 @main.command()
 @click.pass_context
@@ -76,9 +69,10 @@ def checkout(context):
     """Checkout dependencies
     """
     with timeit('fetch'):
-        logging.info("# Checkout")
-        punic = context.obj
-        punic.fetch()
+        with error_handling():
+            logging.info("# Checkout")
+            punic = context.obj
+            punic.fetch()
 
 
 @main.command()
@@ -91,16 +85,11 @@ def build(context, configuration, platform, fetch, deps):
     """Build dependencies
     """
     with timeit('build'):
-        logging.info("# Build")
-        punic = context.obj
-
-        if configuration:
-            punic.config.configuration = configuration
-        if platform:
-            punic.config.platforms = parse_platforms(platform)
-        punic.config.dump()
-
-        punic.build(dependencies = deps, fetch = fetch)
+        with error_handling():
+            logging.info("# Build")
+            punic = context.obj
+            punic.config.update(configuration=configuration, platform=platform)
+            punic.build(dependencies = deps, fetch = fetch)
 
 
 @main.command()
@@ -112,17 +101,12 @@ def bootstrap(context, configuration, platform, deps):
     """Fetch & build dependencies
     """
     with timeit('bootstrap'):
-        logging.info("# Bootstrap")
-        punic = context.obj
-
-        if configuration:
-            punic.config.configuration = configuration
-        if platform:
-            punic.config.platforms = parse_platforms(platform)
-        punic.config.dump()
-
-        punic.fetch()
-        punic.build(dependencies = deps, fetch = True)
+        with error_handling():
+            logging.info("# Bootstrap")
+            punic = context.obj
+            punic.config.update(configuration=configuration, platform=platform)
+            punic.fetch()
+            punic.build(dependencies = deps, fetch = True)
 
 
 @main.command()
@@ -155,21 +139,22 @@ def clean(context, configuration, platform, xcode, caches):
 def graph(context, fetch):
     """Output resolved dependency graph"""
     with timeit('graph'):
-        logging.info("# Graph")
-        punic = context.obj
-        graph = punic.graph(fetch = fetch)
+        with error_handling():
+            logging.info("# Graph")
+            punic = context.obj
+            graph = punic.graph(fetch = fetch)
 
-        import networkx as nx
+            import networkx as nx
 
-        logging.info('# Writing graph file to "{}".'.format(os.getcwd()))
-        nx.drawing.nx_pydot.write_dot(graph, 'graph.dot')
+            logging.info('# Writing graph file to "{}".'.format(os.getcwd()))
+            nx.drawing.nx_pydot.write_dot(graph, 'graph.dot')
 
-        command = 'dot graph.dot -ograph.png -Tpng'
-        if runner.can_run(command):
-            logging.info('# Rendering dot file to png file.')
-            runner.run(command)
-        else:
-            logging.warning('# graphviz not installed. Cannot convert graph to a png.')
+            command = 'dot graph.dot -ograph.png -Tpng'
+            if runner.can_run(command):
+                logging.info('# Rendering dot file to png file.')
+                runner.run(command)
+            else:
+                logging.warning('# graphviz not installed. Cannot convert graph to a png.')
 
 @main.command()
 @click.pass_context
@@ -177,13 +162,11 @@ def version(context):
     """Print punic version"""
     print punic.__version__
 
-if __name__ == '__main__':
-    import sys
-    import os
-    import shlex
-
-    os.chdir('/Users/schwa/Desktop/3dr-Site-Scan-iOS')
-
-    sys.argv = shlex.split('{} --verbose bootstrap'.format(sys.argv[0]))
-
-    main()
+@contextlib.contextmanager
+def error_handling():
+    try:
+        yield
+    except RepositoryNotClonedError:
+        logging.error("# Error: No locally cloned repository found. Did you neglect to run `punic checkout` first?")
+    except:
+        raise

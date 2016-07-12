@@ -52,6 +52,12 @@ class Config(object):
         for k, v in self.defaults.items():
             logging.debug('# \t{}: {}'.format(k, v))
 
+    def update(self, configuration = None, platform = None):
+        if configuration:
+            self.configuration = configuration
+        if platform:
+            self.platforms = parse_platforms(platform)
+
     @property
     def configuration(self):
         return self.defaults['configuration']

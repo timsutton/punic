@@ -4,6 +4,7 @@ import affirm
 
 from flufl.enum import Enum
 import logging
+import contextlib
 
 from memoize import mproperty
 
@@ -11,6 +12,7 @@ from punic.utilities import *
 from punic.basic_types import *
 from punic.runner import *
 from punic.config import *
+from punic.errors import *
 
 class Repository(object):
     def __init__(self, punic, identifier, repo_path):
@@ -36,20 +38,20 @@ class Repository(object):
         """Return a list of Tag objects representing git tags. Only tags that are valid semantic versions are returned"""
         # type: () -> [Tag]
 
-        with work_directory(self.path):
+        with self.work_directory():
             result = runner.run2('git tag')
             tags = result.stdout.read().split('\n')
             tags = [Revision(repository = self, revision = tag, revision_type = Revision.Type.tag) for tag in tags if SemanticVersion.is_semantic(tag)]
             return sorted(tags)
 
     def rev_parse(self, s):
-        with work_directory(self.path):
+        with self.work_directory():
             return runner.run('git rev-parse {}'.format(s)).strip()
 
     def checkout(self, revision):
         # type: (String)
         logging.debug('# Checking out {} @ revision {}'.format(self, revision))
-        with work_directory(str(self.path)):
+        with self.work_directory():
             runner.run('git checkout {}'.format(revision))
 
     def fetch(self):
@@ -58,7 +60,7 @@ class Repository(object):
                 logging.debug('# Cloning: {}'.format(self))
                 runner.run('git clone --recursive "{}"'.format(self.identifier.remote_url))
         else:
-            with work_directory(str(self.path)):
+            with self.work_directory():
                 logging.debug('# Fetching: {}'.format(self))
                 runner.run('git fetch')
 
@@ -74,7 +76,7 @@ class Repository(object):
             cartfile.read(self.path / "Cartfile")
             specifications = cartfile.specifications
         else:
-            with work_directory(self.path):
+            with self.work_directory():
                 result = runner.run2('git show {}:Cartfile'.format(revision))
                 if result.return_code != 0:
                     specifications = []
@@ -90,6 +92,13 @@ class Repository(object):
     def revisions_for_predicate(self, predicate):
         # type: (VersionPredicate) -> [Tag]
         return [tag for tag in self.tags if predicate.test(tag.semantic_version)]
+
+    @contextlib.contextmanager
+    def work_directory(self):
+        if not self.path.exists():
+            raise RepositoryNotClonedError()
+        with work_directory(self.path):
+            yield
 
 ########################################################################################################################
 
