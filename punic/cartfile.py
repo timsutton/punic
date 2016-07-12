@@ -7,6 +7,7 @@ import re
 from pathlib2 import Path
 
 from .basic_types import *
+from .errors import *
 
 class Cartfile(object):
     def __init__(self, specifications=None):
@@ -16,6 +17,8 @@ class Cartfile(object):
         # type: (Path)
 
         if isinstance(source, Path):
+            if not source.exists():
+                raise CartfileNotFound(path = source)
             source = source.open().read()
         lines = [line.rstrip() for line in source.splitlines()]
         self.specifications = [Specification.cartfile_string(line) for line in lines if

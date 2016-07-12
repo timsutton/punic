@@ -19,6 +19,7 @@ class MyHTMLParser(HTMLParser):
         self.s = ''
 
         self.styles = {
+            'err': term.red,
             'ref': term.yellow,
             'rev': term.bold,
             'cmd': term.cyan + term.underline,
