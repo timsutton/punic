@@ -13,6 +13,7 @@ from punic.utilities import *
 from punic.model import *
 from punic.runner import *
 from punic.errors import *
+from punic.styling import *
 
 
 @click.group()
@@ -41,7 +42,7 @@ def resolve(context, fetch):
     """
     with timeit('resolve'):
         with error_handling():
-            logging.info("# Resolve")
+            logging.info(styled("<head>#</head> <command>Resolve</command>"))
             punic = context.obj
             punic.resolve(fetch=fetch)
 
