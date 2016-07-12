@@ -6,7 +6,7 @@ import shlex
 
 os.chdir('/Users/schwa/Desktop/3dr-Site-Scan-iOS')
 
-sys.argv = shlex.split('punic update --no-fetch')
+sys.argv = shlex.split('punic --verbose --echo update --no-fetch')
 
 main()
 

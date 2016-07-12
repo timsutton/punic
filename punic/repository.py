@@ -40,8 +40,8 @@ class Repository(object):
         # type: () -> [Tag]
 
         with self.work_directory():
-            result = runner.run2('git tag')
-            tags = result.stdout.read().split('\n')
+            result = runner.run('git tag', check=True)
+            tags = result.stdout.split('\n')
             tags = [Revision(repository=self, revision=tag, revision_type=Revision.Type.tag) for tag in tags if
                     SemanticVersion.is_semantic(tag)]
             return sorted(tags)
@@ -49,23 +49,24 @@ class Repository(object):
     def rev_parse(self, s):
         # type: (str) -> str
         with self.work_directory():
-            return runner.run('git rev-parse {}'.format(s)).strip()
+            result = runner.run('git rev-parse {}'.format(s), check=True)
+            return result.stdout.strip()
 
     def checkout(self, revision):
         # type: (str)
         logging.debug('# Checking out {} @ revision {}'.format(self, revision))
         with self.work_directory():
-            runner.run('git checkout {}'.format(revision))
+            runner.run('git checkout {}'.format(revision), check = True)
 
     def fetch(self):
         if not self.path.exists():
             with work_directory(str(self.path.parent)):
                 logging.debug('# Cloning: {}'.format(self))
-                runner.run('git clone --recursive "{}"'.format(self.identifier.remote_url))
+                runner.run('git clone --recursive "{}"'.format(self.identifier.remote_url), check=True)
         else:
             with self.work_directory():
                 logging.debug('# Fetching: {}'.format(self))
-                runner.run('git fetch')
+                runner.run('git fetch', check=True)
 
     def specifications_for_revision(self, revision):
         # type: (str) -> [Specification]
@@ -80,11 +81,11 @@ class Repository(object):
             specifications = cartfile.specifications
         else:
             with self.work_directory():
-                result = runner.run2('git show {}:Cartfile'.format(revision))
+                result = runner.run('git show {}:Cartfile'.format(revision))
                 if result.return_code != 0:
                     specifications = []
                 else:
-                    data = result.stdout.read()
+                    data = result.stdout
                     cartfile = Cartfile()
                     cartfile.read(data)
                     specifications = cartfile.specifications
@@ -124,7 +125,8 @@ class Revision(object):
     @mproperty
     def sha(self):
         with work_directory(self.repository.path):
-            return runner.run('git rev-parse "{}"'.format(self.revision), echo=False).strip()
+            result = runner.run('git rev-parse "{}"'.format(self.revision), echo=False, check=True)
+            return result.stdout.strip()
 
     def __repr__(self):
         return str(self.revision)
@@ -138,7 +140,7 @@ class Revision(object):
                     result = 0
                 else:
                     result = 1 if runner.result(
-                        'git merge-base --is-ancestor "{}" "{}"'.format(other.sha, self.sha)) else -1
+                        'git merge-base --is-ancestor "{}" "{}"'.format(other, self)) else -1
 
                     # TODO: just because X is not ancestor of Y doesn't mean Y is an ancestor of X
                     # if result == -1:

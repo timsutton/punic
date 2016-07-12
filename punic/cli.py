@@ -152,7 +152,7 @@ def graph(context, fetch):
             command = 'dot graph.dot -ograph.png -Tpng'
             if runner.can_run(command):
                 logging.info('# Rendering dot file to png file.')
-                runner.run(command)
+                runner.run(command, check = True)
             else:
                 logging.warning('# graphviz not installed. Cannot convert graph to a png.')
 

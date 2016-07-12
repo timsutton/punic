@@ -34,7 +34,8 @@ class XcodeProject(object):
     @mproperty
     def info(self):
         command = xcodebuild(project=self.path, command='-list')
-        output = runner.run(cache_key=self.identifier, command=command)
+        result = runner.run(cache_key=self.identifier, command=command, check = True)
+        output = result.stdout
         targets, configurations, schemes = parse_info(output)
         return targets, configurations, schemes
 
@@ -48,7 +49,8 @@ class XcodeProject(object):
             arguments = dict()
         command = xcodebuild(project=self.path, command='-showBuildSettings', scheme=scheme, target=target,
                              configuration=configuration, sdk=sdk, arguments=arguments)
-        output = runner.run(cache_key=self.identifier, command=command)
+        result = runner.run(cache_key=self.identifier, command=command, check = True)
+        output = result.stdout
         return parse_build_settings(output)
 
     def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None, temp_symroot=False):
@@ -62,7 +64,7 @@ class XcodeProject(object):
 
         command = xcodebuild(project=self.path, command='build', scheme=scheme, target=target,
                              configuration=configuration, sdk=sdk, arguments=arguments)
-        runner.run(command)
+        runner.run(command, check=True)
 
         build_settings = self.build_settings(scheme=scheme, target=target, configuration=configuration, sdk=sdk,
                                              arguments=arguments)
@@ -200,7 +202,8 @@ def parse_build_settings(string):
 
 def uuids_from_binary(path):
     command = ['/usr/bin/xcrun', 'dwarfdump', '--uuid', path]
-    output = runner.run(command)
+    result = runner.run(command, check=True)
+    output = result.stdout
     lines = output.splitlines()
     matches = [re.match(r'^UUID: ([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}) \((.+)\) (.+)$', line)
                for line in lines]

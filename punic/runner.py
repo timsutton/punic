@@ -10,7 +10,7 @@ import shelve
 from memoize import mproperty
 
 from punic.utilities import *
-
+import StringIO
 
 class Result(object):
     pass
@@ -42,27 +42,8 @@ class Runner(object):
             # TODO: Reopen
 
     def result(self, command):
-        result = self.run2(command)
+        result = self.run(command)
         return result.return_code
-
-    def run_(self, command, cwd=None, echo=None):
-        try:
-            if not cwd:
-                cwd = os.getcwd()
-            with work_directory(cwd):
-                command = self.convert_args(command)
-
-                real_echo = self.echo
-                if echo is not None:
-                    real_echo = echo
-
-                if real_echo:
-                    logging.info(' '.join(command))
-                return subprocess.check_output(command, stderr=subprocess.STDOUT)
-
-        except subprocess.CalledProcessError, e:
-            print e.output
-            raise e
 
     def convert_args(self, args):
         if isinstance(args, basestring):
@@ -73,46 +54,48 @@ class Runner(object):
 
     def can_run(self, args):
         args = self.convert_args(args)
-        result  = self.run2(['/usr/bin/env', 'which', args[0]], echo = False)
+        result  = self.run(['/usr/bin/env', 'which', args[0]], echo = False)
         return True if result.return_code == 0 else False
 
-    def run2(self, command, cwd = None, echo = None, cache_key = None):
+    def run(self, command, cwd = None, echo = None, cache_key = None, check = False):
         args = self.convert_args(command)
 
-        if echo == True:
+        if echo == True or self.echo == True:
             # TODO: Wont properly reproduce command if command is a string
-            logging.info(' '.join(command))
+            logging.info(' '.join(args))
 
-        with work_directory(cwd):
-            popen = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return_code = popen.wait()
+        if cache_key:
+            key = '{}{}'.format(cache_key, ' '.join(command))
+            if key in self.shelf:
+                logging.debug('CACHE HIT: {}'.format(key))
+                return_code, stdout, stderr = self.shelf[key]
+                result = Result()
+                result.return_code = return_code
+                result.stdout = stdout
+                result.stderr = stderr
+                return result
+
+        stdout = subprocess.PIPE
+        stderr = subprocess.PIPE if not check else subprocess.STDOUT
+
+        popen = subprocess.Popen(args, cwd = cwd, stdout=stdout, stderr=stderr)
+        stdout, stderr = popen.communicate()
+        return_code = popen.returncode
+
+        if check and return_code != 0:
+            # TODO
+            raise Exception('OOPS')
+
+        if cache_key:
+            key = '{}{}'.format(cache_key, ' '.join(command))
+            self.shelf[key] = return_code, stdout, stderr
+
         result = Result()
         result.return_code = return_code
-        result.stdout = popen.stdout
-        result.stderr = popen.stderr
+        result.stdout = stdout
+        result.stderr = stderr
 
         return result
-
-    def run(self, *args, **kwargs):
-        if 'cache_key' in kwargs and 'command' in kwargs:
-            key = kwargs['cache_key']
-            command = kwargs['command']
-
-            if 'echo' in kwargs:
-                del kwargs['echo']
-            kwargs['echo'] = self.echo
-
-            key = '{}{}'.format(key, command)
-            if key in self.shelf:
-                return self.shelf[key]
-            else:
-                del kwargs['cache_key']
-                result = self.run_(*args, **kwargs)
-                self.shelf[key] = result
-                return result
-        else:
-            result = self.run_(*args, **kwargs)
-            return result
 
 
 runner = Runner()
