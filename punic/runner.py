@@ -44,7 +44,7 @@ class Runner(object):
 
     def result(self, command):
         result = self.run2(command)
-        return result.result_code
+        return result.return_code
 
     def run_(self, command, cwd=None, echo=None):
         try:
