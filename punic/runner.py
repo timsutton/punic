@@ -1,12 +1,14 @@
 from __future__ import division, absolute_import, print_function
 
-__all__ = ['Runner', 'runner', 'Result']
+__all__ = ['Runner', 'runner', 'Result', 'CalledProcessError']
 
 import os
 import subprocess
 import shlex
 import shelve
 
+
+from subprocess import CalledProcessError
 from memoize import mproperty
 
 from .logger import *
@@ -97,9 +99,7 @@ class Runner(object):
 
         if check and return_code != 0:
             # TODO
-            print(stderr)
-            print(stdout)
-            raise Exception('OOPS')
+            raise CalledProcessError(return_code, command, stdout)
 
         if cache_key:
             key = '{}{}'.format(cache_key, ' '.join(command))

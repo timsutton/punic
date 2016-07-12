@@ -96,7 +96,14 @@ class XcodeProject(object):
             symroot = tempfile.mkdtemp()
             arguments['SYMROOT'] = symroot
 
-        self.check_call(subcommand='build', scheme=scheme, target=target, configuration=configuration, sdk=sdk, arguments=arguments)
+        try:
+            self.check_call(subcommand='build', scheme=scheme, target=target, configuration=configuration, sdk=sdk, arguments=arguments)
+        except CalledProcessError as e:
+            logger.error('<err>Error</err>: Failed to build - result code <echo>{}</echo>'.format(e.returncode))
+            logger.error('Command: <echo>{}</echo>'.format(e.cmd))
+            logger.error(e.output)
+            exit(e.returncode)
+
 
         build_settings = self.build_settings(scheme=scheme, target=target, configuration=configuration, sdk=sdk, arguments=arguments)
 
