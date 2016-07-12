@@ -197,12 +197,12 @@ class Punic(object):
             #            exit(0)
 
     def clean(self, configuration, platforms):
-        # type: (str, str) -> DiGraph
+        # type: (str, str)
+
         for platform, project, scheme in self.scheme_walker(platforms=platforms):
             for sdk in platform.sdks:
-                command = xcodebuild(project=project.path, command='clean', scheme=scheme, sdk=sdk,
-                                     configuration=configuration)
-                runner.check_run(command)
+                logger.info('<sub>Cleaning</sub>: {} {} {} {}'.format(project.path, scheme, sdk, configuration))
+                project.check_call(subcommand = 'clean', scheme=scheme, sdk=sdk, configuration=configuration)
 
     def ordered_dependencies(self, fetch=False, name_filter=None):
         # type: (bool, [str]) -> [(ProjectIdentifier, Revision)]
