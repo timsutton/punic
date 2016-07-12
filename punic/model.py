@@ -240,7 +240,7 @@ class Punic(object):
             os.symlink(str(self.build_path), str(carthage_symlink_path))
 
             def make_identifier(project_path):
-                rev = project.repo.revparse_single(revision).id
+                rev = project.rev_parse(revision)
                 identifier = '{},{}'.format(str(rev), project_path.relative_to(self.checkouts_path))
                 return identifier
 

@@ -9,30 +9,32 @@ A clean room reimplementation of (_parts_ of) the Carthage dependency manager.
 Quick install (for [homebrew](http://brew.sh) users):
 
 ```shell
-$ brew install libgit2
-$ brew install python2.7 # optional if you'd rather sudo pip install
-$ pip install --user --upgrade git+https://github.com/schwa/punic.git
+$ brew install python2.7 # optional - but generally easiest way to make a sane python setup if you're not a python expert
+$ pip install --upgrade git+https://github.com/schwa/punic.git
 ```
 
 ## Usage
 
 Punic currently supports a subset of Carthage functionality.
 
-```
+```shell
+$ punic
 Usage: punic [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  --echo
-  --verbose
+  --echo     Echo all commands to terminal.
+  --verbose  Verbose logging.
   --help     Show this message and exit.
 
 Commands:
-  bootstrap
-  build
-  checkout
-  clean
-  resolve
-  update
+  bootstrap  Fetch & build dependencies
+  build      Build dependencies
+  checkout   Checkout dependencies
+  clean      Clean project & punic environment.
+  graph      Output resolved dependency graph
+  resolve    Resolve dependencies and output...
+  update     Resolve & build dependencies.
+  version    Print punic version
 ```
 
 See https://github.com/Carthage/Carthage for usage information
@@ -58,7 +60,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | bootstrap / --configuration     | Implemented                        |
 | bootstrap / --platform          | Implemented                        |
 | bootstrap / --derived-data      | Unimplemented                      |
-| bootstrap / --verbose           | Unimplemented                      |
+| bootstrap / --verbose           | Implemented                        |
 | bootstrap / --no-checkout       | Unimplemented                      |
 | bootstrap / --no-build          | Unimplemented                      |
 | bootstrap / --use-ssh           | Unimplemented                      |
@@ -66,7 +68,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | bootstrap / --no-use-binaries   | Unimplemented. Note 1              |
 | bootstrap / --color             | Unimplemented                      |
 | bootstrap / --project-directory | Unimplemented                      |
-| bootstrap / [dependencies]      | Unimplemented                      |
+| bootstrap / [dependencies]      | Implemented                        |
 | build                           | Implemented                        |
 | build / --configuration         | Implemented                        |
 | build / --platform              | Implemented                        |
@@ -81,20 +83,20 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | checkout / --no-use-binaries    | Unimplemented. Note 1              |
 | checkout / --color              | Unimplemented                      |
 | checkout / --project-directory  | Unimplemented                      |
-| checkout / [dependencies]       | Unimplemented                      |
+| checkout / [dependencies]       | Implemented                        |
 | copy-frameworks                 | Unimplemented                      |
 | fetch                           | Unimplemented                      |
 | fetch / --color                 | Unimplemented                      |
 | outdated                        | Unimplemented                      |
 | outdated / --use-ssh            | Unimplemented                      |
-| outdated / --verbose            | Unimplemented                      |
+| outdated / --verbose            | Implemented                        |
 | outdated / --color              | Unimplemented                      |
 | outdated / --project-directory  | Unimplemented                      |
 | update                          | Implemented                        |
 | update / --configuration        | Implemented                        |
 | update / --platform             | Implemented                        |
 | update / --derived-data         | Unimplemented                      |
-| update / --verbose              | Unimplemented                      |
+| update / --verbose              | Implemented                        |
 | update / --no-checkout          | Unimplemented                      |
 | update / --no-build             | Unimplemented                      |
 | update / --use-ssh              | Unimplemented                      |
@@ -102,7 +104,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | update / --no-use-binaries      | Unimplemented. Note 1              |
 | update / --color                | Unimplemented                      |
 | update / --project-directory    | Unimplemented                      |
-| update / [dependencies]         | Unimplemented                      |
+| update / [dependencies]         | Implemented                        |
 
 ### Notes:
 

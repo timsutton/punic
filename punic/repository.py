@@ -3,10 +3,8 @@ __all__ = ['Repository', 'Revision']
 import affirm
 
 from flufl.enum import Enum
-import re
 import logging
 
-import pygit2
 from memoize import mproperty
 
 from punic.utilities import *
@@ -19,6 +17,7 @@ class Repository(object):
         self.punic = punic
         self.identifier = identifier
         self.path = repo_path
+        self.specifications_cache = dict()
 
     def __repr__(self):
         return str(self.identifier)
@@ -33,12 +32,6 @@ class Repository(object):
         return hash(self.identifier)
 
     @mproperty
-    def repo(self):
-        if not self.path.exists():
-            raise Exception("Not such path: {}".format(self.path))
-        return pygit2.Repository(str(self.path))
-
-    @mproperty
     def tags(self):
         """Return a list of Tag objects representing git tags. Only tags that are valid semantic versions are returned"""
         # type: () -> [Tag]
@@ -49,11 +42,13 @@ class Repository(object):
             tags = [Revision(repository = self, revision = tag, revision_type = Revision.Type.tag) for tag in tags if SemanticVersion.is_semantic(tag)]
             return sorted(tags)
 
+    def rev_parse(self, s):
+        with work_directory(self.path):
+            return runner.run('git rev-parse {}'.format(s)).strip()
+
     def checkout(self, revision):
         # type: (String)
         logging.debug('# Checking out {} @ revision {}'.format(self, revision))
-        #rev = self.repo.revparse_single(revision)
-        #self.repo.checkout_tree(rev, strategy=pygit2.GIT_CHECKOUT_FORCE)
         with work_directory(str(self.path)):
             runner.run('git checkout {}'.format(revision))
 
@@ -68,27 +63,29 @@ class Repository(object):
                 runner.run('git fetch')
 
     def specifications_for_revision(self, revision):
-        # type: (Revision) -> [Specification]
+        # type: (str) -> [Specification]
 
-        # logging.debug('Getting cartfile from tag {} of {}'.format(tag, self))
+        # logging.debug('Getting cartfile from revision {} of {})'.format(revision, self))
 
-        if revision == None and self == self.punic.root_project:
+        if revision in self.specifications_cache:
+            return self.specifications_cache[revision]
+        elif revision == None and self == self.punic.root_project:
             cartfile = Cartfile()
             cartfile.read(self.path / "Cartfile")
-            return cartfile.specifications
-
-        rev = self.repo.revparse_single(revision)
-        if not hasattr(rev, 'tree'):
-            rev = rev.get_object()
-        if 'Cartfile' not in rev.tree:
-            return []
+            specifications = cartfile.specifications
         else:
-#           runner.run('git show {}:Cartfile'.format(tag))
-            cartfile = rev.tree['Cartfile']
-            blob = self.repo[cartfile.id]
-            cartfile = Cartfile()
-            cartfile.read(blob.data)
-            return cartfile.specifications
+            with work_directory(self.path):
+                result = runner.run2('git show {}:Cartfile'.format(revision))
+                if result.return_code != 0:
+                    specifications = []
+                else:
+                    data = result.stdout.read()
+                    cartfile = Cartfile()
+                    cartfile.read(data)
+                    specifications = cartfile.specifications
+
+        self.specifications_cache[revision] = specifications
+        return specifications
 
     def revisions_for_predicate(self, predicate):
         # type: (VersionPredicate) -> [Tag]

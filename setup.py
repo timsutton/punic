@@ -20,7 +20,6 @@ setup(
         'networkx',
         'pathlib2',
         'pureyaml',
-        'pygit2',
         'requests',
         ],
     entry_points='''
