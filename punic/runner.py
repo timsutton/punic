@@ -1,5 +1,5 @@
 __author__ = 'Jonathan Wight <jwight@mac.com>'
-__all__ = ['CacheableRunner', 'runner']
+__all__ = ['CacheableRunner', 'runner', 'Result']
 
 import os
 import subprocess
@@ -12,7 +12,13 @@ from memoize import mproperty
 from punic.utilities import *
 
 
+class Result(object):
+    pass
+
+
 class CacheableRunner(object):
+
+
     def __init__(self, cache_path = None):
         self.cache_path = cache_path
         self.echo = False
@@ -73,6 +79,19 @@ class CacheableRunner(object):
         popen = subprocess.Popen(['/usr/bin/env', 'which', args[0]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return_code = popen.wait()
         return True if return_code == 0 else False
+
+    def run2(self, command):
+        args = self.convert_args(command)
+        popen = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        return_code = popen.wait()
+
+
+        result = Result()
+        result.return_code = return_code
+        result.stdout = popen.stdout
+        result.stderr = popen.stderr
+        return result
 
     def run(self, *args, **kwargs):
         if 'cache_key' in kwargs and 'command' in kwargs:
