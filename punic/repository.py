@@ -65,7 +65,16 @@ class Repository(object):
         if not self.path.exists():
             with work_directory(str(self.path.parent)):
                 logger.debug('<sub>Cloning</sub>: <ref>{}</ref>'.format(self))
-                runner.check_run('git clone --recursive "{}"'.format(self.identifier.remote_url))
+
+                url = self.identifier.remote_url
+                import urlparse
+                parsed_url = urlparse.urlparse(url)
+                if parsed_url.scheme == 'file':
+                    repo = parsed_url.path
+                else:
+                    repo = url
+
+                runner.check_run('git clone --recursive "{}" {}'.format(repo, str(self.path)))
         else:
             with self.work_directory():
                 logger.debug('<sub>Fetching</sub>: <ref>{}</ref>'.format(self))
