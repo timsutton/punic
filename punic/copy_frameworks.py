@@ -43,33 +43,39 @@ def copy_frameworks_main():
 
         framework_path = output_path
 
-        if not code_signing_allowed:
-            logger.info('\tCode signing not allowed. Skipping')
-            continue
-
         binary_path = framework_path / framework_name
 
-        # Find out what architectures the framework has
-        output = runner.check_call(['/usr/bin/xcrun', 'lipo', '-info', binary_path])
-        match = re.match(r'^Architectures in the fat file: (.+) are: (.+)'.format(binary_path), output)
-        assert match.groups()[0] == str(binary_path)
-        architectures = set(match.groups()[1].strip().split(' '))
-        logger.info('\tArchitectures: {}'.format(list(architectures)))
+        if code_signing_allowed:
+            # Find out what architectures the framework has
+            output = runner.check_call(['/usr/bin/xcrun', 'lipo', '-info', binary_path])
+            match = re.match(r'^Architectures in the fat file: (.+) are: (.+)'.format(binary_path), output)
+            assert match.groups()[0] == str(binary_path)
+            architectures = set(match.groups()[1].strip().split(' '))
+            logger.info('\tArchitectures: {}'.format(list(architectures)))
 
-        # Produce a list of architectures that are not valid
-        excluded_architectures = architectures.difference(valid_architectures)
+            # Produce a list of architectures that are not valid
+            excluded_architectures = architectures.difference(valid_architectures)
 
-        # Skip if all architectures are valid
-        if not excluded_architectures:
-            continue
+            # Skip if all architectures are valid
+            if not excluded_architectures:
+                continue
 
-        # For each invalid architecture strip it from framework
-        for architecture in excluded_architectures:
-            logger.info('\tStripping "{}" from "{}"'.format(architecture, framework_name))
-            output = runner.check_call(['/usr/bin/xcrun', 'lipo', '-remove', architecture, '-output', binary_path, binary_path])
+            # For each invalid architecture strip it from framework
+            for architecture in excluded_architectures:
+                logger.info('\tStripping "{}" from "{}"'.format(architecture, framework_name))
+                output = runner.check_call(['/usr/bin/xcrun', 'lipo', '-remove', architecture, '-output', binary_path, binary_path])
 
-            # Resign framework
-            logger.info('\tResigning "{}"/"{}" with "{}"'.format(framework_name, architecture, expanded_identity))
+                # Resign framework
+                logger.info('\tResigning "{}"/"{}" with "{}"'.format(framework_name, architecture, expanded_identity))
+
+            logger.info('\tCode signing: "$SYMROOT/{}"'.format(binary_path.relative_to(sym_root)))
+
+            # noinspection PyUnusedLocal
+            result = runner.check_call(['/usr/bin/xcrun', 'codesign', '--force', '--sign', expanded_identity,
+                '--preserve-metadata=identifier,entitlements', binary_path])
+        else:
+            logger.info('\tCode signing not allowed. Skipping.')
+
 
         # Copy bcsymbolmap files from $PROJECT_DIRCarthage/Buil to $BUILT_PRODUCTS_DIR
         if enable_bitcode and action == 'install':
@@ -78,11 +84,5 @@ def copy_frameworks_main():
                 bcsymbolmap_path = punic_builds_dir / (uuid + '.bcsymbolmap')
                 logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(bcsymbolmap_path.relative_to(project_dir)))
                 shutil.copy(str(bcsymbolmap_path), str(built_products_dir))
-
-        logger.info('\tCode signing: "$SYMROOT/{}"'.format(binary_path.relative_to(sym_root)))
-
-        # noinspection PyUnusedLocal
-        result = runner.check_call(['/usr/bin/xcrun', 'codesign', '--force', '--sign', expanded_identity, '--preserve-metadata=identifier,entitlements', binary_path])
-
 
 
