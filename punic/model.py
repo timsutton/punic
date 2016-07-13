@@ -7,7 +7,6 @@ import shutil
 from copy import copy
 
 from pathlib2 import Path
-import requests
 
 import punic
 from .utilities import *
@@ -52,28 +51,6 @@ class Punic(object):
         }
 
         self.root_project = self.repository_for_identifier(root_project_identifier)
-
-        try:
-            logger.debug('<sub>Checking punic version</sub>')
-            current_version, latest_version = self.versions()
-            logger.debug(
-                'Current version: <rev>{}</rev>, latest version: <rev>{}</rev>'.format(current_version, latest_version))
-            if current_version < latest_version:
-                logger.warn(
-                    'You are using version <rev>{}</rev>, version <rev>{}</rev> is available. Use <echo>`pip install -U http://github.com/schwa/punic`</echo> to update to latest version.'.format(
-                        current_version, latest_version), styled=True)
-        except requests.exceptions.ReadTimeout as e:
-            logger.debug('<error>Failed to check versions: <rev>{}</rev></error>'.format(e))
-
-    def versions(self):
-        # type: () -> (SemanticVersion, SemanticVersion)
-
-        current_version = SemanticVersion.string(punic.__version__)
-        # TODO: Is this the best URL?
-        result = requests.get('https://raw.githubusercontent.com/schwa/punic/develop/VERSION', timeout=0.3)
-        latest_version = SemanticVersion.string(result.text.strip())
-
-        return current_version, latest_version
 
     def resolve(self, fetch):
         # type: (bool)

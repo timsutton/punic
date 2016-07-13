@@ -15,6 +15,7 @@ from .runner import *
 from .errors import *
 from .config import *
 from .logger import *
+from .version_check import *
 
 @click.group()
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
@@ -34,6 +35,8 @@ def main(context, echo, verbose, color):
 
     punic = Punic()
     context.obj = punic
+
+    version_check()
 
 
 @main.command()
