@@ -114,7 +114,7 @@ class Specification(object):
         self.raw_string = None
 
     @classmethod
-    def cartfile_string(cls, string, overrides):
+    def cartfile_string(cls, string, overrides = None):
         # type: (str) -> Specification
         """
         >>> Specification.cartfile_string('github "foo/bar"')
