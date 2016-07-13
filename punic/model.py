@@ -81,10 +81,10 @@ class Punic(object):
         resolver = Resolver(punic=self, fetch=fetch)
         build_order = resolver.resolve_build_order()
 
-        for index, value in enumerate(build_order):
+        for index, value in enumerate(build_order[:-1]):
             dependency, version = value
             logger.debug(
-                '{} <ref>{}</ref> <rev>{}</rev>'.format(index + 1, dependency, version.revision if version else ''))
+                '{} <ref>{}</ref> <rev>{}</rev> <ref>{}</ref>'.format(index + 1, dependency, version.revision if version else '', dependency.remote_url))
 
         specifications = [
             Specification(identifier=dependency, predicate=VersionPredicate('"{}"'.format(version.revision))) for
