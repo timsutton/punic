@@ -5,6 +5,7 @@ __all__ = ['Resolver', 'Node']
 from collections import (defaultdict, namedtuple)
 from networkx import (DiGraph, dfs_preorder_nodes, topological_sort, number_of_nodes, number_of_edges)
 from .logger import *
+from .repository import *
 
 Node = namedtuple('Node', 'identifier version')
 
@@ -116,16 +117,23 @@ class Resolver(object):
     def resolve_versions(self, dependencies):
         # type: (ProjectIdentifier, Revision) -> [ProjectIdentifier, Tag]
         """Given an array of project identifier/version pairs work out the build order"""
+
         graph = DiGraph()
         versions_for_identifier = dict(dependencies)
         for identifier, version in dependencies:
             parent = Node(identifier, version)
             graph.add_node(parent)
-            for dependency, _ in self._dependencies_for_node(Node(identifier, version.revision)):
+
+            assert isinstance(version, Revision)
+
+            dependencies_for_node = self._dependencies_for_node(Node(identifier, version))
+
+            for dependency, _ in dependencies_for_node:
                 version = versions_for_identifier[dependency]
                 child = Node(dependency, version)
                 graph.add_edge(parent, child)
         build_order = topological_sort(graph, reverse=True)
+
         return build_order
 
     def _dependencies_for_node(self, node):

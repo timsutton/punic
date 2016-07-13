@@ -6,6 +6,7 @@ import os
 import shutil
 from copy import copy
 from pathlib2 import Path
+import affirm
 from .utilities import *
 from .xcode import *
 from .basic_types import *
@@ -56,7 +57,12 @@ class Punic(object):
         return Resolver(root = Node(self.root_project.identifier, None), dependencies_for_node = self._dependencies_for_node)
 
     def _dependencies_for_node(self, node):
-        return self.dependencies_for_project_and_tag(identifier=node.identifier, tag=node.version)
+        # print(type(node.version), node.version)
+        if not (not node.version or isinstance(node.version, Revision)):
+            logger.info("FUCK")
+        assert not node.version or isinstance(node.version, Revision)
+        dependencies = self.dependencies_for_project_and_tag(identifier=node.identifier, tag=node.version)
+        return dependencies
 
     def resolve(self):
         # type: (bool)
@@ -194,15 +200,14 @@ class Punic(object):
         cartfile = Cartfile(overrides=config.repo_overrides)
         cartfile.read(self.root_path / 'Cartfile.resolved')
 
-        def predicate_to_revision(predicate):
-            # type: (VersionPredicate) -> Revision
-
-            if predicate.operator == VersionOperator.commitish:
-                return Revision(repository=None, revision=predicate.value, revision_type=Revision.Type.other)
+        def predicate_to_revision(spec):
+            repository = self.repository_for_identifier(spec.identifier)
+            if spec.predicate.operator == VersionOperator.commitish:
+                return Revision(repository=repository, revision=spec.predicate.value, revision_type=Revision.Type.other)
             else:
                 raise Exception("Cannot convert predicate to revision: {}".format(predicate))
 
-        dependencies = [(spec.identifier, predicate_to_revision(spec.predicate)) for spec in cartfile.specifications]
+        dependencies = [(spec.identifier, predicate_to_revision(spec)) for spec in cartfile.specifications]
         resolved_dependencies = self._resolver().resolve_versions(dependencies)
         resolved_dependencies = [dependency for dependency in resolved_dependencies if
             dependency[0].matches(name_filter)]
@@ -290,7 +295,10 @@ class Punic(object):
             return repository
 
     def dependencies_for_project_and_tag(self, identifier, tag):
-        # type: (ProjectIdentifier, Revision, bool) -> [ProjectIdentifier, [Revision]]
+        # type: (ProjectIdentifier, Revision) -> [ProjectIdentifier, [Revision]]
+
+        assert isinstance(identifier, ProjectIdentifier)
+        assert not tag or isinstance(tag, Revision)
 
         repository = self.repository_for_identifier(identifier, fetch=self.can_fetch)
         specifications = repository.specifications_for_revision(tag)
@@ -298,12 +306,9 @@ class Punic(object):
         def make(specification):
             repository = self.repository_for_identifier(specification.identifier, fetch=self.can_fetch)
             tags = repository.revisions_for_predicate(specification.predicate)
-
             if specification.predicate.operator == VersionOperator.commitish:
-                tags.append(Revision(repository=repository, revision=specification.predicate.value,
-                    revision_type=Revision.Type.other))
+                tags.append(Revision(repository=repository, revision=specification.predicate.value, revision_type=Revision.Type.other))
                 tags.sort()
-
             assert len(tags)
             return repository.identifier, tags
 

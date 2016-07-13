@@ -42,6 +42,19 @@ def main(context, echo, verbose, color):
 
 @main.command()
 @click.pass_context
+def checkout(context):
+    """Checkout dependencies."""
+    with timeit('fetch'):
+        with error_handling():
+            logger.info("<cmd>Checkout</cmd>")
+            punic = context.obj
+            punic.can_fetch = True # obviously
+            punic.fetch()
+
+
+
+@main.command()
+@click.pass_context
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 def resolve(context, fetch):
     """Resolve dependencies and output `Carthage.resolved` file.
@@ -61,6 +74,24 @@ def resolve(context, fetch):
 @click.option('--configuration', default=None,
     help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
+@click.argument('deps', nargs=-1)
+def build(context, configuration, platform, deps):
+    """Build dependencies."""
+    with timeit('build'):
+        with error_handling():
+            logger.info("<cmd>Build</cmd>")
+            punic = context.obj
+            punic.config.update(configuration=configuration, platform=platform)
+
+            punic.can_fetch = False
+            punic.build(dependencies=deps)
+
+
+@main.command()
+@click.pass_context
+@click.option('--configuration', default=None,
+    help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
 def update(context, configuration, platform, fetch, deps):
@@ -70,38 +101,12 @@ def update(context, configuration, platform, fetch, deps):
             logger.info("<cmd>Update</cmd>")
             punic = context.obj
             punic.config.update(configuration=configuration, platform=platform)
+
             punic.can_fetch = fetch
             punic.resolve()
             punic.build(dependencies=deps)
 
 
-@main.command()
-@click.pass_context
-def checkout(context):
-    """Checkout dependencies."""
-    with timeit('fetch'):
-        with error_handling():
-            logger.info("<cmd>Checkout</cmd>")
-            punic = context.obj
-            punic.can_fetch = True # obviously
-            punic.fetch()
-
-
-@main.command()
-@click.pass_context
-@click.option('--configuration', default=None,
-    help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
-@click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
-@click.argument('deps', nargs=-1)
-def build(context, configuration, platform, deps):
-    """Build dependencies."""
-    with timeit('build'):
-        with error_handling():
-            logger.info("<cmd>Build</cmd>")
-            punic = context.obj
-            punic.can_fetch = False
-            punic.config.update(configuration=configuration, platform=platform)
-            punic.build(dependencies=deps)
 
 
 @main.command()

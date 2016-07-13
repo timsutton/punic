@@ -8,6 +8,7 @@ import contextlib
 import functools
 import hashlib
 import affirm
+import six
 from memoize import mproperty
 from .utilities import *
 from .runner import *
@@ -90,7 +91,9 @@ class Repository(object):
                 runner.check_run('git fetch')
 
     def specifications_for_revision(self, revision):
-        # type: (str) -> [Specification]
+        # type: (Revision) -> [Specification]
+
+        assert not revision or isinstance(revision, Revision)
 
         # logger.debug('Getting cartfile from revision {} of {})'.format(revision, self))
 
@@ -137,6 +140,10 @@ class Revision(object):
         other = 'other'
 
     def __init__(self, repository, revision, revision_type):
+        assert isinstance(repository, Repository)
+        assert isinstance(revision, six.string_types)
+#        assert isinstance(revision_type, Revision.Type) # TODO: This doesn't work.
+
         self.repository = repository
         self.revision = revision
         self.revision_type = revision_type
@@ -145,6 +152,7 @@ class Revision(object):
 
     @mproperty
     def sha(self):
+        assert self.repository
         with work_directory(self.repository.path):
             output = runner.check_run('git rev-parse "{}"'.format(self.revision), echo=False)
             return output.strip()
@@ -153,10 +161,14 @@ class Revision(object):
         return str(self.revision)
 
     def __eq__(self, other):
-        if self.semantic_version and other.semantic_version and not Revision.always_use_is_ancestor:
-            return self.semantic_version == other.semantic_version
-        else:
-            return self.sha == other.sha
+        try:
+            if self.semantic_version and other.semantic_version and not Revision.always_use_is_ancestor:
+                return self.semantic_version == other.semantic_version
+            else:
+                return self.sha == other.sha
+        except:
+            logger.error(self.repository)
+            raise
 
     # see: https://bugs.python.org/issue25732
     def __ne__(self, other):
