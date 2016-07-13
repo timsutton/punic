@@ -2,17 +2,14 @@ from __future__ import division, absolute_import, print_function
 
 __all__ = ['Repository', 'Revision']
 
-import affirm
 
 from flufl.enum import Enum
 import contextlib
-import shutil
 import functools
-
+import hashlib
+import affirm
 from memoize import mproperty
-
 from .utilities import *
-from .basic_types import *
 from .runner import *
 from .config import *
 from .errors import *
@@ -20,10 +17,9 @@ from .logger import *
 from .cartfile import *
 from .semantic_version import *
 
-import hashlib
 
 class Repository(object):
-    def __init__(self, punic, identifier, repo_path = None):
+    def __init__(self, punic, identifier, repo_path=None):
         self.punic = punic
         self.identifier = identifier
         if repo_path:
@@ -55,7 +51,7 @@ class Repository(object):
             output = runner.check_run('git tag')
             tags = output.split('\n')
             tags = [Revision(repository=self, revision=tag, revision_type=Revision.Type.tag) for tag in tags if
-                    SemanticVersion.is_semantic(tag)]
+                SemanticVersion.is_semantic(tag)]
             return sorted(tags)
 
     def rev_parse(self, s):
@@ -70,7 +66,7 @@ class Repository(object):
         with self.work_directory():
             try:
                 runner.check_run('git checkout {}'.format(revision))
-            except Exception as e:
+            except Exception:
                 raise NoSuchRevision(repository=self, revision=revision)
 
     def fetch(self):
@@ -101,7 +97,7 @@ class Repository(object):
         if revision in self.specifications_cache:
             return self.specifications_cache[revision]
         elif revision is None and self == self.punic.root_project:
-            cartfile = Cartfile(overrides = config.repo_overrides)
+            cartfile = Cartfile(overrides=config.repo_overrides)
             cartfile.read(self.path / 'Cartfile')
             specifications = cartfile.specifications
         else:
@@ -111,7 +107,7 @@ class Repository(object):
                     specifications = []
                 else:
                     data = result.stdout
-                    cartfile = Cartfile(overrides = config.repo_overrides)
+                    cartfile = Cartfile(overrides=config.repo_overrides)
                     cartfile.read(data)
                     specifications = cartfile.specifications
 
@@ -145,7 +141,7 @@ class Revision(object):
         self.revision = revision
         self.revision_type = revision_type
         self.semantic_version = (
-        SemanticVersion.string(self.revision) if self.revision_type == Revision.Type.tag else None)
+            SemanticVersion.string(self.revision) if self.revision_type == Revision.Type.tag else None)
 
     @mproperty
     def sha(self):
@@ -157,7 +153,7 @@ class Revision(object):
         return str(self.revision)
 
     def __eq__(self, other):
-        if self.semantic_version and other.semantic_version and Revision.always_use_is_ancestor == False:
+        if self.semantic_version and other.semantic_version and not Revision.always_use_is_ancestor:
             return self.semantic_version == other.semantic_version
         else:
             return self.sha == other.sha
@@ -167,7 +163,7 @@ class Revision(object):
         return not (self == other)
 
     def __lt__(self, other):
-        if self.semantic_version and other.semantic_version and Revision.always_use_is_ancestor == False:
+        if self.semantic_version and other.semantic_version and not Revision.always_use_is_ancestor:
             return self.semantic_version < other.semantic_version
         else:
             with work_directory(self.repository.path):

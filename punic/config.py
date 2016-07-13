@@ -4,10 +4,8 @@ __all__ = ['Config', 'config']
 
 from pathlib2 import Path
 import pureyaml
-
 from .basic_types import *
 from .logger import *
-from .semantic_version import *
 
 
 class Config(object):

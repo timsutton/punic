@@ -5,13 +5,13 @@ __all__ = ['work_directory', 'timeit']
 import contextlib
 import os
 import time
-
 from .logger import *
 
 
 @contextlib.contextmanager
 def work_directory(path):
     # type: (Union[Path, None])
+    saved_wd = None
     if path:
         path = str(path)
         saved_wd = os.getcwd()
@@ -21,7 +21,7 @@ def work_directory(path):
     except:
         raise
     finally:
-        if path:
+        if saved_wd:
             os.chdir(saved_wd)
 
 

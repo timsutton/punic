@@ -1,19 +1,19 @@
 from __future__ import division, absolute_import, print_function
 
-import shutil
-import os
 import contextlib
-
+import logging
+import os
+import shutil
+import sys
 import click
-
 import punic
 from .basic_types import *
-from .utilities import *
+from .errors import *
+from .logger import *
 from .model import *
 from .runner import *
-from .errors import *
-from .config import *
-from .logger import *
+from .semantic_version import *
+from .utilities import *
 from .version_check import *
 
 
@@ -170,14 +170,24 @@ def graph(context, fetch):
 @click.pass_context
 def version(context):
     """Print punic version"""
-    print(punic.__version__)
+    logger.info('Punic version: {}'.format(punic.__version__), prefix = False)
 
+    sys_version = sys.version_info
+    sys_version = SemanticVersion.from_dict(dict(
+        major = sys_version.major,
+        minor = sys_version.minor,
+        micro = sys_version.micro,
+        releaselevel = sys_version.releaselevel,
+        serial = sys_version.serial,
+    ))
 
+    logger.info('Python version: {}'.format(sys_version), prefix=False)
+    version_check(verbose = True, timeout = None, failure_is_an_option=False)
 @contextlib.contextmanager
 def error_handling():
     try:
         yield
-    except RepositoryNotClonedError as e:
+    except RepositoryNotClonedError:
         logger.error('Error: No locally cloned repository found. Did you neglect to run `punic checkout` first?')
     except CartfileNotFound as e:
         logger.error('<err>Error</err>: No Cartfile found at path: <ref>{}</ref>'.format(e.path))

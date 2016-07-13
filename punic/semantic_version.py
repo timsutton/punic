@@ -1,9 +1,9 @@
 from __future__ import division, absolute_import, print_function
 
+__all__ = ['SemanticVersion']
+
 import re
 from functools import total_ordering
-
-__all__ = ['SemanticVersion']
 
 
 # TODO: Doesn't support full http://semvar.org spec
@@ -64,6 +64,21 @@ class SemanticVersion(object):
 
     def __hash__(self):
         return hash(self.major * 1000000) ^ hash(self.minor * 10000) ^ hash(self.patch * 100)
+
+
+    @classmethod
+    def from_dict(cls, d):
+
+
+
+        if set(d.keys()).issubset(set(['major', 'minor', 'micro', 'releaselevel', 'serial'])):
+            return SemanticVersion(
+                major = d.get('major'),
+                minor = d.get('minor'),
+                patch = d.get('micro')
+            )
+
+        pass
 
     @classmethod
     def string(cls, s):

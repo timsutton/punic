@@ -3,9 +3,7 @@ from __future__ import division, absolute_import, print_function
 __all__ = ['Cartfile']
 
 import re
-
 from pathlib2 import Path
-
 from .basic_types import *
 from .errors import *
 

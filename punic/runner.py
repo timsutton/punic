@@ -5,16 +5,17 @@ __all__ = ['Runner', 'runner', 'Result', 'CalledProcessError']
 import subprocess
 import shlex
 import shelve
-
 from subprocess import CalledProcessError
 from memoize import mproperty
 import six
-
 from .logger import *
 
 
 class Result(object):
-    pass
+    def __init__(self):
+        self.return_code = None
+        self.stdout = None
+        self.stderr = None
 
 
 class Runner(object):
@@ -68,7 +69,7 @@ class Runner(object):
     def run(self, command, cwd=None, echo=None, cache_key=None, check=False, env=None):
         args = self.convert_args(command)
 
-        if echo == True or self.echo == True:
+        if echo or self.echo:
             # TODO: Wont properly reproduce command if command is a string
             logger.echo(' '.join(args))
 

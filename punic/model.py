@@ -5,10 +5,7 @@ __all__ = ['Punic']
 import os
 import shutil
 from copy import copy
-
 from pathlib2 import Path
-
-import punic
 from .utilities import *
 from .xcode import *
 from .basic_types import *
@@ -18,7 +15,6 @@ from .config import *
 from .repository import *
 from .logger import *
 from .cartfile import *
-from .semantic_version import *
 
 
 ########################################################################################################################
@@ -279,7 +275,6 @@ class Punic(object):
         if identifier in self.all_repositories:
             return self.all_repositories[identifier]
         else:
-            path = self.repo_cache_directory / identifier.project_name
             repository = Repository(self, identifier=identifier)
             if fetch:
                 repository.fetch()

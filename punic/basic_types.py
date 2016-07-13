@@ -1,23 +1,22 @@
 from __future__ import division, absolute_import, print_function
 
-__all__ = ['Specification', 'Platform', 'ProjectIdentifier',
-    'VersionOperator', 'VersionPredicate', 'parse_platforms']
-
 import re
 import functools
-
 from pathlib2 import Path
 from memoize import mproperty
 from flufl.enum import Enum
 import six
-
 from .logger import *
 
 # Ideally we could six.urllib but this causes problem with nosetests!
 if six.PY2:
     import urlparse
 elif six.PY3:
-    import urllib.urlparse as urlparse
+    import urllib.parse as urlparse
+
+__all__ = ['Specification', 'Platform', 'ProjectIdentifier',
+    'VersionOperator', 'VersionPredicate', 'parse_platforms']
+
 
 # TODO: Doesn't support full http://semvar.org spec
 @functools.total_ordering
@@ -303,6 +302,9 @@ class VersionPredicate(object):
 
 
 class Platform(object):
+
+    all = []
+
     def __init__(self, name, nickname, sdks, output_directory_name):
         self.name = name
         self.nickname = nickname

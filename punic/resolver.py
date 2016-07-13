@@ -3,9 +3,7 @@ from __future__ import division, absolute_import, print_function
 __all__ = ['Resolver']
 
 from collections import defaultdict
-
 from networkx import (DiGraph, dfs_preorder_nodes, topological_sort, number_of_nodes, number_of_edges)
-
 from .logger import *
 
 

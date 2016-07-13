@@ -3,12 +3,8 @@ from __future__ import division, absolute_import, print_function
 __all__ = ['Xcode', 'XcodeProject', 'uuids_from_binary', 'BuildProduct']
 
 import re
-import shlex
-import tempfile
-
 from pathlib2 import Path
 from memoize import mproperty
-
 from .runner import *
 from .logger import *
 from .semantic_version import *
@@ -44,12 +40,14 @@ class Xcode(object):
         match = re.match(r'^Xcode (?P<version>.+)\nBuild version (?P<build>.+)', output)
         return SemanticVersion.string(match.groupdict()['version'])
 
+    # noinspection PyMethodMayBeStatic
     def call(self, command, **kwargs):
         command = runner.convert_args(command)
         command = ['/usr/bin/xcrun'] + command
         result = runner.run(command, **kwargs)
         return result
 
+    # noinspection PyMethodMayBeStatic
     def check_call(self, command, **kwargs):
         command = runner.convert_args(command)
         command = ['/usr/bin/xcrun'] + command
