@@ -6,17 +6,16 @@ from six.moves.html_parser import HTMLParser
 
 from blessings import Terminal
 
-# from .config import config
-
 term = Terminal()
 
 
 # create a subclass and override the handler methods
 class MyHTMLParser(HTMLParser):
-    def __init__(self):
+    def __init__(self, styled):
         HTMLParser.__init__(self)
 
         self.s = ''
+        self.styled = styled
 
         self.styles = {
             'err': term.red,
@@ -38,7 +37,7 @@ class MyHTMLParser(HTMLParser):
             self.style_stack.pop()
 
     def handle_data(self, data):
-        if enabled:
+        if self.styled:
             self.apply()
         self.s += data
 
@@ -47,12 +46,8 @@ class MyHTMLParser(HTMLParser):
         for style in set(self.style_stack):
             self.s += style
 
-# TODO: This is crap. Stop exposing it. Maybe put into logger instead?
-enabled = True
-
-
-def styled(s):
-    parser = MyHTMLParser()
+def styled(s, styled):
+    parser = MyHTMLParser(styled = styled)
     parser.feed(s)
     return parser.s + term.normal
 

@@ -16,7 +16,6 @@ class Config(object):
             'configuration': None,
             'platforms': [],
         }
-        self.color = False
         self.xcode = None
         self.repo_overrides = dict()
 

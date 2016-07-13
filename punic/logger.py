@@ -7,10 +7,10 @@ import punic.styling
 
 class Logger(object):
     def __init__(self):
-        pass
+        self.color = True
 
     def log(self, level, msg):
-        msg = punic.styling.styled('<echo>#</echo> {}'.format(msg))
+        msg = punic.styling.styled('<echo>#</echo> {}'.format(msg), styled = self.color)
         logging.log(level, msg)
 
     def verbose(self, msg):

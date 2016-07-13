@@ -31,7 +31,7 @@ def main(context, echo, verbose, color):
     requests_log.setLevel(logging.WARNING)
     requests_log.propagate = True
 
-    config.color = color
+    logger.color = color
 
     punic = Punic()
     context.obj = punic
