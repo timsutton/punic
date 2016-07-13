@@ -214,7 +214,7 @@ class Punic(object):
         for (identifier, revision) in dependencies:
             project = self.repository_for_identifier(identifier)
             revision = revision.revision
-            checkout_path = self.checkouts_path / project.path.name
+            checkout_path = self.checkouts_path / identifier.project_name
 
             if fetch:
                 project.checkout(revision)
