@@ -21,7 +21,7 @@ class Resolver(object):
         def populate_graph(graph, parent, depth=0):
             graph.add_node(parent)
 
-            for child_identifier, child_versions in self.dependencies_for_node(Node(parent.identifier, parent.version.revision if parent.version else None)):
+            for child_identifier, child_versions in self.dependencies_for_node(parent):
                 for child_version in child_versions:
                     child = Node(child_identifier, child_version)
                     if dependency_filter and dependency_filter(child.identifier, child.version) == False:
