@@ -30,4 +30,4 @@ def timeit(task=None):
     start = time.time()
     yield
     end = time.time()
-    logger.debug('{} {}'.format(task if task else '<unnamed task>', end - start))
+    logger.debug('Task \'<sub>{}</sub>\' took <echo>{:.6f}</echo> seconds.'.format(task if task else '<unnamed task>', end - start))

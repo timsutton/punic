@@ -68,7 +68,10 @@ class Repository(object):
         # type: (str)
         logger.debug('Checking out <ref>{}</ref> @ revision <rev>{}</rev>'.format(self, revision))
         with self.work_directory():
-            runner.check_run('git checkout {}'.format(revision))
+            try:
+                runner.check_run('git checkout {}'.format(revision))
+            except Exception as e:
+                raise NoSuchRevision(repository=self, revision=revision)
 
     def fetch(self):
 
