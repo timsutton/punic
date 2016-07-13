@@ -2,23 +2,17 @@ from __future__ import division, absolute_import, print_function
 
 __all__ = ['Resolver']
 
-from collections import defaultdict
+from collections import (defaultdict, namedtuple)
 from networkx import (DiGraph, dfs_preorder_nodes, topological_sort, number_of_nodes, number_of_edges)
 from .logger import *
 
-
-def dump(stream, graph, node, depth=0):
-    count = len(graph.predecessors(node))
-
-    stream.write("{}{} {}\n".format('\t' * depth, node, count))
-    for child in sorted(graph[node].keys()):
-        dump(stream, graph, child, depth + 1)
+Node = namedtuple('Node', 'identifier version')
 
 
 class Resolver(object):
     def __init__(self, punic, fetch=True):
         self.punic = punic
-        self.root = (self.punic.root_project.identifier, None)
+        self.root = Node(self.punic.root_project.identifier, None)
         self.fetch = fetch
 
     def build_graph(self, dependency_filter=None):
@@ -26,14 +20,13 @@ class Resolver(object):
 
         # TODO: Probably don't need to pass dependency_filter to populate_graph
         def populate_graph(graph, parent, parent_version, depth=0):
-            graph.add_node((parent, parent_version))
-            for child, child_versions in self.punic.dependencies_for_project_and_tag(parent,
-                    parent_version.revision if parent_version else None,
-                    fetch=self.fetch):
+            graph.add_node(Node(parent, parent_version))
+
+            for child, child_versions in self.dependencies_for_node(Node(parent, parent_version.revision if parent_version else None)):
                 for child_version in child_versions:
                     if dependency_filter and dependency_filter(child, child_version) == False:
                         continue
-                    graph.add_edge((parent, parent_version), (child, child_version))
+                    graph.add_edge(Node(parent, parent_version), Node(child, child_version))
                     populate_graph(graph, child, child_version, depth=depth + 1)
 
         graph = DiGraph()
@@ -42,8 +35,8 @@ class Resolver(object):
 
     def resolve(self):
         # type: () -> DiGraph
-        for dependency, revisions in self.punic.dependencies_for_project_and_tag(self.punic.root_project.identifier,
-                None, fetch=self.fetch):
+
+        for dependency, revisions in self.dependencies_for_node(self.root):
             logger.debug('<ref>{}</ref> <rev>{}</rev>'.format(dependency, revisions))
 
         logger.debug('Building universal graph')
@@ -65,8 +58,8 @@ class Resolver(object):
                 if len(versions) <= 1:
                     continue
                 for version in sorted(versions):
-                    if len(graph.predecessors((dependency, version))) <= 1:
-                        graph.remove_node((dependency, version))
+                    if len(graph.predecessors(Node(dependency, version))) <= 1:
+                        graph.remove_node(Node(dependency, version))
                         all_dependencies[dependency].remove(version)
                     if len(versions) <= 1:
                         break
@@ -80,7 +73,7 @@ class Resolver(object):
                     some = all_dependencies[dependency]
                     difference = some.difference(versions)
                     for version in difference:
-                        graph.remove_node((dependency, version))
+                        graph.remove_node(Node(dependency, version))
                         all_dependencies[dependency].remove(version)
                 for successor in graph.successors(node):
                     prune(successor)
@@ -126,12 +119,25 @@ class Resolver(object):
         graph = DiGraph()
         versions_for_identifier = dict(dependencies)
         for identifier, version in dependencies:
-            parent = (identifier, version)
+            parent = Node(identifier, version)
             graph.add_node(parent)
-            for dependency, _ in self.punic.dependencies_for_project_and_tag(identifier=identifier,
-                    tag=version.revision, fetch=fetch):
+            for dependency, _ in self.dependencies_for_node(Node(identifier, version.revision), fetch = fetch):
                 version = versions_for_identifier[dependency]
-                child = (dependency, version)
+                child = Node(dependency, version)
                 graph.add_edge(parent, child)
         build_order = topological_sort(graph, reverse=True)
         return build_order
+
+    def dependencies_for_node(self, node, fetch = None):
+        # type: (Edge, bool) -> [Any, [Any]]
+        if fetch is None:
+            fetch = self.fetch
+
+        return self.punic.dependencies_for_project_and_tag(identifier=node.identifier, tag=node.version, fetch=fetch)
+
+def dump(stream, graph, node, depth=0):
+    count = len(graph.predecessors(node))
+
+    stream.write("{}{} {}\n".format('\t' * depth, node, count))
+    for child in sorted(graph[node].keys()):
+        dump(stream, graph, child, depth + 1)
