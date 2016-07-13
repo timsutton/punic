@@ -52,7 +52,7 @@ class Punic(object):
 
     def resolve(self, fetch):
         # type: (bool)
-        resolver = Resolver(punic=self, fetch=fetch)
+        resolver = Resolver(punic=self, root_identifier=self.root_project.identifier, fetch=fetch)
         build_order = resolver.resolve_build_order()
 
         for index, value in enumerate(build_order[:-1]):
@@ -71,7 +71,7 @@ class Punic(object):
 
     def graph(self, fetch=True):
         # type: (bool) -> DiGraph
-        resolver = Resolver(punic=self, fetch=fetch)
+        resolver = Resolver(punic=self, root_identifier=self.root_project.identifier, fetch=fetch)
         return resolver.resolve()
 
     def fetch(self):
@@ -195,8 +195,8 @@ class Punic(object):
                 raise Exception("Cannot convert predicate to revision: {}".format(predicate))
 
         dependencies = [(spec.identifier, predicate_to_revision(spec.predicate)) for spec in cartfile.specifications]
-        resolver = Resolver(self)
-        resolved_dependencies = resolver.resolve_versions(dependencies, fetch=fetch)
+        resolver = Resolver(punic = self, root_identifier=self.root_project.identifier, fetch = fetch)
+        resolved_dependencies = resolver.resolve_versions(dependencies)
         resolved_dependencies = [dependency for dependency in resolved_dependencies if
             dependency[0].matches(name_filter)]
         return resolved_dependencies

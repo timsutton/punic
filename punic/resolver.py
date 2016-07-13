@@ -10,9 +10,9 @@ Node = namedtuple('Node', 'identifier version')
 
 
 class Resolver(object):
-    def __init__(self, punic, fetch=True):
+    def __init__(self, punic, root_identifier, fetch=True):
         self.punic = punic
-        self.root = Node(self.punic.root_project.identifier, None)
+        self.root = Node(root_identifier, None)
         self.fetch = fetch
 
     def build_graph(self, dependency_filter=None):
@@ -113,7 +113,7 @@ class Resolver(object):
         build_order = topological_sort(graph, reverse=True)
         return build_order
 
-    def resolve_versions(self, dependencies, fetch=False):
+    def resolve_versions(self, dependencies):
         # type: (ProjectIdentifier, Revision) -> [ProjectIdentifier, Tag]
         """Given an array of project identifier/version pairs work out the build order"""
         graph = DiGraph()
@@ -121,19 +121,17 @@ class Resolver(object):
         for identifier, version in dependencies:
             parent = Node(identifier, version)
             graph.add_node(parent)
-            for dependency, _ in self.dependencies_for_node(Node(identifier, version.revision), fetch = fetch):
+            for dependency, _ in self.dependencies_for_node(Node(identifier, version.revision)):
                 version = versions_for_identifier[dependency]
                 child = Node(dependency, version)
                 graph.add_edge(parent, child)
         build_order = topological_sort(graph, reverse=True)
         return build_order
 
-    def dependencies_for_node(self, node, fetch = None):
+    def dependencies_for_node(self, node):
         # type: (Edge, bool) -> [Any, [Any]]
-        if fetch is None:
-            fetch = self.fetch
 
-        return self.punic.dependencies_for_project_and_tag(identifier=node.identifier, tag=node.version, fetch=fetch)
+        return self.punic.dependencies_for_project_and_tag(identifier=node.identifier, tag=node.version, fetch=self.fetch)
 
 def dump(stream, graph, node, depth=0):
     count = len(graph.predecessors(node))
