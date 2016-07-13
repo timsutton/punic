@@ -23,11 +23,23 @@ __all__ = ['Specification', 'Platform', 'ProjectIdentifier',
 class SemanticVersion(object):
     @classmethod
     def is_semantic(cls, s):
+        """
+        >>> SemanticVersion.is_semantic("1.0")
+        True
+        >>> SemanticVersion.is_semantic("x.0")
+        False
+        """
         # type: (str) -> bool
         match = re.match('(?:v)?(\d+)(?:\.(\d+)(?:\.(\d+))?)?', s)
         return True if match else False
 
     def __init__(self, major, minor, patch=None, identifiers=None):
+        """
+        >>> SemanticVersion(1, 0)
+        1.0
+        >>> SemanticVersion(1, 0, 0)
+        1.0
+        """
         self.major = major if major else 0
         self.minor = minor if minor else 0
         self.patch = patch if patch else 0
@@ -41,6 +53,10 @@ class SemanticVersion(object):
     @property
     def components(self):
         return [self.major, self.minor, self.patch]
+        """
+        >>> SemanticVersion(1, 2, 3).components
+        (1, 2, 3)
+        """
 
     def __repr__(self):
         components = [self.major, self.minor] + ([self.patch] if self.patch else [])
@@ -103,6 +119,10 @@ class SemanticVersion(object):
 
     @property
     def next_major(self):
+        """
+        >>> SemanticVersion.string('1.2').next_major
+        2.0
+        """
         # type: () -> SemanticVersion
         return SemanticVersion(major=self.major + 1, minor=0, patch=0)
 
@@ -153,7 +173,7 @@ class Specification(object):
     def __repr__(self):
         return 'github "{identifier}" {predicate}'.format(**self.__dict__).strip()
 
-
+#@functools.total_ordering
 class ProjectIdentifier(object):
     @classmethod
     def string(cls, string, overrides=None):
@@ -211,12 +231,33 @@ class ProjectIdentifier(object):
         return self.identifier
 
     def __eq__(self, other):
+        """
+        >>> ProjectIdentifier.string('github "foo/bar"') == ProjectIdentifier.string('github "foo/bar"')
+        True
+        """
         return self.identifier == other.identifier
 
+    def __ne__(self, other):
+        """
+        >>> ProjectIdentifier.string('github "foo/bar"') != ProjectIdentifier.string('github "foo/bar2"')
+        True
+        """
+        return not (self == other)
+
     def __lt__(self, other):
+        """
+        >>> ProjectIdentifier.string('github "foo/bar"') < ProjectIdentifier.string('github "foo/bar2"')
+        True
+        """
         return self.identifier < other.identifier
 
     def __hash__(self):
+        """
+        >>> hash(ProjectIdentifier.string('github "foo/bar"')) == hash(ProjectIdentifier.string('github "foo/bar"'))
+        True
+        >>> hash(ProjectIdentifier.string('github "foo/bar"')) != hash(ProjectIdentifier.string('github "foo/bar2"'))
+        True
+        """
         return hash(self.identifier)
 
     def matches(self, name_filter=None):
