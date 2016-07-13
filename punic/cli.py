@@ -36,7 +36,8 @@ def main(context, echo, verbose, color):
     punic = Punic()
     context.obj = punic
 
-    version_check()
+    # Dont do this here. use `punic version`
+    # version_check()
 
 
 @main.command()
