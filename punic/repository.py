@@ -6,6 +6,7 @@ import affirm
 
 from flufl.enum import Enum
 import contextlib
+import functools
 
 from memoize import mproperty
 
@@ -110,6 +111,7 @@ class Repository(object):
 ########################################################################################################################
 
 
+@functools.total_ordering
 class Revision(object):
     always_use_is_ancestor = False
 
@@ -133,21 +135,27 @@ class Revision(object):
     def __repr__(self):
         return str(self.revision)
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
         if self.semantic_version and other.semantic_version and Revision.always_use_is_ancestor == False:
-            return cmp(self.semantic_version, other.semantic_version)
+            return self.semantic_version == other.semantic_version
+        else:
+            return self.sha == other.sha
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __lt__(self, other):
+        if self.semantic_version and other.semantic_version and Revision.always_use_is_ancestor == False:
+            return self.semantic_version < other.semantic_version
         else:
             with work_directory(self.repository.path):
-                if self.sha == other.sha:
-                    result = 0
+                result = runner.run('git merge-base --is-ancestor "{}" "{}"'.format(other, self))
+                if result.return_code == 0:
+                    return False
+                if result.return_code == 1:
+                    return True
                 else:
-                    result = 1 if runner.result(
-                        'git merge-base --is-ancestor "{}" "{}"'.format(other, self)) else -1
-
-                    # TODO: just because X is not ancestor of Y doesn't mean Y is an ancestor of X
-                    # if result == -1:
-                    #     assert runner.result('git merge-base --is-ancestor "{}" "{}"'.format(self, other))
-                return result
+                    raise Exception('git merge-base returned {}'.format(result.return_code))
 
     def __hash__(self):
         return hash(self.revision)
