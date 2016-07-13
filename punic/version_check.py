@@ -25,6 +25,11 @@ def version_check(verbose = False, timeout=0.3, failure_is_an_option=True):
             logger.warn("""You are using version <rev>{}</rev>, version <rev>{}</rev> is available.
             Use <echo>`pip install -U http://github.com/schwa/punic`</echo> to update to latest version.""".format(
                 current_version, latest_version), styled=True)
+    # TODO: Duplicated code
+    except requests.exceptions.ReadTimeout as e:
+        logger.debug('<error>Failed to check versions')
+        if not failure_is_an_option:
+            raise e
     except requests.exceptions.ConnectTimeout as e:
         logger.debug('<error>Failed to check versions')
         if not failure_is_an_option:
