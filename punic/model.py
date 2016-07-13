@@ -234,8 +234,8 @@ class Punic(object):
             carthage_symlink_path = carthage_path / 'Build'
             if carthage_symlink_path.exists():
                 carthage_symlink_path.unlink()
-            logger.debug('<sub>Creating symlink: <ref>{}</ref> <ref>{}</ref></sub>'.format(self.build_path,
-                carthage_symlink_path))
+            logger.debug('<sub>Creating symlink: <ref>{}</ref> to <ref>{}</ref></sub>'.format(
+                carthage_symlink_path.relative_to(self.root_path), self.build_path.relative_to(self.root_path)))
             assert self.build_path.exists()
             os.symlink(str(self.build_path), str(carthage_symlink_path))
 
