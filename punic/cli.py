@@ -145,7 +145,8 @@ def clean(context, configuration, platform, xcode, caches):
 @main.command()
 @click.pass_context
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
-def graph(context, fetch):
+@click.option('--open', default=False, is_flag=True, help="""Open the graph image file.""")
+def graph(context, fetch, open):
     """Output resolved dependency graph"""
     with timeit('graph'):
         with error_handling():
@@ -162,6 +163,9 @@ def graph(context, fetch):
             if runner.can_run(command):
                 logger.info('Rendering dot file to png file.')
                 runner.check_run(command)
+                if open:
+                    runner.run('open graph.png')
+
             else:
                 logging.warning('graphviz not installed. Cannot convert graph to a png.')
 
