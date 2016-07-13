@@ -7,7 +7,7 @@ import pureyaml
 
 from .basic_types import *
 from .logger import *
-
+from .semantic_version import *
 
 class Config(object):
     def __init__(self):
@@ -17,6 +17,7 @@ class Config(object):
         }
         self.color = False
         self.xcode = None
+        self.repo_overrides = dict()
 
         self.read(Path('punic.yaml'))
 
@@ -36,10 +37,15 @@ class Config(object):
             elif 'platform' in defaults:
                 self.platforms = parse_platforms(defaults['platform'])
 
+        if 'repo-overrides' in d:
+            self.repo_overrides = d['repo-overrides']
+
     def dump(self):
-        logger.echo('Config:')
+        logger.info('Config:')
+        logger.info('\tDefaults')
         for k, v in self.defaults.items():
-            logger.echo('\t{}: {}'.format(k, v))
+            logger.info('\t\t{}: {}'.format(k, v))
+        logger.info('\tOverides: {}'.format(self.repo_overrides))
 
     def update(self, configuration=None, platform=None):
         # type: (str, string) -> bool

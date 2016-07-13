@@ -99,6 +99,7 @@ class Runner(object):
 
         if check and return_code != 0:
             # TODO
+            logger.debug(stdout)
             raise CalledProcessError(return_code, command, stdout)
 
         if cache_key:

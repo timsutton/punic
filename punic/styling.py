@@ -1,12 +1,12 @@
 from __future__ import division, absolute_import, print_function
 
-__all__ = ['styled']
+__all__ = ['styled', 'enabled']
 
 from HTMLParser import HTMLParser
 
 from blessings import Terminal
 
-from .config import config
+# from .config import config
 
 term = Terminal()
 
@@ -38,7 +38,7 @@ class MyHTMLParser(HTMLParser):
             self.style_stack.pop()
 
     def handle_data(self, data):
-        if config.color:
+        if enabled:
             self.apply()
         self.s += data
 
@@ -46,6 +46,8 @@ class MyHTMLParser(HTMLParser):
         self.s += term.normal
         for style in set(self.style_stack):
             self.s += style
+
+enabled = True
 
 def styled(s):
     parser = MyHTMLParser()

@@ -1,15 +1,17 @@
 from __future__ import division, absolute_import, print_function
 
-__all__ = ['SemanticVersion', 'Specification', 'Platform', 'ProjectIdentifier',
+__all__ = ['Specification', 'Platform', 'ProjectIdentifier',
            'VersionOperator', 'VersionPredicate', 'parse_platforms']
 
 import re
 import urlparse
+import functools
 
 from pathlib2 import Path
 from memoize import mproperty
 from flufl.enum import Enum
 
+from .logger import *
 
 # TODO: Doesn't support full http://semvar.org spec
 class SemanticVersion(object):
@@ -97,7 +99,7 @@ class Specification(object):
         self.raw_string = None
 
     @classmethod
-    def cartfile_string(cls, string):
+    def cartfile_string(cls, string, overrides):
         # type: (str) -> Specification
         """
         >>> Specification.cartfile_string('github "foo/bar"')
@@ -126,7 +128,7 @@ class Specification(object):
             if not match:
                 raise Exception('Bad spec {}'.format(string))
 
-        identifier = ProjectIdentifier.string(match.group('address'))
+        identifier = ProjectIdentifier.string(match.group('address'), overrides = overrides)
         predicate = VersionPredicate(match.group('predicate'))
         specification = Specification(identifier=identifier, predicate=predicate)
         specification.raw_string = string
@@ -139,7 +141,7 @@ class Specification(object):
 
 class ProjectIdentifier(object):
     @classmethod
-    def string(cls, string):
+    def string(cls, string, overrides = None):
         # type: (str) -> ProjectIdentifier
         """
         >>> ProjectIdentifier.string('github "foo/bar"')
@@ -159,7 +161,7 @@ class ProjectIdentifier(object):
             team_name = match.group('team_name')
             project_name = match.group('project_name')
             remote_url = 'git@github.com:{}/{}.git'.format(team_name, project_name)
-            return ProjectIdentifier(team_name=team_name, project_name=project_name, remote_url=remote_url)
+            return ProjectIdentifier(overrides = overrides, team_name=team_name, project_name=project_name, remote_url=remote_url)
         else:
             match = re.match(r'file:///.+', string)
             if not match:
@@ -169,12 +171,18 @@ class ProjectIdentifier(object):
             path = Path(urlparse.urlparse(remote_url).path)
             project_name = path.name
 
-            return ProjectIdentifier(project_name=project_name, remote_url=remote_url)
+            return ProjectIdentifier(overrides = overrides, project_name=project_name, remote_url=remote_url)
 
-    def __init__(self, team_name=None, project_name=None, remote_url=None):
+    def __init__(self, team_name=None, project_name=None, remote_url=None, overrides = None):
         self.team_name = team_name
         self.project_name = project_name
         self.remote_url = remote_url
+        if overrides and self.project_name in overrides:
+            overide_url = overrides[self.project_name]
+            logger.info('Overriding {} with git URL {}'.format(self.project_name, overide_url))
+            self.remote_url = overide_url
+
+
 
     @mproperty
     def identifier(self):

@@ -10,8 +10,9 @@ from .basic_types import *
 from .errors import *
 
 class Cartfile(object):
-    def __init__(self, specifications=None):
+    def __init__(self, specifications=None, overrides=None):
         self.specifications = specifications if specifications else []
+        self.overrides = overrides
 
     def read(self, source):
         # type: (Path)
@@ -21,8 +22,7 @@ class Cartfile(object):
                 raise CartfileNotFound(path = source)
             source = source.open().read()
         lines = [line.rstrip() for line in source.splitlines()]
-        self.specifications = [Specification.cartfile_string(line) for line in lines if
-                               re.match(r'^github .+', str(line))]
+        self.specifications = [Specification.cartfile_string(line, self.overrides) for line in lines if re.match(r'^github .+', str(line))]
 
     def write(self, destination):
         # type: (File)

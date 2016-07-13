@@ -6,6 +6,7 @@ import affirm
 
 from flufl.enum import Enum
 import contextlib
+import shutil
 import functools
 
 from memoize import mproperty
@@ -17,6 +18,7 @@ from .config import *
 from .errors import *
 from .logger import *
 from .cartfile import *
+from .semantic_version import *
 
 class Repository(object):
     def __init__(self, punic, identifier, repo_path):
@@ -62,6 +64,15 @@ class Repository(object):
             runner.check_run('git checkout {}'.format(revision))
 
     def fetch(self):
+
+        # TODO: This is silly
+        if self.identifier.project_name in config.repo_overrides:
+            logger.warn('WARNING: Project {} has override URL)'.format(self))
+            if self.path.exists():
+                logger.warn('Deleting repo: {}.'.format(self.path))
+                shutil.rmtree(str(self.path))
+                assert not self.path.exists()
+
         if not self.path.exists():
             with work_directory(str(self.path.parent)):
                 logger.debug('<sub>Cloning</sub>: <ref>{}</ref>'.format(self))
@@ -88,8 +99,8 @@ class Repository(object):
         if revision in self.specifications_cache:
             return self.specifications_cache[revision]
         elif revision is None and self == self.punic.root_project:
-            cartfile = Cartfile()
-            cartfile.read(self.path / "Cartfile")
+            cartfile = Cartfile(overrides = config.repo_overrides)
+            cartfile.read(self.path / 'Cartfile')
             specifications = cartfile.specifications
         else:
             with self.work_directory():
@@ -98,7 +109,7 @@ class Repository(object):
                     specifications = []
                 else:
                     data = result.stdout
-                    cartfile = Cartfile()
+                    cartfile = Cartfile(overrides = config.repo_overrides)
                     cartfile.read(data)
                     specifications = cartfile.specifications
 
@@ -118,7 +129,6 @@ class Repository(object):
 
 
 ########################################################################################################################
-
 
 @functools.total_ordering
 class Revision(object):

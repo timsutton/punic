@@ -19,6 +19,7 @@ from .config import *
 from .repository import *
 from .logger import *
 from .cartfile import *
+from .semantic_version import *
 
 ########################################################################################################################
 
@@ -44,7 +45,7 @@ class Punic(object):
 
         runner.cache_path = self.library_directory / "cache.shelf"
 
-        root_project_identifier = ProjectIdentifier(project_name=self.root_path.name)
+        root_project_identifier = ProjectIdentifier(overrides=None, project_name=self.root_path.name)
 
         self.all_repositories = {
             root_project_identifier: Repository(punic=self, identifier=root_project_identifier,
@@ -60,9 +61,9 @@ class Punic(object):
                 'Current version: <rev>{}</rev>, latest version: <rev>{}</rev>'.format(current_version, latest_version))
             if current_version < latest_version:
                 logger.warn(
-                    'You are using version <rev>{}</rev>, version <rev>{}</rev> is available. Use `pip install -U http://github.com/schwa/punic` to update to latest version.'.format(
+                    'You are using version <rev>{}</rev>, version <rev>{}</rev> is available. Use <echo>`pip install -U http://github.com/schwa/punic`</echo> to update to latest version.'.format(
                         current_version, latest_version), styled=True)
-        except Exception as e:
+        except requests.exceptions.ReadTimeout as e:
             logger.debug('<error>Failed to check versions: <rev>{}</rev></error>'.format(e))
 
     def versions(self):
@@ -206,7 +207,7 @@ class Punic(object):
     def ordered_dependencies(self, fetch=False, name_filter=None):
         # type: (bool, [str]) -> [(ProjectIdentifier, Revision)]
 
-        cartfile = Cartfile()
+        cartfile = Cartfile(overrides=config.repo_overrides)
         cartfile.read(self.root_path / 'Cartfile.resolved')
 
         def predicate_to_revision(predicate):
