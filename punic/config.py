@@ -46,7 +46,7 @@ class Config(object):
         logger.info('\tDefaults')
         for k, v in self.defaults.items():
             logger.info('\t\t{}: {}'.format(k, v))
-        logger.info('\tOverides: {}'.format(self.repo_overrides))
+        logger.info('\tOverrides: {}'.format(self.repo_overrides))
 
     def update(self, configuration=None, platform=None):
         # type: (str, string) -> bool

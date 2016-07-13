@@ -180,9 +180,9 @@ class ProjectIdentifier(object):
         self.project_name = project_name
         self.remote_url = remote_url
         if overrides and self.project_name in overrides:
-            overide_url = overrides[self.project_name]
-            logger.info('Overriding {} with git URL {}'.format(self.project_name, overide_url))
-            self.remote_url = overide_url
+            override_url = overrides[self.project_name]
+            logger.info('Overriding {} with git URL {}'.format(self.project_name, override_url))
+            self.remote_url = override_url
 
     @mproperty
     def identifier(self):

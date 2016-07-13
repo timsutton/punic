@@ -12,12 +12,6 @@ from memoize import mproperty
 
 from .logger import *
 
-from itertools import (chain, imap)
-
-
-def flatmap(f, items):
-    return chain.from_iterable(imap(f, items))
-
 
 class Result(object):
     pass
