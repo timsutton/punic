@@ -162,8 +162,9 @@ class Revision(object):
         else:
             return self.sha == other.sha
 
+    # see: https://bugs.python.org/issue25732
     def __ne__(self, other):
-        return not self.__eq__(other)
+        return not (self == other)
 
     def __lt__(self, other):
         if self.semantic_version and other.semantic_version and Revision.always_use_is_ancestor == False:

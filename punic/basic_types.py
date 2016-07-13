@@ -15,6 +15,7 @@ from .logger import *
 
 
 # TODO: Doesn't support full http://semvar.org spec
+@functools.total_ordering
 class SemanticVersion(object):
     @classmethod
     def is_semantic(cls, s):
@@ -42,7 +43,7 @@ class SemanticVersion(object):
         components = [str(component) for component in components]
         return '.'.join(components)
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
         """
         >>> SemanticVersion.string('1') == SemanticVersion.string('1')
         True
@@ -52,6 +53,15 @@ class SemanticVersion(object):
         True
         >>> SemanticVersion.string('1') != SemanticVersion.string('1')
         False
+        """
+        return self.components == other.components
+
+    # see: https://bugs.python.org/issue25732
+    def __ne__(self, other):
+        return not (self == other)
+
+    def __lt__(self, other):
+        """
         >>> SemanticVersion.string('1') < SemanticVersion.string('2')
         True
         >>> SemanticVersion.string('1') <= SemanticVersion.string('2')
@@ -59,7 +69,7 @@ class SemanticVersion(object):
         >>> SemanticVersion.string('1.1') > SemanticVersion.string('1.0')
         True
         """
-        return cmp(self.components, other.components)
+        return self.components < other.components
 
     def __hash__(self):
         return hash(self.major * 1000000) ^ hash(self.minor * 10000) ^ hash(self.patch * 100)
