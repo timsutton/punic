@@ -57,9 +57,6 @@ class Punic(object):
         return Resolver(root = Node(self.root_project.identifier, None), dependencies_for_node = self._dependencies_for_node)
 
     def _dependencies_for_node(self, node):
-        # print(type(node.version), node.version)
-        if not (not node.version or isinstance(node.version, Revision)):
-            logger.info("FUCK")
         assert not node.version or isinstance(node.version, Revision)
         dependencies = self.dependencies_for_project_and_tag(identifier=node.identifier, tag=node.version)
         return dependencies
@@ -184,7 +181,6 @@ class Punic(object):
 
                 ########################################################################################################
 
-                #            exit(0)
 
     def clean(self, configuration, platforms):
         # type: (str, str)
