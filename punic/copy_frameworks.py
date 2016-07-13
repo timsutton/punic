@@ -8,9 +8,10 @@ import shutil
 from pathlib2 import Path
 from .runner import *
 from .logger import *
+from .xcode import uuids_from_binary
 
 def copy_frameworks_main():
-    #
+
     sym_root = Path(os.environ['SYMROOT'])
     valid_architectures = set(os.environ['VALID_ARCHS'].split(' '))
     input_file_count = int(os.environ['SCRIPT_INPUT_FILE_COUNT'])
@@ -20,6 +21,11 @@ def copy_frameworks_main():
     frameworks_folder_path = os.environ['FRAMEWORKS_FOLDER_PATH']
     frameworks_path = built_products_dir / frameworks_folder_path
     code_signing_allowed = os.environ['CODE_SIGNING_ALLOWED'] == 'YES'
+    enable_bitcode = os.environ['ENABLE_BITCODE'] == 'YES'
+    project_dir = Path(os.environ['PROJECT_DIR'])
+    platform_display_name = os.environ['PLATFORM_DISPLAY_NAME']
+    punic_builds_dir = project_dir / 'Carthage' / 'Build' / platform_display_name
+    action = os.environ['ACTION']
 
     for input_path in input_files:
 
@@ -65,8 +71,18 @@ def copy_frameworks_main():
             # Resign framework
             logger.info('\tResigning "{}"/"{}" with "{}"'.format(framework_name, architecture, expanded_identity))
 
+        # Copy bcsymbolmap files from $PROJECT_DIRCarthage/Buil to $BUILT_PRODUCTS_DIR
+        if enable_bitcode and action == 'install':
+            uuids = uuids_from_binary(binary_path)
+            for uuid in uuids:
+                bcsymbolmap_path = punic_builds_dir / (uuid + '.bcsymbolmap')
+                logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(bcsymbolmap_path.relative_to(project_dir)))
+                shutil.copy(str(bcsymbolmap_path), str(built_products_dir))
+
         logger.info('\tCode signing: "$SYMROOT/{}"'.format(binary_path.relative_to(sym_root)))
 
         # noinspection PyUnusedLocal
         result = runner.check_call(['/usr/bin/xcrun', 'codesign', '--force', '--sign', expanded_identity, '--preserve-metadata=identifier,entitlements', binary_path])
+
+
 
