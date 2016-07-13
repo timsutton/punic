@@ -4,15 +4,20 @@ __all__ = ['Specification', 'Platform', 'ProjectIdentifier',
     'VersionOperator', 'VersionPredicate', 'parse_platforms']
 
 import re
-import urlparse
 import functools
 
 from pathlib2 import Path
 from memoize import mproperty
 from flufl.enum import Enum
+import six
 
 from .logger import *
 
+# Ideally we could six.urllib but this causes problem with nosetests!
+if six.PY2:
+    import urlparse
+elif six.PY3:
+    import urllib.urlparse as urlparse
 
 # TODO: Doesn't support full http://semvar.org spec
 @functools.total_ordering
