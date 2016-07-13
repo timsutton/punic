@@ -20,11 +20,18 @@ from .logger import *
 from .cartfile import *
 from .semantic_version import *
 
+import hashlib
+
 class Repository(object):
-    def __init__(self, punic, identifier, repo_path):
+    def __init__(self, punic, identifier, repo_path = None):
         self.punic = punic
         self.identifier = identifier
-        self.path = repo_path
+        if repo_path:
+            self.path = repo_path
+        else:
+            url_hash = hashlib.md5(self.identifier.remote_url).hexdigest()
+            self.path = punic.repo_cache_directory / "{}_{}".format(self.identifier.project_name, url_hash)
+
         self.specifications_cache = dict()
 
     def __repr__(self):
@@ -64,14 +71,6 @@ class Repository(object):
             runner.check_run('git checkout {}'.format(revision))
 
     def fetch(self):
-
-        # TODO: This is silly
-        if self.identifier.project_name in config.repo_overrides:
-            logger.warn('WARNING: Project {} has override URL)'.format(self))
-            if self.path.exists():
-                logger.warn('Deleting repo: {}.'.format(self.path))
-                shutil.rmtree(str(self.path))
-                assert not self.path.exists()
 
         if not self.path.exists():
             with work_directory(str(self.path.parent)):

@@ -48,8 +48,7 @@ class Punic(object):
         root_project_identifier = ProjectIdentifier(overrides=None, project_name=self.root_path.name)
 
         self.all_repositories = {
-            root_project_identifier: Repository(punic=self, identifier=root_project_identifier,
-                                                repo_path=self.root_path),
+            root_project_identifier: Repository(punic=self, identifier=root_project_identifier, repo_path=self.root_path),
         }
 
         self.root_project = self.repository_for_identifier(root_project_identifier)
@@ -299,7 +298,7 @@ class Punic(object):
             return self.all_repositories[identifier]
         else:
             path = self.repo_cache_directory / identifier.project_name
-            repository = Repository(self, identifier=identifier, repo_path=path)
+            repository = Repository(self, identifier=identifier)
             if fetch:
                 repository.fetch()
             self.all_repositories[identifier] = repository
