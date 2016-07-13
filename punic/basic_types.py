@@ -45,10 +45,10 @@ class SemanticVersion(object):
         self.patch = patch if patch else 0
         self.identifiers = identifiers if identifiers else []
 
-    @property
-    def value(self):
-        # TODO: Lazy
-        return self.major * 1000000 + self.minor * 1000 + self.patch
+    # @property
+    # def value(self):
+    #     # TODO: Lazy
+    #     return self.major * 1000000 + self.minor * 1000 + self.patch
 
     @property
     def components(self):
