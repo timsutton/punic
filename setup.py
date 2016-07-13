@@ -21,6 +21,7 @@ setup(
         'pathlib2',
         'pureyaml',
         'requests',
+        'six',
         ],
     entry_points='''
         [console_scripts]

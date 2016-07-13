@@ -2,13 +2,13 @@ from __future__ import division, absolute_import, print_function
 
 __all__ = ['Runner', 'runner', 'Result', 'CalledProcessError']
 
-import os
 import subprocess
 import shlex
 import shelve
 
 from subprocess import CalledProcessError
 from memoize import mproperty
+import six
 
 from .logger import *
 
@@ -50,7 +50,7 @@ class Runner(object):
     def convert_args(args):
         if isinstance(args, list) or isinstance(args, tuple):
             return [str(arg) for arg in args]
-        elif isinstance(args, basestring):
+        elif isinstance(args, six.string_types):
             return shlex.split(args)
         else:
             return [str(args)]

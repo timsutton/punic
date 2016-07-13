@@ -2,7 +2,7 @@ from __future__ import division, absolute_import, print_function
 
 __all__ = ['styled', 'enabled']
 
-from HTMLParser import HTMLParser
+from six.moves.html_parser import HTMLParser
 
 from blessings import Terminal
 
@@ -47,7 +47,7 @@ class MyHTMLParser(HTMLParser):
         for style in set(self.style_stack):
             self.s += style
 
-
+# TODO: This is crap. Stop exposing it. Maybe put into logger instead?
 enabled = True
 
 

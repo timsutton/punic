@@ -7,3 +7,4 @@ networkx
 pathlib2
 pureyaml
 requests
+six
