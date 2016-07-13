@@ -52,11 +52,13 @@ class SemanticVersion(object):
 
     @property
     def components(self):
-        return [self.major, self.minor, self.patch]
         """
         >>> SemanticVersion(1, 2, 3).components
         (1, 2, 3)
         """
+        return [self.major, self.minor, self.patch]
+# TODO: using a tuple breaks code
+#        return (self.major, self.minor, self.patch)
 
     def __repr__(self):
         components = [self.major, self.minor] + ([self.patch] if self.patch else [])
