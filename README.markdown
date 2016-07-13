@@ -56,6 +56,66 @@ Punic supports Carthage `Cartfile` and `Cartfile.resolved` files.
 
 Punic can be considered an early preview release and probably is not ready for production use. Use at your own peril.
 
+## New Features
+
+### `punic.yaml` files.
+
+As well as configuring your build dependencies with `Cartfile` you can also use a `punic.yaml` file to specify other options.
+
+#### `punic.yaml` defaults
+
+An example `punic.yaml` file follows:
+
+```yaml
+defaults:
+  configuration: Debug
+  platform: iOS
+```
+
+This example specifies both a default configuration and a default platform. This allows you to skip providing `--configuration` and `--platform` switches on the command-line.
+
+Switches provided on the command line will override defaults in your `punic.yaml` file.
+
+#### `punic.yaml` repo-overrides
+
+Assume you have a project that depends on an external repository "ExampleOrg/Project-A" which in turns depends on another external repository "ExampleOrg/Project-B". If you wanted to fork and make changes to "Project-B" you would also have to fork and change the Cartfile within "Project-A" so that it refers to the forked URL of "Project-B".
+
+With the `repo-overrides` section of `punic.yaml` you can globally replace the URL of any dependency without having to edit Cartfiles deep within your dependency hierarchy.
+
+```yaml
+repo-overrides:
+  Project-B: git@github.com:MyOrg/Project-B.git
+```
+
+You can also use this feature to redirect a dependency to a local, on disk url. This is useful if you need to test changes inside a dependency.
+
+```yaml
+repo-overrides:
+  Project-B: file:///Users/example/Projects/Project-B
+```
+
+Note that repositories pointed to by file URL are still cloned and fetched just like any other repository and your changes _must_ be committed for them to be picked up by Punic.
+
+## Roadmap
+
+The current roadmap for Punic is as follows (in rough order of priority):
+
+- [ ] `copy-frameworks` subcommand.
+- [ ] `fetch` subcommand
+- [ ] Add a `migrate` subcommand that can migrate Cartfiles to the punic.yaml.
+- [ ] Add a `table-of-contents` subcommand that will produce a filtered list of all projects, schemes etc of all dependencies. This TOC could then be used inside punic.yaml as a whitelist or blacklist. This will allow us to do things like skip frameworks that should not be built.
+- [ ] Include full Cartfile (.private) functional in punic.yaml
+- [ ] Provide carthage compatibility mode and break punic command line compatibility. For example 'bootstrap' should be renamed 'update' (and update becomes something else).
+- [ ] Reliability. Punic needs to be tested against as many other Cartfiles as possible and needs to reliably produce the same build order
+- [ ] Run on travis
+- [ ] Support `build` subcommand's `--no-skip-current` switch
+- [ ] Support `Cartfile.private` functionality
+- [ ] Support specifying target dependencies at command line. Full resolve/fetch
+- [ ] Unit test Resolver
+- [X] Allow specification of default platforms and configurations in new style config file (`punic.yaml`)
+- [X] Support branch style Cartfile specifications.
+- [X] Support specifying target dependencies at command line. Building only.
+
 ## Differences between Punic & Carthage
 
 Aside from differences of implementation one of the fundamental differences is that Carthage always runs `xcodebuild clean` before building dependencies. Punic deliberately does not perform this clean step and provides an explicit `punic clean` command. The goal of this is to not force collaborators to sit through long clean builds when very little has changed. This can provide dramatic speed ups to a users workflow (during testing builds that can take Carthage 20-25 minutes to build on top-end hardware take less than a minute to do a 'dirty' build.)
@@ -117,34 +177,12 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | update / --project-directory    | _Unimplemented_                    |
 | update / [dependencies]         | Implemented                        |
 
+
 ### Notes:
 
 1. Binary archives will not be supported until Swift supports a non-fragile ABI.
 
-## Roadmap
 
-The current roadmap for Punic is as follows (in rough order of priority):
-
-- [X] Support branch style Cartfile specifications.
-- [ ] `copy-frameworks` subcommand.
-- [ ] Run on travis
-- [ ] Reliability. Punic needs to be tested against as many other Cartfiles as possible and needs to reliably produce the same build order
-- [ ] Support `build` subcommand's `--no-skip-current` switch
-- [ ] `fetch` subcommand
-- [ ] Support specifying target dependencies at command line. (This is relatively low priority because incremental Punic builds are much much quicker than slow carthage clean builds.)
-- [ ] Support `Cartfile.private` functionality
-- [ ] Replace Cartfiles with a better, more expressive file format (yaml? toml?). Partially done.
-- [ ] Add a `migrate` subcommand that can migrate Cartfiles to the new format.
-- [X] Allow specification of default platforms and configurations in new style config file (`punic.yaml`)
-- [ ] Cache xcodeproject and scheme info in new style build artifact files (replacing .resolved)
-
-## New Features
-
-TODO: Discuss differences between punic and carthage here.
-
-## Configuration
-
-TODO: Discuss `punic.yaml` here.
 
 ## Frequently Answer Questions
 
