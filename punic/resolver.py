@@ -18,19 +18,19 @@ class Resolver(object):
     def build_graph(self, dependency_filter=None):
         # type: ([str]) -> DiGraph
 
-        # TODO: Probably don't need to pass dependency_filter to populate_graph
-        def populate_graph(graph, parent, parent_version, depth=0):
-            graph.add_node(Node(parent, parent_version))
+        def populate_graph(graph, parent, depth=0):
+            graph.add_node(parent)
 
-            for child, child_versions in self.dependencies_for_node(Node(parent, parent_version.revision if parent_version else None)):
+            for child_identifier, child_versions in self.dependencies_for_node(Node(parent.identifier, parent.version.revision if parent.version else None)):
                 for child_version in child_versions:
-                    if dependency_filter and dependency_filter(child, child_version) == False:
+                    child = Node(child_identifier, child_version)
+                    if dependency_filter and dependency_filter(child.identifier, child.version) == False:
                         continue
-                    graph.add_edge(Node(parent, parent_version), Node(child, child_version))
-                    populate_graph(graph, child, child_version, depth=depth + 1)
+                    graph.add_edge(parent, child)
+                    populate_graph(graph, child, depth=depth + 1)
 
         graph = DiGraph()
-        populate_graph(graph=graph, parent=self.punic.root_project.identifier, parent_version=None)
+        populate_graph(graph=graph, parent = self.root)
         return graph
 
     def resolve(self):
