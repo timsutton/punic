@@ -65,7 +65,7 @@ class Specification(object):
     def __repr__(self):
         return 'github "{identifier}" {predicate}'.format(**self.__dict__).strip()
 
-#@functools.total_ordering
+@functools.total_ordering
 class ProjectIdentifier(object):
     @classmethod
     def string(cls, string, overrides=None):
