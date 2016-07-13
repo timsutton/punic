@@ -48,11 +48,19 @@ class Punic(object):
                 repo_path=self.root_path),
         }
 
+        self.can_fetch = False
+
         self.root_project = self.repository_for_identifier(root_project_identifier)
 
-    def resolve(self, fetch):
+    def _resolver(self):
+        return Resolver(root = Node(self.root_project.identifier, None), dependencies_for_node = self._dependencies_for_node)
+
+    def _dependencies_for_node(self, node):
+        return self.dependencies_for_project_and_tag(identifier=node.identifier, tag=node.version)
+
+    def resolve(self):
         # type: (bool)
-        resolver = Resolver(punic=self, root_identifier=self.root_project.identifier, fetch=fetch)
+        resolver = self._resolver()
         build_order = resolver.resolve_build_order()
 
         for index, value in enumerate(build_order[:-1]):
@@ -69,15 +77,15 @@ class Punic(object):
         cartfile = Cartfile(specifications=specifications)
         cartfile.write((self.root_path / 'Cartfile.resolved').open('w'))
 
-    def graph(self, fetch=True):
+    def graph(self):
         # type: (bool) -> DiGraph
-        resolver = Resolver(punic=self, root_identifier=self.root_project.identifier, fetch=fetch)
-        return resolver.resolve()
+        return self._resolver().resolve()
 
+    # TODO: This can be deprecated and the can_fetch flag relied on instead
     def fetch(self):
         # type: ()
         # TODO: FIXME
-        for project in self.xcode_projects(fetch=True):
+        for project in self.xcode_projects():
             pass
 
     @property
@@ -91,7 +99,7 @@ class Punic(object):
             'CARTHAGE': 'YES',
         }
 
-    def build(self, dependencies, fetch):
+    def build(self, dependencies):
         # type: ([str], bool)
         # TODO: This code needs a major refactoring and clean-up.
 
@@ -102,7 +110,7 @@ class Punic(object):
 
         filtered_dependencies = self.ordered_dependencies(fetch=False, name_filter=dependencies)
 
-        projects = self.xcode_projects(dependencies=filtered_dependencies, fetch=fetch)
+        projects = self.xcode_projects(dependencies=filtered_dependencies)
 
         for platform, project, scheme in self.scheme_walker(projects=projects,
                 platforms=platforms):
@@ -195,13 +203,12 @@ class Punic(object):
                 raise Exception("Cannot convert predicate to revision: {}".format(predicate))
 
         dependencies = [(spec.identifier, predicate_to_revision(spec.predicate)) for spec in cartfile.specifications]
-        resolver = Resolver(punic = self, root_identifier=self.root_project.identifier, fetch = fetch)
-        resolved_dependencies = resolver.resolve_versions(dependencies)
+        resolved_dependencies = self._resolver().resolve_versions(dependencies)
         resolved_dependencies = [dependency for dependency in resolved_dependencies if
             dependency[0].matches(name_filter)]
         return resolved_dependencies
 
-    def xcode_projects(self, dependencies=None, fetch=False):
+    def xcode_projects(self, dependencies=None):
         # type: ([(ProjectIdentifier, Revision)]) -> [XcodeProject]
 
         if not self.build_path.exists():
@@ -209,14 +216,15 @@ class Punic(object):
         all_projects = []
 
         if not dependencies:
-            dependencies = self.ordered_dependencies(fetch=fetch)
+            dependencies = self.ordered_dependencies()
 
         for (identifier, revision) in dependencies:
             project = self.repository_for_identifier(identifier)
             revision = revision.revision
             checkout_path = self.checkouts_path / identifier.project_name
 
-            if fetch:
+            # TODO: This isn't really 'can_fetch'
+            if self.can_fetch:
                 project.checkout(revision)
                 logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
                 if checkout_path.exists():
@@ -281,14 +289,14 @@ class Punic(object):
             self.all_repositories[identifier] = repository
             return repository
 
-    def dependencies_for_project_and_tag(self, identifier, tag, fetch=True):
+    def dependencies_for_project_and_tag(self, identifier, tag):
         # type: (ProjectIdentifier, Revision, bool) -> [ProjectIdentifier, [Revision]]
 
-        repository = self.repository_for_identifier(identifier, fetch=fetch)
+        repository = self.repository_for_identifier(identifier, fetch=self.can_fetch)
         specifications = repository.specifications_for_revision(tag)
 
         def make(specification):
-            repository = self.repository_for_identifier(specification.identifier, fetch=fetch)
+            repository = self.repository_for_identifier(specification.identifier, fetch=self.can_fetch)
             tags = repository.revisions_for_predicate(specification.predicate)
 
             if specification.predicate.operator == VersionOperator.commitish:

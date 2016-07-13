@@ -52,7 +52,8 @@ def resolve(context, fetch):
         with error_handling():
             logger.info("<cmd>Resolve</cmd>")
             punic = context.obj
-            punic.resolve(fetch=fetch)
+            punic.can_fetch = fetch
+            punic.resolve()
 
 
 @main.command()
@@ -69,8 +70,9 @@ def update(context, configuration, platform, fetch, deps):
             logger.info("<cmd>Update</cmd>")
             punic = context.obj
             punic.config.update(configuration=configuration, platform=platform)
-            punic.resolve(fetch=fetch)
-            punic.build(dependencies=deps, fetch=fetch)
+            punic.can_fetch = fetch
+            punic.resolve()
+            punic.build(dependencies=deps)
 
 
 @main.command()
@@ -81,6 +83,7 @@ def checkout(context):
         with error_handling():
             logger.info("<cmd>Checkout</cmd>")
             punic = context.obj
+            punic.can_fetch = True # obviously
             punic.fetch()
 
 
@@ -89,16 +92,16 @@ def checkout(context):
 @click.option('--configuration', default=None,
     help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
-@click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
-def build(context, configuration, platform, fetch, deps):
+def build(context, configuration, platform, deps):
     """Build dependencies."""
     with timeit('build'):
         with error_handling():
             logger.info("<cmd>Build</cmd>")
             punic = context.obj
+            punic.can_fetch = False
             punic.config.update(configuration=configuration, platform=platform)
-            punic.build(dependencies=deps, fetch=fetch)
+            punic.build(dependencies=deps)
 
 
 @main.command()
@@ -113,9 +116,10 @@ def bootstrap(context, configuration, platform, deps):
         with error_handling():
             logger.info("<cmd>Bootstrap</cmd>")
             punic = context.obj
+            punic.can_fetch = True
             punic.config.update(configuration=configuration, platform=platform)
             punic.fetch()
-            punic.build(dependencies=deps, fetch=True)
+            punic.build(dependencies=deps)
 
 
 @main.command()
@@ -152,7 +156,8 @@ def graph(context, fetch, open):
         with error_handling():
             logger.info("<cmd>Graph</cmd>")
             punic = context.obj
-            graph = punic.graph(fetch=fetch)
+            punic.can_fetch = fetch
+            graph = punic.graph()
 
             import networkx as nx
 
