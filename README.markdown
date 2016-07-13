@@ -100,7 +100,7 @@ Note that repositories pointed to by file URL are still cloned and fetched just 
 
 The current roadmap for Punic is as follows (in rough order of priority):
 
-- [ ] `copy-frameworks` subcommand.
+- [X] `copy-frameworks` subcommand.
 - [ ] `fetch` subcommand
 - [ ] Add a `migrate` subcommand that can migrate Cartfiles to the punic.yaml.
 - [ ] Add a `table-of-contents` subcommand that will produce a filtered list of all projects, schemes etc of all dependencies. This TOC could then be used inside punic.yaml as a whitelist or blacklist. This will allow us to do things like skip frameworks that should not be built.
@@ -155,7 +155,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | checkout / --color              | Implemented                        |
 | checkout / --project-directory  | _Unimplemented_                    |
 | checkout / [dependencies]       | Implemented                        |
-| copy-frameworks                 | _Unimplemented_                    |
+| copy-frameworks                 | Implemented                       |
 | fetch                           | _Unimplemented_                    |
 | fetch / --color                 | _Unimplemented_                    |
 | outdated                        | _Unimplemented_                    |
