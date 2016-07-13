@@ -117,7 +117,7 @@ class ProjectIdentifier(object):
         elif self.remote_url:
             return self.remote_url
         else:
-            return '<unnamed>'
+            return '#unnamed#'
 
     def __repr__(self):
         return self.identifier
