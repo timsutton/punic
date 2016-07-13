@@ -34,11 +34,6 @@ class SemanticVersion(object):
         self.identifiers = identifiers if identifiers else []
 
     @property
-    def value(self):
-        # TODO: Lazy
-        return self.major * 1000000 + self.minor * 1000 + self.patch
-
-    @property
     def _components(self):
         """
         >>> SemanticVersion(1, 2, 3)._components
