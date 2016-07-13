@@ -130,6 +130,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | bootstrap                       | Implemented                        |
 | bootstrap / --configuration     | Implemented                        |
 | bootstrap / --platform          | Implemented                        |
+| bootstrap / --toolchain         | _Unimplemented_                    |
 | bootstrap / --derived-data      | _Unimplemented_                    |
 | bootstrap / --verbose           | Implemented                        |
 | bootstrap / --no-checkout       | _Unimplemented_                    |
@@ -143,6 +144,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | build                           | Implemented                        |
 | build / --configuration         | Implemented                        |
 | build / --platform              | Implemented                        |
+| build / --toolchain             | _Unimplemented_                    |
 | build / --derived-data          | _Unimplemented_                    |
 | build / --no-skip-current       | _Unimplemented_                    |
 | build / --color                 | Implemented                        |
@@ -155,7 +157,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | checkout / --color              | Implemented                        |
 | checkout / --project-directory  | _Unimplemented_                    |
 | checkout / [dependencies]       | Implemented                        |
-| copy-frameworks                 | Implemented                       |
+| copy-frameworks                 | Implemented                        |
 | fetch                           | _Unimplemented_                    |
 | fetch / --color                 | _Unimplemented_                    |
 | outdated                        | _Unimplemented_                    |
@@ -166,6 +168,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | update                          | Implemented                        |
 | update / --configuration        | Implemented                        |
 | update / --platform             | Implemented                        |
+| update / --toolchain            | _Unimplemented_                    |
 | update / --derived-data         | _Unimplemented_                    |
 | update / --verbose              | Implemented                        |
 | update / --no-checkout          | _Unimplemented_                    |
