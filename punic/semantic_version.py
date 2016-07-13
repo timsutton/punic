@@ -11,11 +11,23 @@ from functools import total_ordering
 class SemanticVersion(object):
     @classmethod
     def is_semantic(cls, s):
+        """
+        >>> SemanticVersion.is_semantic("1.0")
+        True
+        >>> SemanticVersion.is_semantic("x.0")
+        False
+        """
         # type: (str) -> bool
         match = re.match('(?:v)?(\d+)(?:\.(\d+)(?:\.(\d+))?)?', s)
         return True if match else False
 
     def __init__(self, major, minor, patch=None, identifiers=None):
+        """
+        >>> SemanticVersion(1, 0)
+        1.0
+        >>> SemanticVersion(1, 0, 0)
+        1.0
+        """
         self.major = major if major else 0
         self.minor = minor if minor else 0
         self.patch = patch if patch else 0
@@ -27,7 +39,13 @@ class SemanticVersion(object):
         return self.major * 1000000 + self.minor * 1000 + self.patch
 
     @property
-    def components(self):
+    def _components(self):
+        """
+        >>> SemanticVersion(1, 2, 3)._components
+        [1, 2, 3]
+        """
+        # TODO: using a tuple breaks code
+        #        return (self.major, self.minor, self.patch)
         return [self.major, self.minor, self.patch]
 
     def __repr__(self):
@@ -46,7 +64,7 @@ class SemanticVersion(object):
         >>> SemanticVersion.string('1') != SemanticVersion.string('1')
         False
         """
-        return self.components == other.components
+        return self._components == other._components
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -60,7 +78,7 @@ class SemanticVersion(object):
         >>> SemanticVersion.string('1.1') > SemanticVersion.string('1.0')
         True
         """
-        return self.components < other.components
+        return self._components < other._components
 
     def __hash__(self):
         return hash(self.major * 1000000) ^ hash(self.minor * 10000) ^ hash(self.patch * 100)
@@ -68,17 +86,14 @@ class SemanticVersion(object):
 
     @classmethod
     def from_dict(cls, d):
-
-
-
         if set(d.keys()).issubset(set(['major', 'minor', 'micro', 'releaselevel', 'serial'])):
             return SemanticVersion(
                 major = d.get('major'),
                 minor = d.get('minor'),
                 patch = d.get('micro')
             )
-
-        pass
+        else:
+            raise Exception('Invalid dict')
 
     @classmethod
     def string(cls, s):
@@ -105,5 +120,9 @@ class SemanticVersion(object):
 
     @property
     def next_major(self):
+        """
+        >>> SemanticVersion.string('1.2').next_major
+        2.0
+        """
         # type: () -> SemanticVersion
         return SemanticVersion(major=self.major + 1, minor=0, patch=0)
