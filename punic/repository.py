@@ -176,4 +176,5 @@ class Revision(object):
                     raise Exception('git merge-base returned {}'.format(result.return_code))
 
     def __hash__(self):
+        # TODO: Should include repo too?
         return hash(self.revision)

@@ -76,6 +76,12 @@ class SemanticVersion(object):
         return self._components < other._components
 
     def __hash__(self):
+        """
+        >>> hash(SemanticVersion(1, 0)) == hash(SemanticVersion(1, 0))
+        True
+        >>> hash(SemanticVersion(1, 0)) != hash(SemanticVersion(0, 1))
+        True
+        """
         return hash(self.major * 1000000) ^ hash(self.minor * 10000) ^ hash(self.patch * 100)
 
 
@@ -100,9 +106,10 @@ class SemanticVersion(object):
         1.2
         >>> SemanticVersion.string('1.2.3')
         1.2.3
-
-        # >>> SemanticVersion.string('1.0-foo')
-        # 1.0-foo
+        >>> SemanticVersion.string('garbage')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        Exception: "garbage" not a semantic version.
         """
         match = re.match('(?:v)?(\d+)(?:\.(\d+)(?:\.(\d+))?)?', s)
         if not match:
