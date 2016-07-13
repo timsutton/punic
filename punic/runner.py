@@ -66,6 +66,9 @@ class Runner(object):
         result = self.run(*args, **kwargs)
         return result.stdout
 
+    # TODO
+    check_call = check_run
+
     def run(self, command, cwd=None, echo=None, cache_key=None, check=False, env=None):
         args = self.convert_args(command)
 

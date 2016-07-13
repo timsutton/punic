@@ -15,7 +15,7 @@ from .runner import *
 from .semantic_version import *
 from .utilities import *
 from .version_check import *
-
+from .copy_frameworks import *
 
 @click.group()
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
@@ -178,6 +178,12 @@ def graph(context, fetch, open):
 
             else:
                 logging.warning('graphviz not installed. Cannot convert graph to a png.')
+
+
+@main.command(name = 'copy-frameworks')
+@click.pass_context
+def copy_frameworks(context):
+    copy_frameworks_main()
 
 
 # noinspection PyUnusedLocal
