@@ -1,7 +1,7 @@
 from __future__ import division, absolute_import, print_function
 
 __all__ = ['Specification', 'Platform', 'ProjectIdentifier',
-           'VersionOperator', 'VersionPredicate', 'parse_platforms']
+    'VersionOperator', 'VersionPredicate', 'parse_platforms']
 
 import re
 import urlparse
@@ -12,6 +12,7 @@ from memoize import mproperty
 from flufl.enum import Enum
 
 from .logger import *
+
 
 # TODO: Doesn't support full http://semvar.org spec
 class SemanticVersion(object):
@@ -128,7 +129,7 @@ class Specification(object):
             if not match:
                 raise Exception('Bad spec {}'.format(string))
 
-        identifier = ProjectIdentifier.string(match.group('address'), overrides = overrides)
+        identifier = ProjectIdentifier.string(match.group('address'), overrides=overrides)
         predicate = VersionPredicate(match.group('predicate'))
         specification = Specification(identifier=identifier, predicate=predicate)
         specification.raw_string = string
@@ -141,7 +142,7 @@ class Specification(object):
 
 class ProjectIdentifier(object):
     @classmethod
-    def string(cls, string, overrides = None):
+    def string(cls, string, overrides=None):
         # type: (str) -> ProjectIdentifier
         """
         >>> ProjectIdentifier.string('github "foo/bar"')
@@ -161,7 +162,8 @@ class ProjectIdentifier(object):
             team_name = match.group('team_name')
             project_name = match.group('project_name')
             remote_url = 'git@github.com:{}/{}.git'.format(team_name, project_name)
-            return ProjectIdentifier(overrides = overrides, team_name=team_name, project_name=project_name, remote_url=remote_url)
+            return ProjectIdentifier(overrides=overrides, team_name=team_name, project_name=project_name,
+                remote_url=remote_url)
         else:
             match = re.match(r'file:///.+', string)
             if not match:
@@ -171,9 +173,9 @@ class ProjectIdentifier(object):
             path = Path(urlparse.urlparse(remote_url).path)
             project_name = path.name
 
-            return ProjectIdentifier(overrides = overrides, project_name=project_name, remote_url=remote_url)
+            return ProjectIdentifier(overrides=overrides, project_name=project_name, remote_url=remote_url)
 
-    def __init__(self, team_name=None, project_name=None, remote_url=None, overrides = None):
+    def __init__(self, team_name=None, project_name=None, remote_url=None, overrides=None):
         self.team_name = team_name
         self.project_name = project_name
         self.remote_url = remote_url
@@ -181,8 +183,6 @@ class ProjectIdentifier(object):
             overide_url = overrides[self.project_name]
             logger.info('Overriding {} with git URL {}'.format(self.project_name, overide_url))
             self.remote_url = overide_url
-
-
 
     @mproperty
     def identifier(self):

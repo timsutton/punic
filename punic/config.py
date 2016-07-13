@@ -9,6 +9,7 @@ from .basic_types import *
 from .logger import *
 from .semantic_version import *
 
+
 class Config(object):
     def __init__(self):
         self.defaults = {

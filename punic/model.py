@@ -20,6 +20,7 @@ from .logger import *
 from .cartfile import *
 from .semantic_version import *
 
+
 ########################################################################################################################
 
 
@@ -47,7 +48,8 @@ class Punic(object):
         root_project_identifier = ProjectIdentifier(overrides=None, project_name=self.root_path.name)
 
         self.all_repositories = {
-            root_project_identifier: Repository(punic=self, identifier=root_project_identifier, repo_path=self.root_path),
+            root_project_identifier: Repository(punic=self, identifier=root_project_identifier,
+                repo_path=self.root_path),
         }
 
         self.root_project = self.repository_for_identifier(root_project_identifier)
@@ -60,7 +62,8 @@ class Punic(object):
         for index, value in enumerate(build_order[:-1]):
             dependency, version = value
             logger.debug(
-                '{} <ref>{}</ref> <rev>{}</rev> <ref>{}</ref>'.format(index + 1, dependency, version.revision if version else '', dependency.remote_url))
+                '{} <ref>{}</ref> <rev>{}</rev> <ref>{}</ref>'.format(index + 1, dependency,
+                    version.revision if version else '', dependency.remote_url))
 
         specifications = [
             Specification(identifier=dependency, predicate=VersionPredicate('"{}"'.format(version.revision))) for
@@ -106,15 +109,16 @@ class Punic(object):
         projects = self.xcode_projects(dependencies=filtered_dependencies, fetch=fetch)
 
         for platform, project, scheme in self.scheme_walker(projects=projects,
-                                                            platforms=platforms):
+                platforms=platforms):
 
             with timeit(project.path.name):
 
                 products = dict()
                 for sdk in platform.sdks:
                     logger.info('<sub>Building</sub> <ref>{}</ref> {} {} {}'.format(project.path.name, scheme, sdk,
-                                                                                    configuration))
-                    product = project.build(scheme=scheme, configuration=configuration, sdk=sdk, arguments=self.xcode_arguments)
+                        configuration))
+                    product = project.build(scheme=scheme, configuration=configuration, sdk=sdk,
+                        arguments=self.xcode_arguments)
                     products[sdk] = product
 
                 ########################################################################################################
@@ -141,7 +145,7 @@ class Punic(object):
                     logger.debug('<sub>Lipo-ing</sub>')
                     executable_paths = [product.executable_path for product in products.values()]
                     command = ['/usr/bin/xcrun', 'lipo', '-create'] + executable_paths + ['-output',
-                                                                                          output_product.executable_path]
+                        output_product.executable_path]
                     runner.check_run(command)
                     mtime = executable_paths[0].stat().st_mtime
                     os.utime(str(output_product.executable_path), (mtime, mtime))
@@ -165,12 +169,12 @@ class Punic(object):
 
                 logger.debug('<sub>Producing dSYM files</sub>')
                 command = ['/usr/bin/xcrun', 'dsymutil', str(output_product.executable_path), '-o',
-                           str(output_product.target_build_dir / (output_product.executable_name + '.dSYM'))]
+                    str(output_product.target_build_dir / (output_product.executable_name + '.dSYM'))]
                 runner.check_run(command)
 
                 ########################################################################################################
 
-            #            exit(0)
+                #            exit(0)
 
     def clean(self, configuration, platforms):
         # type: (str, str)
@@ -178,7 +182,7 @@ class Punic(object):
         for platform, project, scheme in self.scheme_walker(platforms=platforms):
             for sdk in platform.sdks:
                 logger.info('<sub>Cleaning</sub>: {} {} {} {}'.format(project.path, scheme, sdk, configuration))
-                project.check_call(subcommand = 'clean', scheme=scheme, sdk=sdk, configuration=configuration)
+                project.check_call(subcommand='clean', scheme=scheme, sdk=sdk, configuration=configuration)
 
     def ordered_dependencies(self, fetch=False, name_filter=None):
         # type: (bool, [str]) -> [(ProjectIdentifier, Revision)]
@@ -198,7 +202,7 @@ class Punic(object):
         resolver = Resolver(self)
         resolved_dependencies = resolver.resolve_versions(dependencies, fetch=fetch)
         resolved_dependencies = [dependency for dependency in resolved_dependencies if
-                                 dependency[0].matches(name_filter)]
+            dependency[0].matches(name_filter)]
         return resolved_dependencies
 
     def xcode_projects(self, dependencies=None, fetch=False):
@@ -235,7 +239,7 @@ class Punic(object):
             if carthage_symlink_path.exists():
                 carthage_symlink_path.unlink()
             logger.debug('<sub>Creating symlink: <ref>{}</ref> <ref>{}</ref></sub>'.format(self.build_path,
-                                                                                           carthage_symlink_path))
+                carthage_symlink_path))
             assert self.build_path.exists()
             os.symlink(str(self.build_path), str(carthage_symlink_path))
 
@@ -245,8 +249,9 @@ class Punic(object):
                 return identifier
 
             project_paths = checkout_path.glob("*.xcodeproj")
-            projects = [XcodeProject(self, config.xcode, project_path, make_identifier(project_path)) for project_path in
-                        project_paths]
+            projects = [XcodeProject(self, config.xcode, project_path, make_identifier(project_path)) for project_path
+                in
+                project_paths]
             all_projects += projects
         return all_projects
 
@@ -262,10 +267,10 @@ class Punic(object):
                 platform_build_path.mkdir(parents=True)
             for project in projects:
                 schemes = [scheme for scheme in project.schemes if
-                           platform.sdks[0] in project.build_settings(scheme).get('SUPPORTED_PLATFORMS', '').split(' ')]
+                    platform.sdks[0] in project.build_settings(scheme).get('SUPPORTED_PLATFORMS', '').split(' ')]
                 schemes = [scheme for scheme in schemes if
-                           project.build_settings(scheme).get(
-                               'PACKAGE_TYPE') == 'com.apple.package-type.wrapper.framework']
+                    project.build_settings(scheme).get(
+                        'PACKAGE_TYPE') == 'com.apple.package-type.wrapper.framework']
                 for scheme in schemes:
                     yield platform, project, scheme
 
@@ -293,7 +298,7 @@ class Punic(object):
 
             if specification.predicate.operator == VersionOperator.commitish:
                 tags.append(Revision(repository=repository, revision=specification.predicate.value,
-                                     revision_type=Revision.Type.other))
+                    revision_type=Revision.Type.other))
                 tags.sort()
 
             assert len(tags)

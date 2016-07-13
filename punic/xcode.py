@@ -13,6 +13,7 @@ from .runner import *
 from .logger import *
 from .semantic_version import *
 
+
 class Xcode(object):
     all_xcodes = None
     default_xcode = None
@@ -25,11 +26,13 @@ class Xcode(object):
 
     @classmethod
     def find_all(cls):
-        output = runner.check_run('/usr/bin/mdfind \'kMDItemCFBundleIdentifier="com.apple.dt.Xcode" and kMDItemContentType="com.apple.application-bundle"\'')
+        output = runner.check_run(
+            '/usr/bin/mdfind \'kMDItemCFBundleIdentifier="com.apple.dt.Xcode" and kMDItemContentType="com.apple.application-bundle"\'')
         xcodes = [Xcode(Path(path)) for path in output.strip().split("\n")]
         Xcode.all_xcodes = dict([(xcode.version, xcode) for xcode in xcodes])
         default_developer_dir_path = Path(runner.check_run(['xcode-select', '-p']).strip())
-        Xcode.default_xcode = [xcode for version, xcode in Xcode.all_xcodes.items() if xcode.developer_dir_path == default_developer_dir_path][0]
+        Xcode.default_xcode = [xcode for version, xcode in Xcode.all_xcodes.items() if
+            xcode.developer_dir_path == default_developer_dir_path][0]
 
     def __init__(self, path):
         self.path = path
@@ -37,7 +40,7 @@ class Xcode(object):
 
     @mproperty
     def version(self):
-        output = self.check_call(['xcodebuild', '-version'], env = {'DEVELOPER_DIR': str(self.developer_dir_path)})
+        output = self.check_call(['xcodebuild', '-version'], env={'DEVELOPER_DIR': str(self.developer_dir_path)})
         match = re.match(r'^Xcode (?P<version>.+)\nBuild version (?P<build>.+)', output)
         return SemanticVersion.string(match.groupdict()['version'])
 
@@ -55,6 +58,7 @@ class Xcode(object):
 
     def __repr__(self):
         return '{} ({})'.format(self.path, self.version)
+
 
 ########################################################################################################################
 
@@ -86,26 +90,29 @@ class XcodeProject(object):
         return targets, configurations, schemes
 
     def build_settings(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None):
-        output = self.check_call(subcommand='-showBuildSettings', scheme=scheme, target=target, configuration=configuration, sdk=sdk, arguments=arguments, cache_key=self.identifier)
+        output = self.check_call(subcommand='-showBuildSettings', scheme=scheme, target=target,
+            configuration=configuration, sdk=sdk, arguments=arguments, cache_key=self.identifier)
         return parse_build_settings(output)
 
     def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None):
         if not arguments:
             arguments = dict()
         try:
-            self.check_call(subcommand='build', scheme=scheme, target=target, configuration=configuration, sdk=sdk, arguments=arguments)
+            self.check_call(subcommand='build', scheme=scheme, target=target, configuration=configuration, sdk=sdk,
+                arguments=arguments)
         except CalledProcessError as e:
             logger.error('<err>Error</err>: Failed to build - result code <echo>{}</echo>'.format(e.returncode))
             logger.error('Command: <echo>{}</echo>'.format(e.cmd))
             logger.error(e.output)
             exit(e.returncode)
 
-
-        build_settings = self.build_settings(scheme=scheme, target=target, configuration=configuration, sdk=sdk, arguments=arguments)
+        build_settings = self.build_settings(scheme=scheme, target=target, configuration=configuration, sdk=sdk,
+            arguments=arguments)
 
         return BuildProduct.build_settings(build_settings)
 
-    def check_call(self, subcommand, scheme=None, target=None, configuration=None, sdk=None, jobs=None, arguments=None, **kwargs):
+    def check_call(self, subcommand, scheme=None, target=None, configuration=None, sdk=None, jobs=None, arguments=None,
+            **kwargs):
         if not arguments:
             arguments = dict()
 
@@ -119,6 +126,7 @@ class XcodeProject(object):
                   + ['{}={}'.format(key, value) for key, value in arguments.items()] \
                   + [subcommand]
         return self.xcode.check_call(command, **kwargs)
+
 
 ########################################################################################################################
 
@@ -173,7 +181,7 @@ class BuildProduct(object):
         product.product_name = build_settings['PRODUCT_NAME']  # 'Example'
         product.executable_name = build_settings['EXECUTABLE_NAME']  # 'Example'
         product.target_build_dir = Path(build_settings[
-                                            'TARGET_BUILD_DIR'])  # ~/Library/Developer/Xcode/DerivedData/Example-<random>/Build/Products/<configuration>-<sdk>
+            'TARGET_BUILD_DIR'])  # ~/Library/Developer/Xcode/DerivedData/Example-<random>/Build/Products/<configuration>-<sdk>
         return product
 
     @classmethod
@@ -235,6 +243,6 @@ def uuids_from_binary(path):
     output = runner.check_run(command)
     lines = output.splitlines()
     matches = [re.match(r'^UUID: ([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}) \((.+)\) (.+)$', line)
-               for line in lines]
+        for line in lines]
     uuids = [match.group(1) for match in matches]
     return uuids

@@ -4,6 +4,7 @@ import logging
 
 import punic.styling
 
+
 class Logger(object):
     def __init__(self):
         pass
@@ -30,5 +31,6 @@ class Logger(object):
     def echo(self, msg):
         msg = punic.styling.styled('<echo>{}</echo>'.format(msg))
         logging.log(logging.DEBUG, msg)
+
 
 logger = Logger()

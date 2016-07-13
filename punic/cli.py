@@ -1,6 +1,5 @@
 from __future__ import division, absolute_import, print_function
 
-
 import shutil
 import os
 import contextlib
@@ -16,6 +15,7 @@ from .errors import *
 from .config import *
 from .logger import *
 from .version_check import *
+
 
 @click.group()
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
@@ -57,7 +57,7 @@ def resolve(context, fetch):
 @main.command()
 @click.pass_context
 @click.option('--configuration', default=None,
-              help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+    help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
@@ -86,7 +86,7 @@ def checkout(context):
 @main.command()
 @click.pass_context
 @click.option('--configuration', default=None,
-              help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+    help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
@@ -103,7 +103,7 @@ def build(context, configuration, platform, fetch, deps):
 @main.command()
 @click.pass_context
 @click.option('--configuration', default=None,
-              help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+    help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.argument('deps', nargs=-1)
 def bootstrap(context, configuration, platform, deps):
@@ -120,7 +120,7 @@ def bootstrap(context, configuration, platform, deps):
 @main.command()
 @click.pass_context
 @click.option('--configuration', default=None,
-              help="""Dependency configurations to clean. Usually 'Release' or 'Debug'.""")
+    help="""Dependency configurations to clean. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to clean. Comma separated list.""")
 @click.option('--xcode/--no-xcode', default=True, is_flag=True, help="""Clean xcode projects.""")
 @click.option('--caches', default=False, is_flag=True, help="""Clean the global punic carthage files.""")
@@ -183,6 +183,7 @@ def error_handling():
         logger.error('<err>Error</err>: No Cartfile found at path: <ref>{}</ref>'.format(e.path))
     except NoSuchRevision as e:
         logger.error('<err>Error</err>: No such revision {} found in repository {}'.format(e.revision, e.repository))
-        logger.error('Are you sure you are using the latest bits? Try an explicit `punic fetch` or use `punic bootstrap` instead of `punic build`')
+        logger.error(
+            'Are you sure you are using the latest bits? Try an explicit `punic fetch` or use `punic bootstrap` instead of `punic build`')
     except:
         raise

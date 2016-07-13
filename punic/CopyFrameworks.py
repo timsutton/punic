@@ -59,7 +59,7 @@ def main():
         print("# Resigning {} with {}".format(framework_name, expanded_identity))
         # noinspection PyUnusedLocal
         result = subprocess.check_call(["/usr/bin/xcrun", "codesign", "--force", "--sign", expanded_identity,
-                                        "--preserve-metadata=identifier,entitlements", binary_path])
+            "--preserve-metadata=identifier,entitlements", binary_path])
 
 
 if __name__ == "__main__":

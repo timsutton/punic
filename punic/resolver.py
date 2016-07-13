@@ -30,8 +30,8 @@ class Resolver(object):
         def populate_graph(graph, parent, parent_version, depth=0):
             graph.add_node((parent, parent_version))
             for child, child_versions in self.punic.dependencies_for_project_and_tag(parent,
-                                                                                     parent_version.revision if parent_version else None,
-                                                                                     fetch=self.fetch):
+                    parent_version.revision if parent_version else None,
+                    fetch=self.fetch):
                 for child_version in child_versions:
                     if dependency_filter and dependency_filter(child, child_version) == False:
                         continue
@@ -45,7 +45,7 @@ class Resolver(object):
     def resolve(self):
         # type: () -> DiGraph
         for dependency, revisions in self.punic.dependencies_for_project_and_tag(self.punic.root_project.identifier,
-                                                                                 None, fetch=self.fetch):
+                None, fetch=self.fetch):
             logger.debug('<ref>{}</ref> <rev>{}</rev>'.format(dependency, revisions))
 
         logger.debug('Building universal graph')
@@ -131,7 +131,7 @@ class Resolver(object):
             parent = (identifier, version)
             graph.add_node(parent)
             for dependency, _ in self.punic.dependencies_for_project_and_tag(identifier=identifier,
-                                                                             tag=version.revision, fetch=fetch):
+                    tag=version.revision, fetch=fetch):
                 version = versions_for_identifier[dependency]
                 child = (dependency, version)
                 graph.add_edge(parent, child)

@@ -10,9 +10,9 @@ from blessings import Terminal
 
 term = Terminal()
 
+
 # create a subclass and override the handler methods
 class MyHTMLParser(HTMLParser):
-
     def __init__(self):
         HTMLParser.__init__(self)
 
@@ -23,7 +23,7 @@ class MyHTMLParser(HTMLParser):
             'ref': term.yellow,
             'rev': term.bold,
             'cmd': term.cyan + term.underline,
-            #'sub': term.cyan,
+            # 'sub': term.cyan,
             'echo': term.yellow,
         }
 
@@ -47,7 +47,9 @@ class MyHTMLParser(HTMLParser):
         for style in set(self.style_stack):
             self.s += style
 
+
 enabled = True
+
 
 def styled(s):
     parser = MyHTMLParser()

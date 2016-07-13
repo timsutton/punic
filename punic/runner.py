@@ -7,13 +7,13 @@ import subprocess
 import shlex
 import shelve
 
-
 from subprocess import CalledProcessError
 from memoize import mproperty
 
 from .logger import *
 
 from itertools import (chain, imap)
+
 
 def flatmap(f, items):
     return chain.from_iterable(imap(f, items))
@@ -63,7 +63,7 @@ class Runner(object):
 
     def can_run(self, args):
         args = self.convert_args(args)
-        result = self.run(['/usr/bin/env', 'which', args[0]], echo = False)
+        result = self.run(['/usr/bin/env', 'which', args[0]], echo=False)
         return True if result.return_code == 0 else False
 
     def check_run(self, *args, **kwargs):
@@ -71,7 +71,7 @@ class Runner(object):
         result = self.run(*args, **kwargs)
         return result.stdout
 
-    def run(self, command, cwd = None, echo = None, cache_key = None, check = False, env = None):
+    def run(self, command, cwd=None, echo=None, cache_key=None, check=False, env=None):
         args = self.convert_args(command)
 
         if echo == True or self.echo == True:
@@ -79,7 +79,7 @@ class Runner(object):
             logger.echo(' '.join(args))
 
         if cache_key and self.shelf:
-            #assert not env # TODO
+            # assert not env # TODO
             key = '{}{}'.format(cache_key, ' '.join(command))
             if key in self.shelf:
                 # logger.debug('CACHE HIT: {}'.format(key))
@@ -93,7 +93,7 @@ class Runner(object):
         stdout = subprocess.PIPE
         stderr = subprocess.PIPE if not check else subprocess.STDOUT
 
-        popen = subprocess.Popen(args, cwd = cwd, stdout=stdout, stderr=stderr, env = env)
+        popen = subprocess.Popen(args, cwd=cwd, stdout=stdout, stderr=stderr, env=env)
         stdout, stderr = popen.communicate()
         return_code = popen.returncode
 
