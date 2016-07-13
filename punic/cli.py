@@ -43,7 +43,7 @@ def main(context, echo, verbose, color):
 @main.command()
 @click.pass_context
 def checkout(context):
-    """Checkout dependencies."""
+    """Clones or fetches a Git repository ahead of time."""
     with timeit('fetch'):
         with error_handling():
             logger.info("<cmd>Checkout</cmd>")
@@ -76,7 +76,7 @@ def resolve(context, fetch):
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.argument('deps', nargs=-1)
 def build(context, configuration, platform, deps):
-    """Build dependencies."""
+    """Build the project's dependencies."""
     with timeit('build'):
         with error_handling():
             logger.info("<cmd>Build</cmd>")
@@ -95,7 +95,7 @@ def build(context, configuration, platform, deps):
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
 def update(context, configuration, platform, fetch, deps):
-    """Resolve & build dependencies."""
+    """Update and rebuild the project's dependencies."""
     with timeit('update'):
         with error_handling():
             logger.info("<cmd>Update</cmd>")
@@ -116,7 +116,7 @@ def update(context, configuration, platform, fetch, deps):
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.argument('deps', nargs=-1)
 def bootstrap(context, configuration, platform, deps):
-    """Fetch & build dependencies."""
+    """Check out and build the project's dependencies."""
     with timeit('bootstrap'):
         with error_handling():
             logger.info("<cmd>Bootstrap</cmd>")
@@ -156,7 +156,7 @@ def clean(context, configuration, platform, xcode, caches):
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--open', default=False, is_flag=True, help="""Open the graph image file.""")
 def graph(context, fetch, open):
-    """Output resolved dependency graph"""
+    """Output resolved dependency graph."""
     with timeit('graph'):
         with error_handling():
             logger.info("<cmd>Graph</cmd>")
@@ -183,6 +183,7 @@ def graph(context, fetch, open):
 @main.command(name = 'copy-frameworks')
 @click.pass_context
 def copy_frameworks(context):
+    """In a Run Script build phase, copies each framework specified by a SCRIPT_INPUT_FILE environment variable into the built app bundle."""
     copy_frameworks_main()
 
 
@@ -190,7 +191,7 @@ def copy_frameworks(context):
 @main.command()
 @click.pass_context
 def version(context):
-    """Print punic version"""
+    """Display the current version of Carthage."""
     logger.info('Punic version: {}'.format(punic.__version__), prefix = False)
 
     sys_version = sys.version_info
@@ -204,6 +205,8 @@ def version(context):
 
     logger.info('Python version: {}'.format(sys_version), prefix=False)
     version_check(verbose = True, timeout = None, failure_is_an_option=False)
+
+
 @contextlib.contextmanager
 def error_handling():
     try:
