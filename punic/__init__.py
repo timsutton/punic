@@ -1,6 +1,6 @@
 from __future__ import division, absolute_import, print_function
 
-__version__ = '0.0.8'
+__version__ = '0.0.9'
 
 import sys
 from pathlib2 import Path
