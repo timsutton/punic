@@ -76,13 +76,25 @@ def copy_frameworks_main():
         else:
             logger.info('\tCode signing not allowed. Skipping.')
 
-
-        # Copy bcsymbolmap files from $PROJECT_DIRCarthage/Buil to $BUILT_PRODUCTS_DIR
-        if enable_bitcode and action == 'install':
+        if action == 'install':
             uuids = uuids_from_binary(binary_path)
-            for uuid in uuids:
-                bcsymbolmap_path = punic_builds_dir / (uuid + '.bcsymbolmap')
-                logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(bcsymbolmap_path.relative_to(project_dir)))
-                shutil.copy(str(bcsymbolmap_path), str(built_products_dir))
+
+            # Copy dSYM files from $PROJECT_DIRCarthage/Build to $BUILT_PRODUCTS_DIR
+            dsym_path = input_path.parent / (binary_path.name + '.dSYM')
+
+            if dsym_path.exists():
+                logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(
+                    dsym_path.relative_to(project_dir)))
+                if (built_products_dir / dsym_path.name).exists:
+                    shutil.rmtree(built_products_dir / dsym_path.name)
+                shutil.copytree(str(dsym_path), str(built_products_dir / dsym_path.name))
+
+
+            # Copy bcsymbolmap files from $PROJECT_DIRCarthage/Build to $BUILT_PRODUCTS_DIR
+            if enable_bitcode:
+                for uuid in uuids:
+                    bcsymbolmap_path = punic_builds_dir / (uuid + '.bcsymbolmap')
+                    logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(bcsymbolmap_path.relative_to(project_dir)))
+                    shutil.copy(str(bcsymbolmap_path), str(built_products_dir))
 
 
