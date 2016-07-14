@@ -9,7 +9,6 @@ from .carthage_cli import *
 
 def main():
     path = Path(sys.argv[0])
-    print(path.name)
     if path.name in set(['carthage_punic']):
         carthage_cli()
     else:

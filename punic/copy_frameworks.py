@@ -4,11 +4,11 @@ __all__ = ['copy_frameworks_main']
 
 import os
 import re
-import shutil
 from pathlib2 import Path
 from .runner import *
 from .logger import *
 from .xcode import uuids_from_binary
+import punic.shshutil as shutil
 
 def copy_frameworks_main():
 
@@ -38,8 +38,8 @@ def copy_frameworks_main():
 
         logger.info('\tCopying framework "{}" to "$SYMROOT/{}"'.format(framework_name, output_path.relative_to(sym_root)))
         if output_path.exists():
-            shutil.rmtree(str(output_path))
-        shutil.copytree(str(input_path), str(output_path))
+            shutil.rmtree(output_path)
+        shutil.copytree(input_path, output_path)
 
         framework_path = output_path
 
@@ -88,8 +88,8 @@ def copy_frameworks_main():
 
                 logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(dsym_path.relative_to(project_dir)))
                 if dsym_output_path.exists():
-                    shutil.rmtree(str(dsym_output_path))
-                shutil.copytree(str(dsym_path), str(dsym_output_path))
+                    shutil.rmtree(dsym_output_path)
+                shutil.copytree(dsym_path, dsym_output_path)
 
 
             # Copy bcsymbolmap files from $PROJECT_DIRCarthage/Build to $BUILT_PRODUCTS_DIR
@@ -97,6 +97,6 @@ def copy_frameworks_main():
                 for uuid in uuids:
                     bcsymbolmap_path = punic_builds_dir / (uuid + '.bcsymbolmap')
                     logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(bcsymbolmap_path.relative_to(project_dir)))
-                    shutil.copy(str(bcsymbolmap_path), str(built_products_dir))
+                    shutil.copy(bcsymbolmap_path, built_products_dir)
 
 

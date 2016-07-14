@@ -3,7 +3,7 @@ from __future__ import division, absolute_import, print_function
 __all__ = ['Punic']
 
 import os
-import shutil
+import punic.shshutil as shutil
 from copy import copy
 from pathlib2 import Path
 import affirm
@@ -143,8 +143,8 @@ class Punic(object):
 
                 logger.debug('<sub>Copying binary</sub>')
                 if output_product.product_path.exists():
-                    shutil.rmtree(str(output_product.product_path))
-                shutil.copytree(str(device_product.product_path), str(output_product.product_path))
+                    shutil.rmtree(output_product.product_path)
+                shutil.copytree(device_product.product_path, output_product.product_path)
 
                 ########################################################################################################
 
@@ -163,14 +163,14 @@ class Punic(object):
                 for product in products.values():
                     for path in product.module_paths:
                         relative_path = path.relative_to(product.product_path)
-                        shutil.copyfile(str(path), str(output_product.product_path / relative_path))
+                        shutil.copyfile(path, output_product.product_path / relative_path)
 
                 ########################################################################################################
 
                 logger.debug('<sub>Copying bcsymbolmap files</sub>')
                 for product in products.values():
                     for path in product.bcsymbolmap_paths:
-                        shutil.copy(str(path), str(output_product.target_build_dir))
+                        shutil.copy(path, output_product.target_build_dir)
 
                 ########################################################################################################
 
@@ -229,8 +229,8 @@ class Punic(object):
                 project.checkout(revision)
                 logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
                 if checkout_path.exists():
-                    shutil.rmtree(str(checkout_path))
-                shutil.copytree(str(project.path), str(checkout_path), ignore=shutil.ignore_patterns('.git'))
+                    shutil.rmtree(checkout_path)
+                shutil.copytree(project.path, checkout_path, ignore=shutil.ignore_patterns('.git'))
 
             if not checkout_path.exists():
                 raise Exception('No checkout at path: {}'.format(checkout_path))

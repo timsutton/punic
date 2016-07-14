@@ -4,7 +4,7 @@ __all__ = ['punic_cli']
 
 import logging
 import os
-import shutil
+import punic.shshutil as shutil
 import sys
 
 import click
@@ -149,7 +149,7 @@ def clean(context, configuration, platform, xcode, caches):
     if caches:
         if punic.repo_cache_directory.exists():
             logger.info('Cleaning {repo_cache_directory}'.format(**punic.__dict__))
-            shutil.rmtree(str(punic.repo_cache_directory))
+            shutil.rmtree(punic.repo_cache_directory)
         logger.info('Cleaning run cache')
         runner.reset()
 
