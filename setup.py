@@ -25,6 +25,7 @@ setup(
         ],
     entry_points='''
         [console_scripts]
-        punic=punic.cli:main
+        punic=punic:main
+        carthage_punic=punic:main
         ''',
 )
