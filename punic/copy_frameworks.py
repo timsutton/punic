@@ -83,11 +83,13 @@ def copy_frameworks_main():
             dsym_path = input_path.parent / (binary_path.name + '.dSYM')
 
             if dsym_path.exists():
-                logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(
-                    dsym_path.relative_to(project_dir)))
-                if (built_products_dir / dsym_path.name).exists:
-                    shutil.rmtree(built_products_dir / dsym_path.name)
-                shutil.copytree(str(dsym_path), str(built_products_dir / dsym_path.name))
+
+                dsym_output_path = built_products_dir / dsym_path.name
+
+                logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(dsym_path.relative_to(project_dir)))
+                if dsym_output_path.exists():
+                    shutil.rmtree(str(dsym_output_path))
+                shutil.copytree(str(dsym_path), str(dsym_output_path))
 
 
             # Copy bcsymbolmap files from $PROJECT_DIRCarthage/Build to $BUILT_PRODUCTS_DIR
