@@ -45,13 +45,14 @@ def punic_cli(context, echo, verbose, color):
 
 @punic_cli.command()
 @click.pass_context
-def checkout(context):
-    """Clones or fetches a Git repository ahead of time."""
+def fetch(context):
+    """Fetch the project's dependencies.."""
     with timeit('fetch'):
         with error_handling():
-            logger.info("<cmd>Checkout</cmd>")
+            logger.info("<cmd>fetch</cmd>")
             punic = context.obj
             punic.can_fetch = True # obviously
+
             punic.fetch()
 
 
@@ -69,6 +70,7 @@ def resolve(context, fetch):
             logger.info("<cmd>Resolve</cmd>")
             punic = context.obj
             punic.can_fetch = fetch
+
             punic.resolve()
 
 
@@ -77,16 +79,17 @@ def resolve(context, fetch):
 @click.option('--configuration', default=None,
     help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
+@click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
 def build(context, configuration, platform, deps):
-    """Build the project's dependencies."""
+    """Fetch and build the project's dependencies."""
     with timeit('build'):
         with error_handling():
             logger.info("<cmd>Build</cmd>")
             punic = context.obj
             punic.config.update(configuration=configuration, platform=platform)
+            punic.can_fetch = fetch
 
-            punic.can_fetch = False
             punic.build(dependencies=deps)
 
 
@@ -104,30 +107,13 @@ def update(context, configuration, platform, fetch, deps):
             logger.info("<cmd>Update</cmd>")
             punic = context.obj
             punic.config.update(configuration=configuration, platform=platform)
-
             punic.can_fetch = fetch
+
             punic.resolve()
             punic.build(dependencies=deps)
 
 
 
-
-@punic_cli.command()
-@click.pass_context
-@click.option('--configuration', default=None,
-    help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
-@click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
-@click.argument('deps', nargs=-1)
-def bootstrap(context, configuration, platform, deps):
-    """Check out and build the project's dependencies."""
-    with timeit('bootstrap'):
-        with error_handling():
-            logger.info("<cmd>Bootstrap</cmd>")
-            punic = context.obj
-            punic.can_fetch = True
-            punic.config.update(configuration=configuration, platform=platform)
-            punic.fetch()
-            punic.build(dependencies=deps)
 
 
 @punic_cli.command()
@@ -178,7 +164,6 @@ def graph(context, fetch, open):
                 runner.check_run(command)
                 if open:
                     runner.run('open graph.png')
-
             else:
                 logging.warning('graphviz not installed. Cannot convert graph to a png.')
 

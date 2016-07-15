@@ -2,7 +2,7 @@
 
 ## Description
 
-A clean room reimplementation of (_parts_ of) the Carthage dependency manager.
+Punic is intended to be an easier to use, faster and more reliable implementation of the [Carthage](http://github.com/carthage/carthage) dependency management system.
 
 ## Installation
 
@@ -13,39 +13,52 @@ $ brew install python2.7 # optional - but generally easiest way to make a sane p
 $ pip install --upgrade git+https://github.com/schwa/punic.git
 ```
 
-*Update!*
-
-Punic is now python 3 compatible too (tested on python 3.5).
+Punic is python 3(.5) compatible too.
 
 ```shell
 $ brew install python3
 $ pip3 install --upgrade git+https://github.com/schwa/punic.git
 ```
 
-Note: testing primarily occurs with Python 2.7. So until punic gets continuous integration (and more unit tests) it might be safer to run Punic under Python 2.7. But go on; be daring and use Python 3.5!
-
 ## Usage
 
-Punic currently supports a subset of Carthage functionality.
+Punic uses Carthage configuration files (`cartfile` & `cartfile.resolved`).
+
+
+
 
 ```shell
-$ punic
+punic build --platform iOS --configuration Debug
+```
+
+`punic build`
+punic update
+```
+
+
+
+
+
+
+```
+$ punic --help
 Usage: punic [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  --echo     Echo all commands to terminal.
-  --verbose  Verbose logging.
-  --help     Show this message and exit.
+  --echo                Echo all commands to terminal.
+  --verbose             Verbose logging.
+  --color / --no-color  TECHNICOLOR.
+  --help                Show this message and exit.
 
 Commands:
-  bootstrap  Fetch & build dependencies
-  build      Build dependencies
-  checkout   Checkout dependencies
-  clean      Clean project & punic environment.
-  graph      Output resolved dependency graph
-  resolve    Resolve dependencies and output...
-  update     Resolve & build dependencies.
-  version    Print punic version
+  build            Fetch and build the project's dependencies.
+  clean            Clean project & punic environment.
+  copy-frameworks  In a Run Script build phase, copies each...
+  fetch            Fetch the project's dependencies..
+  graph            Output resolved dependency graph.
+  resolve          Resolve dependencies and output...
+  update           Update and rebuild the project's...
+  version          Display the current version of Carthage.
 ```
 
 See https://github.com/Carthage/Carthage for usage information
@@ -101,7 +114,7 @@ Note that repositories pointed to by file URL are still cloned and fetched just 
 The current roadmap for Punic is as follows (in rough order of priority):
 
 - [X] `copy-frameworks` subcommand.
-- [ ] `fetch` subcommand
+- [X] `fetch` subcommand
 - [ ] Add a `migrate` subcommand that can migrate Cartfiles to the punic.yaml.
 - [ ] Add a `table-of-contents` subcommand that will produce a filtered list of all projects, schemes etc of all dependencies. This TOC could then be used inside punic.yaml as a whitelist or blacklist. This will allow us to do things like skip frameworks that should not be built.
 - [ ] Include full Cartfile (.private) functional in punic.yaml
@@ -122,74 +135,6 @@ Aside from differences of implementation one of the fundamental differences is t
 
 Punic only supports "github" style dependency specifications and does not support the use of branch names in version specifications.
 
-A complete list of Carthage compatibility as of version 0.16.2 of Carthage follows:
-
-| Command/Switch                  | Status                             |
-| ---------------                 | ---------------------------------- |
-| archive                         | _Won't_ implement. Note 1          |
-| bootstrap                       | Implemented                        |
-| bootstrap / --configuration     | Implemented                        |
-| bootstrap / --platform          | Implemented                        |
-| bootstrap / --toolchain         | _Unimplemented_                    |
-| bootstrap / --derived-data      | _Unimplemented_                    |
-| bootstrap / --verbose           | Implemented. Note 4                |
-| bootstrap / --no-checkout       | _Unimplemented_                    |
-| bootstrap / --no-build          | _Unimplemented_                    |
-| bootstrap / --use-ssh           | _Unimplemented_                    |
-| bootstrap / --use-submodules    | _Unimplemented_                    |
-| bootstrap / --no-use-binaries   | _Won't_ implement. Note 1          |
-| bootstrap / --color             | Implemented. Note 4                |
-| bootstrap / --project-directory | _Unimplemented_                    |
-| bootstrap / [dependencies]      | Partially implemented. Note 3      |
-| build                           | Implemented                        |
-| build / --configuration         | Implemented                        |
-| build / --platform              | Implemented                        |
-| build / --toolchain             | _Unimplemented_                    |
-| build / --derived-data          | _Unimplemented_                    |
-| build / --no-skip-current       | _Unimplemented_                    |
-| build / --color                 | Implemented. Note 4                |
-| build / --verbose               | Implemented. Note 4                |
-| build / --project-directory     | _Unimplemented_                    |
-| build / [dependencies]          | Partially implemented. Note 3      |
-| checkout                        | Implemented                        |
-| checkout / --use-ssh            | _Unimplemented_                    |
-| checkout / --use-submodules     | _Unimplemented_                    |
-| checkout / --no-use-binaries    | _Won't_ implement. Note 1          |
-| checkout / --color              | Implemented. Note 4                |
-| checkout / --verbose            | Implemented. Note 4                |
-| checkout / --project-directory  | _Unimplemented_                    |
-| checkout / [dependencies]       | _Unimplemented_                    |
-| copy-frameworks                 | Implemented                        |
-| fetch                           | _Won't_ implement. Note 1          |
-| help                            | Implemented. Note 5                |
-| outdated                        | _Unimplemented_                    |
-| outdated / --use-ssh            | _Unimplemented_                    |
-| outdated / --verbose            | _Unimplemented_                    |
-| outdated / --color              | _Unimplemented_                    |
-| outdated / --project-directory  | _Unimplemented_                    |
-| update                          | Implemented                        |
-| update / --configuration        | Implemented                        |
-| update / --platform             | Implemented                        |
-| update / --toolchain            | _Unimplemented_                    |
-| update / --derived-data         | _Unimplemented_                    |
-| update / --verbose              | Implemented. Note 4                |
-| update / --no-checkout          | _Unimplemented_                    |
-| update / --no-build             | _Unimplemented_                    |
-| update / --use-ssh              | _Unimplemented_                    |
-| update / --use-submodules       | _Unimplemented_                    |
-| update / --no-use-binaries      | _Won't_ implement. Note 1          |
-| update / --color                | Implemented. Note 4                |
-| update / --project-directory    | _Unimplemented_                    |
-| update / [dependencies]         | Partially implemented. Note 3      |
-
-
-### Notes:
-
-1. Binary archives will not be supported until Swift supports a non-fragile ABI.
-2. `carthage fetch` doesn't seem very useful.
-3. Specifying dependencies only works to limit what is built. It does not prevent unspecified dependencies from being fetched.
-4. Unlike carthage both the `--verbose` and `--color` are both passed to punic _before_ the subcommand name. e.g. `punic --color --verbose update`. Carthage expects these switches after the subcommand name.
-5. Help is implemented as `punic --help` and not as its own subcommand.
 
 ## Frequently Answer Questions
 
