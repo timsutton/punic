@@ -15,6 +15,7 @@ setup(
         'affirm',
         'blessings',
         'click',
+        'click_didyoumean',
         'flufl.enum',
         'memoize',
         'networkx',

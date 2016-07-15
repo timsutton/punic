@@ -9,6 +9,9 @@ import sys
 
 import click
 
+import click
+from click_didyoumean import DYMGroup
+
 import punic
 from .basic_types import *
 from .copy_frameworks import *
@@ -20,7 +23,7 @@ from .semantic_version import *
 from .utilities import *
 from .version_check import *
 
-@click.group()
+@click.group(cls=DYMGroup)
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
 @click.option('--verbose', default=False, is_flag=True, help="""Verbose logging.""")
 @click.option('--color/--no-color', default=True, is_flag=True, help="""TECHNICOLOR.""")
@@ -81,7 +84,7 @@ def resolve(context, fetch):
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
-def build(context, configuration, platform, deps):
+def build(context, configuration, platform, fetch, deps):
     """Fetch and build the project's dependencies."""
     with timeit('build'):
         with error_handling():
