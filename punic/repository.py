@@ -87,7 +87,7 @@ class Repository(object):
                 runner.check_run('git clone --recursive "{}" {}'.format(repo, str(self.path)))
         else:
             with self.work_directory():
-                logger.debug('<sub>Fetching</sub>: <ref>{}</ref>'.format(self))
+                logger.info('<sub>Fetching</sub>: <ref>{}</ref>'.format(self))
                 runner.check_run('git fetch')
 
     def specifications_for_revision(self, revision):
