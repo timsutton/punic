@@ -115,23 +115,22 @@ class Punic(object):
 
         projects = self.xcode_projects(dependencies=filtered_dependencies)
 
-        for platform, project, scheme in self.scheme_walker(projects=projects,
-                platforms=platforms):
-
+        for platform, project, scheme in self.scheme_walker(projects=projects, platforms=platforms):
             with timeit(project.path.name):
-
                 products = dict()
                 for sdk in platform.sdks:
-                    logger.info('<sub>Building</sub> <ref>{}</ref> {} {} {}'.format(project.path.name, scheme, sdk,
+                    logger.info('<sub>Building</sub> <ref>{}</ref> ({}, {}, {})'.format(project.path.name, scheme, sdk,
                         configuration))
-                    product = project.build(scheme=scheme, configuration=configuration, sdk=sdk,
-                        arguments=self.xcode_arguments)
+
+                    arguments = XcodeBuildArguments(scheme=scheme, configuration=configuration, sdk=sdk, arguments=self.xcode_arguments)
+
+                    product = project.build(arguments=arguments)
                     products[sdk] = product
 
                 ########################################################################################################
 
-                device_sdk = platform.sdks[
-                    0]  # By convention sdk[0] is always the device sdk (e.g. 'iphoneos' and not 'iphonesimulator')
+                # By convention sdk[0] is always the device sdk (e.g. 'iphoneos' and not 'iphonesimulator')
+                device_sdk = platform.sdks[0]
                 device_product = products[device_sdk]
 
                 ########################################################################################################
@@ -271,21 +270,20 @@ class Punic(object):
             if not platform_build_path.exists():
                 platform_build_path.mkdir(parents=True)
             for project in projects:
-                schemes = [scheme for scheme in project.schemes if
-                    platform.sdks[0] in project.build_settings(scheme).get('SUPPORTED_PLATFORMS', '').split(' ')]
-                schemes = [scheme for scheme in schemes if
-                    project.build_settings(scheme).get(
-                        'PACKAGE_TYPE') == 'com.apple.package-type.wrapper.framework']
+
+                schemes_and_arguments = [(scheme, XcodeBuildArguments(scheme = scheme)) for scheme in project.schemes]
+                schemes_and_settings = [(scheme, project.build_settings(arguments = arguments)) for scheme, arguments in schemes_and_arguments]
+                schemes = [scheme for scheme, settings in schemes_and_settings if platform.sdks[0] in settings.get('SUPPORTED_PLATFORMS', '').split(' ') and settings.get('PACKAGE_TYPE') == 'com.apple.package-type.wrapper.framework']
                 for scheme in schemes:
                     yield platform, project, scheme
 
-    def repository_for_identifier(self, identifier, fetch=True):
+    def repository_for_identifier(self, identifier):
         # type: (ProjectIdentifier) -> Repository
         if identifier in self.all_repositories:
             return self.all_repositories[identifier]
         else:
             repository = Repository(self, identifier=identifier)
-            if fetch:
+            if self.can_fetch:
                 repository.fetch()
             self.all_repositories[identifier] = repository
             return repository
@@ -296,11 +294,11 @@ class Punic(object):
         assert isinstance(identifier, ProjectIdentifier)
         assert not tag or isinstance(tag, Revision)
 
-        repository = self.repository_for_identifier(identifier, fetch=self.can_fetch)
+        repository = self.repository_for_identifier(identifier)
         specifications = repository.specifications_for_revision(tag)
 
         def make(specification):
-            repository = self.repository_for_identifier(specification.identifier, fetch=self.can_fetch)
+            repository = self.repository_for_identifier(specification.identifier)
             tags = repository.revisions_for_predicate(specification.predicate)
             if specification.predicate.operator == VersionOperator.commitish:
                 tags.append(Revision(repository=repository, revision=specification.predicate.value, revision_type=Revision.Type.other))

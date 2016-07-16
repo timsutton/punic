@@ -1,10 +1,12 @@
 from __future__ import division, absolute_import, print_function
 
-__all__ = ['Xcode', 'XcodeProject', 'uuids_from_binary', 'BuildProduct']
+__all__ = ['Xcode', 'XcodeProject', 'uuids_from_binary', 'XcodeBuildProduct', 'XcodeBuildArguments']
 
 import re
+import affirm
 from pathlib2 import Path
 from memoize import mproperty
+import six
 from .runner import *
 from .logger import *
 from .semantic_version import *
@@ -67,8 +69,6 @@ class XcodeProject(object):
         self.path = path
         self.identifier = identifier
 
-        # os.environ['DEVELOPER_DIR'] = '/Applications/Xcode.app/Contents/Developer'
-
     @property
     def targets(self):
         return self.info[0]
@@ -83,46 +83,37 @@ class XcodeProject(object):
 
     @mproperty
     def info(self):
+        arguments = XcodeBuildArguments()
+        arguments.project = self.path
         output = self.check_call(subcommand='-list', cache_key=self.identifier)
         targets, configurations, schemes = parse_info(output)
         return targets, configurations, schemes
 
-    def build_settings(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None):
-        output = self.check_call(subcommand='-showBuildSettings', scheme=scheme, target=target,
-            configuration=configuration, sdk=sdk, arguments=arguments, cache_key=self.identifier)
+    def build_settings(self, arguments):
+        # type: (XcodeBuildArguments) -> dict()
+        output = self.check_call(subcommand='-showBuildSettings', arguments=arguments, cache_key=self.identifier)
         return parse_build_settings(output)
 
-    def build(self, scheme=None, target=None, configuration=None, sdk=None, arguments=None):
-        if not arguments:
-            arguments = dict()
+    def build(self, arguments):
+        # type: (XcodeBuildArguments) -> dict()
         try:
-            self.check_call(subcommand='build', scheme=scheme, target=target, configuration=configuration, sdk=sdk,
-                arguments=arguments)
+            self.check_call(subcommand='build', arguments = arguments)
         except CalledProcessError as e:
             logger.error('<err>Error</err>: Failed to build - result code <echo>{}</echo>'.format(e.returncode))
             logger.error('Command: <echo>{}</echo>'.format(e.cmd))
             logger.error(e.output)
             exit(e.returncode)
 
-        build_settings = self.build_settings(scheme=scheme, target=target, configuration=configuration, sdk=sdk,
-            arguments=arguments)
+        build_settings = self.build_settings(arguments=arguments)
+        assert(build_settings)
 
-        return BuildProduct.build_settings(build_settings)
+        return XcodeBuildProduct.build_settings(build_settings)
 
-    def check_call(self, subcommand, scheme=None, target=None, configuration=None, sdk=None, jobs=None, arguments=None,
-            **kwargs):
-        if not arguments:
-            arguments = dict()
-
-        command = ['xcodebuild'] \
-                  + ['-project', str(self.path)] \
-                  + (['-scheme', scheme] if scheme else []) \
-                  + (['-target', target] if target else []) \
-                  + (['-configuration', configuration] if configuration else []) \
-                  + (['-sdk', sdk] if sdk else []) \
-                  + (['-jobs', str(jobs)] if jobs else []) \
-                  + ['{}={}'.format(key, value) for key, value in arguments.items()] \
-                  + [subcommand]
+    def check_call(self, subcommand, arguments = None, **kwargs):
+        # type: (str, XcodeBuildArguments) -> [str]
+        assert not arguments or isinstance(arguments, XcodeBuildArguments)
+        arguments = arguments.to_list() if arguments else []
+        command = ['xcodebuild', '-project', self.path] + arguments + [subcommand]
         return self.xcode.check_call(command, **kwargs)
 
 
@@ -170,17 +161,48 @@ def parse_info(string):
 
 ########################################################################################################################
 
-class BuildProduct(object):
+class XcodeBuildArguments(object):
+    def __init__(self, scheme = None, target = None, configuration = None, sdk = None, jobs = None, derived_data_path = None, arguments = None):
+        self.scheme = scheme
+        self.target = target
+        self.configuration = configuration
+        self.sdk = sdk
+        self.jobs = jobs
+        self.derived_data_path = derived_data_path
+        self.arguments = arguments
+
+    def __repr__(self):
+        return 'XcodeBuildArguments({})'.format(self.__dict__)
+
+    def to_list(self):
+        # type: () -> [Any]
+        parts = []
+        parts += ['-scheme', self.scheme] if self.scheme else []
+        parts += ['-target', self.target] if self.target else []
+        parts += ['-configuration', self.configuration] if self.configuration else []
+        parts += ['-sdk', self.sdk] if self.sdk else []
+        parts += ['-jobs', self.jobs] if self.jobs else []
+        parts += ['-derivedDataPath', self.derived_data_path] if self.derived_data_path else []
+        parts += (['{}={}'.format(key, value) for key, value in self.arguments.items()]) if self.arguments else []
+        return parts
+
+
+########################################################################################################################
+
+
+class XcodeBuildProduct(object):
     @classmethod
     def build_settings(cls, build_settings):
-        product = BuildProduct()
+        product = XcodeBuildProduct()
         product.build_settings = build_settings
         product.full_product_name = build_settings['FULL_PRODUCT_NAME']  # 'Example.framework'
         product.product_name = build_settings['PRODUCT_NAME']  # 'Example'
         product.executable_name = build_settings['EXECUTABLE_NAME']  # 'Example'
-        product.target_build_dir = Path(build_settings[
-            'TARGET_BUILD_DIR'])  # ~/Library/Developer/Xcode/DerivedData/Example-<random>/Build/Products/<configuration>-<sdk>
+        product.target_build_dir = Path(build_settings['TARGET_BUILD_DIR'])  # ~/Library/Developer/Xcode/DerivedData/Example-<random>/Build/Products/<configuration>-<sdk>
         return product
+
+    def __repr__(self):
+        return 'BuildProduct({})'.format(self.__dict__)
 
     @classmethod
     def string(cls, string):
@@ -189,7 +211,7 @@ class BuildProduct(object):
         matches = (match.groups() for match in matches if match)
         build_settings = dict(matches)
 
-        product = BuildProduct.build_settings(build_settings=build_settings)
+        product = XcodeBuildProduct.build_settings(build_settings=build_settings)
         return product
 
     def __init__(self):
