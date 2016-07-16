@@ -111,11 +111,17 @@ class Punic(object):
 
         filtered_dependencies = self._ordered_dependencies(name_filter=dependencies)
 
-        projects = self._xcode_projects(dependencies=filtered_dependencies)
+        checkouts = [Checkout(punic = self, identifier = identifier, revision = revision) for identifier, revision in filtered_dependencies]
 
-        for platform, project, scheme in self._scheme_walker(projects=projects, platforms=platforms):
-            with timeit(project.path.name):
-                self._build_one(platform, project, scheme, configuration)
+        for platform in platforms:
+            for checkout in checkouts:
+                checkout.prepare()
+                for project in checkout.projects:
+                    schemes = project.schemes
+                    schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.support_platform_names]
+                    schemes = [scheme for scheme in schemes if scheme.product_is_framework]
+                    for scheme in schemes:
+                        self._build_one(platform, project, scheme.name, configuration)
 
     def clean(self, configuration, platforms):
         # type: (str, str)
@@ -143,55 +149,6 @@ class Punic(object):
         resolved_dependencies = [dependency for dependency in resolved_dependencies if
             dependency[0].matches(name_filter)]
         return resolved_dependencies
-
-    # TODO: This gets all xcode projects in a dependency and should be moved to a new class called "Checkout"
-    def _xcode_projects(self, dependencies=None):
-        # type: ([(ProjectIdentifier, Revision)]) -> [XcodeProject]
-
-        if not self.build_path.exists():
-            self.build_path.mkdir(parents=True)
-        all_projects = []
-
-        if not dependencies:
-            dependencies = self._ordered_dependencies()
-
-        for (identifier, revision) in dependencies:
-            checkout_path = self.checkouts_path / identifier.project_name
-
-            # TODO: This should be moved to its own stage and should be a side effect of getting projects
-            self._prepare_dependency(identifier, revision)
-
-            # TODO: This is for caching
-            def _make_cache_identifier(project_path):
-                repository = self._repository_for_identifier(identifier)
-                rev = repository.rev_parse(revision)
-                cache_identifier = '{},{}'.format(str(rev), project_path.relative_to(self.checkouts_path))
-                return cache_identifier
-
-            project_paths = checkout_path.glob("*.xcodeproj")
-            projects = [XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path)) for project_path
-                in
-                project_paths]
-            all_projects += projects
-        return all_projects
-
-    def _scheme_walker(self, projects=None, platforms=None):
-        # type: ([XcodeProject], [Platform]) -> (str, XcodeProject, str)
-
-        if not projects:
-            projects = self._xcode_projects(fetch=False)
-
-        for platform in platforms:
-            platform_build_path = self.build_path / platform.output_directory_name
-            if not platform_build_path.exists():
-                platform_build_path.mkdir(parents=True)
-            for project in projects:
-
-                schemes_and_arguments = [(scheme, XcodeBuildArguments(scheme = scheme)) for scheme in project.schemes]
-                schemes_and_settings = [(scheme, project.build_settings(arguments = arguments)) for scheme, arguments in schemes_and_arguments]
-                schemes = [scheme for scheme, settings in schemes_and_settings if platform.sdks[0] in settings.get('SUPPORTED_PLATFORMS', '').split(' ') and settings.get('PACKAGE_TYPE') == 'com.apple.package-type.wrapper.framework']
-                for scheme in schemes:
-                    yield platform, project, scheme
 
     def _repository_for_identifier(self, identifier):
         # type: (ProjectIdentifier) -> Repository
@@ -256,20 +213,29 @@ class Punic(object):
 
     def _build_one(self, platform, project, scheme, configuration):
         products = dict()
+
+        # Build device & simulator (if sim exists)
         for sdk in platform.sdks:
             logger.info('<sub>Building</sub> <ref>{}</ref> ({}, {}, {})'.format(project.path.name, scheme, sdk,
                 configuration))
 
-            arguments = XcodeBuildArguments(scheme=scheme, configuration=configuration, sdk=sdk,
-                arguments=self.xcode_arguments)
+            derived_data_path = self.library_directory / "DerivedData"
+
+            arguments = XcodeBuildArguments(scheme=scheme, configuration=configuration, sdk=sdk, derived_data_path=derived_data_path, arguments=self.xcode_arguments)
 
             product = project.build(arguments=arguments)
             products[sdk] = product
 
+        self._post_process(platform, products)
+
+    def _post_process(self, platform, products):
+
         ########################################################################################################
 
+        logger.debug("<sub>Post processing</sub>")
+
         # By convention sdk[0] is always the device sdk (e.g. 'iphoneos' and not 'iphonesimulator')
-        device_sdk = platform.sdks[0]
+        device_sdk = platform.device_sdk
         device_product = products[device_sdk]
 
         ########################################################################################################
@@ -318,3 +284,52 @@ class Punic(object):
         runner.check_run(command)
 
         ########################################################################################################
+
+class Checkout(object):
+    def __init__(self, punic, identifier, revision):
+        self.punic = punic
+        self.identifier = identifier
+        self.repository = self.punic._repository_for_identifier(self.identifier)
+        self.revision = revision
+        self.checkout_path = self.punic.checkouts_path / self.identifier.project_name
+
+    def prepare(self):
+
+        # TODO: This isn't really 'can_fetch'
+        if self.punic.can_fetch:
+            self.repository.checkout(self.revision)
+            logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
+            if self.checkout_path.exists():
+                shutil.rmtree(self.checkout_path)
+            shutil.copytree(self.repository.path, self.checkout_path, ignore=shutil.ignore_patterns('.git'))
+
+        if not self.checkout_path.exists():
+            raise Exception('No checkout at path: {}'.format(self.checkout_path))
+
+        # We only need to bother making a symlink to <root>/Carthage/Build if dependency also has dependencies.
+        if len(self.punic.dependencies_for_project_and_tag(self.identifier, self.revision)):
+            # Make a Carthage/Build symlink inside checked out project.
+            carthage_path = self.checkout_path / 'Carthage'
+            if not carthage_path.exists():
+                carthage_path.mkdir()
+
+            carthage_symlink_path = carthage_path / 'Build'
+            if carthage_symlink_path.exists():
+                carthage_symlink_path.unlink()
+            logger.debug('<sub>Creating symlink: <ref>{}</ref> to <ref>{}</ref></sub>'.format(
+                carthage_symlink_path.relative_to(self.punic.root_path), self.punic.build_path.relative_to(self.punic.root_path)))
+            assert self.punic.build_path.exists()
+            os.symlink(str(self.punic.build_path), str(carthage_symlink_path))
+
+    @property
+    def projects(self):
+        def _make_cache_identifier(project_path):
+            rev = self.repository.rev_parse(self.revision)
+            cache_identifier = '{},{}'.format(str(rev), project_path.relative_to(self.checkout_path))
+            return cache_identifier
+
+        project_paths = self.checkout_path.glob("*.xcodeproj")
+        projects = [XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path)) for project_path
+            in
+            project_paths]
+        return projects

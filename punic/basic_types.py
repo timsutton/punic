@@ -269,6 +269,10 @@ class Platform(object):
                 return platform
         return None
 
+    @property
+    def device_sdk(self):
+        return self.sdks[0]
+
     def __repr__(self):
         return self.nickname
 

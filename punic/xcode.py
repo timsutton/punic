@@ -78,8 +78,12 @@ class XcodeProject(object):
         return self.info[1]
 
     @property
-    def schemes(self):
+    def scheme_names(self):
         return self.info[2]
+
+    @mproperty
+    def schemes(self):
+        return [Scheme(self, scheme_name) for scheme_name in self.scheme_names]
 
     @mproperty
     def info(self):
@@ -116,6 +120,29 @@ class XcodeProject(object):
         command = ['xcodebuild', '-project', self.path] + arguments + [subcommand]
         return self.xcode.check_call(command, **kwargs)
 
+########################################################################################################################
+
+class Scheme(object):
+    def __init__(self, project, name):
+        self.project = project
+        self.name = name
+
+    @mproperty
+    def build_settings(self):
+        arguments = XcodeBuildArguments(scheme=self.name)
+        return self.project.build_settings(arguments=arguments)
+
+    @property
+    def support_platform_names(self):
+        return self.build_settings.get('SUPPORTED_PLATFORMS', '').split(' ')
+
+    @property
+    def package_type(self):
+        return self.build_settings['PACKAGE_TYPE']
+
+    @property
+    def product_is_framework(self):
+        return self.package_type == 'com.apple.package-type.wrapper.framework'
 
 ########################################################################################################################
 
