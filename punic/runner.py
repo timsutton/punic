@@ -26,6 +26,7 @@ class Runner(object):
     @mproperty
     def shelf(self):
         if not self.cache_path:
+            logger.error("No shelf path")
             return None
         # noinspection PyBroadException
         try:
@@ -100,7 +101,7 @@ class Runner(object):
             logger.debug(stdout)
             raise CalledProcessError(return_code, command, stdout)
 
-        if cache_key:
+        if cache_key and self.shelf:
             key = '{}{}'.format(cache_key, ' '.join(command))
             self.shelf[key] = return_code, stdout, stderr
 
