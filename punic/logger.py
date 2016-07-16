@@ -33,7 +33,7 @@ class Logger(object):
 
     def echo(self, msg):
         msg = punic.styling.styled('<echo>{}</echo>'.format(msg), styled=self.color)
-        self.debug(msg, prefix = False)
+        self.info(msg, prefix = False)
 
 
 logger = Logger()
