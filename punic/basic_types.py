@@ -43,17 +43,13 @@ class Specification(object):
         ReactiveX/RxSwift
         >>> Specification.cartfile_string('github "ReactiveX/RxSwift" "some/branch"').predicate
         "some/branch"
-        >>> Specification.cartfile_string('file:///Users/example/Project').identifier
-        file:///Users/example/Project
-        >>> Specification.cartfile_string('file:///Users/example/Project').identifier.project_name
-        'Project'
+        >>> Specification.cartfile_string('git "file:///Users/example/Project" "some/branch"').identifier
+        Project
         """
 
-        match = re.match(r'^(?P<address>github\s+"[^/]+/(?:.+?)")(?:\s+(?P<predicate>.+)?)?', string)
+        match = re.match(r'^(?P<address>(?P<service>github|git)\s+"[^/]+/(?:.+?)")(?:\s+(?P<predicate>.+)?)?', string)
         if not match:
-            match = re.match(r'^(?P<address>file:///.+)(?:\s+(?P<predicate>.+)?)?', string)
-            if not match:
-                raise Exception('Bad spec {}'.format(string))
+            raise Exception('Bad spec {}'.format(string))
 
         identifier = ProjectIdentifier.string(match.group('address'), overrides=overrides)
         predicate = VersionPredicate(match.group('predicate'))
@@ -63,7 +59,10 @@ class Specification(object):
         return specification
 
     def __repr__(self):
-        return 'github "{identifier}" {predicate}'.format(**self.__dict__).strip()
+        parts = [self.identifier.full_identifier]
+        if self.predicate:
+            parts += [str(self.predicate)]
+        return ' '.join(parts)
 
 @functools.total_ordering
 class ProjectIdentifier(object):
@@ -77,31 +76,41 @@ class ProjectIdentifier(object):
         'foo'
         >>> ProjectIdentifier.string('github "foo/bar"').project_name
         'bar'
-        >>> ProjectIdentifier.string('file:///example')
-        file:///example
-        >>> ProjectIdentifier.string('file:///example').remote_url
-        'file:///example'
+        >>> ProjectIdentifier.string('github "foo/bar"').identifier
+        'foo/bar'
+        >>> ProjectIdentifier.string('github "foo/bar"').full_identifier
+        'github "foo/bar"'
+        >>> ProjectIdentifier.string('git "file:///Users/example/Projects/Example-Project"')
+        Example-Project
         """
 
-        match = re.match(r'^github\s+"(?P<team_name>.+)/(?P<project_name>.+)"', string)
-        if match:
+        match = re.match(r'^(?P<source>github|git)\s+"(?P<link>.+)"', string)
+        if not match:
+            raise Exception('No match')
+
+        source = match.group('source')
+        link = match.group('link')
+
+        if source == 'github':
+            match = re.match(r'^(?P<team_name>[^/]+)/(?P<project_name>[^/]+)$', link)
+            if not match:
+                raise Exception('No match')
             team_name = match.group('team_name')
             project_name = match.group('project_name')
             remote_url = 'git@github.com:{}/{}.git'.format(team_name, project_name)
-            return ProjectIdentifier(overrides=overrides, team_name=team_name, project_name=project_name,
-                remote_url=remote_url)
+        elif source == 'git':
+            team_name = None
+            url_parts = urlparse.urlparse(link)
+            path = Path(url_parts.path)
+            project_name = path.stem
+            remote_url = link
         else:
-            match = re.match(r'file:///.+', string)
-            if not match:
-                raise Exception('Bad project identifier: {}'.format(string))
-            remote_url = match.group(0)
+            raise Exception('No match')
 
-            path = Path(urlparse.urlparse(remote_url).path)
-            project_name = path.name
+        return ProjectIdentifier(source=source, remote_url=remote_url, team_name=team_name, project_name=project_name, overrides=overrides)
 
-            return ProjectIdentifier(overrides=overrides, project_name=project_name, remote_url=remote_url)
-
-    def __init__(self, team_name=None, project_name=None, remote_url=None, overrides=None):
+    def __init__(self, source=None, team_name=None, project_name=None, remote_url=None, overrides=None):
+        self.source = source
         self.team_name = team_name
         self.project_name = project_name
         self.remote_url = remote_url
@@ -111,13 +120,21 @@ class ProjectIdentifier(object):
             self.remote_url = override_url
 
     @mproperty
-    def identifier(self):
-        if self.team_name and self.project_name:
-            return "{}/{}".format(self.team_name, self.project_name)
-        elif self.remote_url:
-            return self.remote_url
+    def full_identifier(self):
+        if self.source == 'git':
+            return '{} "{}"'.format(self.source, self.remote_url)
+        elif self.source == 'github':
+            return '{} "{}/{}"'.format(self.source, self.team_name, self.project_name)
         else:
-            return '#unnamed#'
+            raise Exception("Unknown source")
+
+
+    @mproperty
+    def identifier(self):
+        components = [] \
+            + ([self.team_name] if self.team_name else []) \
+            + [self.project_name]
+        return '/'.join(components)
 
     def __repr__(self):
         return self.identifier
