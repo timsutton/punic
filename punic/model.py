@@ -28,27 +28,12 @@ class Punic(object):
 
         self.config = config
 
-        self.root_path = root_path  # type: Path
-        self.library_directory = Path(os.path.expanduser('~/Library/io.schwa.Punic'))
-        if not self.library_directory.exists():
-            self.library_directory.mkdir(parents=True)
-        self.repo_cache_directory = self.library_directory / 'repo_cache'
-        if not self.repo_cache_directory.exists():
-            self.repo_cache_directory.mkdir(parents=True)
-        self.punic_path = self.root_path / 'Carthage'
-        self.build_path = self.punic_path / 'Build'
-        self.checkouts_path = self.punic_path / 'Checkouts'
-
-        runner.cache_path = self.library_directory / "cache.shelf"
-
-        root_project_identifier = ProjectIdentifier(overrides=None, project_name=self.root_path.name)
+        root_project_identifier = ProjectIdentifier(overrides=None, project_name=self.config.root_path.name)
 
         self.all_repositories = {
             root_project_identifier: Repository(punic=self, identifier=root_project_identifier,
-                repo_path=self.root_path),
+                repo_path=self.config.root_path),
         }
-
-        self.can_fetch = False
 
         self.root_project = self._repository_for_identifier(root_project_identifier)
 
@@ -77,7 +62,7 @@ class Punic(object):
         logger.debug("<sub>Saving</sub> <ref>Cartfile.resolved</ref>")
 
         cartfile = Cartfile(specifications=specifications)
-        cartfile.write((self.root_path / 'Cartfile.resolved').open('w'))
+        cartfile.write((self.config.root_path / 'Cartfile.resolved').open('w'))
 
     def graph(self):
         # type: (bool) -> DiGraph
@@ -106,8 +91,8 @@ class Punic(object):
 
         configuration, platforms = self.config.configuration, self.config.platforms
 
-        if not self.build_path.exists():
-            self.build_path.mkdir(parents=True)
+        if not self.config.build_path.exists():
+            self.config.build_path.mkdir(parents=True)
 
         filtered_dependencies = self._ordered_dependencies(name_filter=dependencies)
 
@@ -123,19 +108,11 @@ class Punic(object):
                     for scheme in schemes:
                         self._build_one(platform, project, scheme.name, configuration)
 
-    def clean(self, configuration, platforms):
-        # type: (str, str)
-
-        for platform, project, scheme in self._scheme_walker(platforms=platforms):
-            for sdk in platform.sdks:
-                logger.info('<sub>Cleaning</sub>: {} {} {} {}'.format(project.path, scheme, sdk, configuration))
-                project.check_call(subcommand='clean', scheme=scheme, sdk=sdk, configuration=configuration)
-
     def _ordered_dependencies(self, name_filter=None):
         # type: (bool, [str]) -> [(ProjectIdentifier, Revision)]
 
         cartfile = Cartfile(overrides=config.repo_overrides)
-        cartfile.read(self.root_path / 'Cartfile.resolved')
+        cartfile.read(self.config.root_path / 'Cartfile.resolved')
 
         def _predicate_to_revision(spec):
             repository = self._repository_for_identifier(spec.identifier)
@@ -156,7 +133,7 @@ class Punic(object):
             return self.all_repositories[identifier]
         else:
             repository = Repository(self, identifier=identifier)
-            if self.can_fetch:
+            if self.config.can_fetch:
                 repository.fetch()
             self.all_repositories[identifier] = repository
             return repository
@@ -183,10 +160,10 @@ class Punic(object):
 
     def _prepare_dependency(self, identifier, revision):
         project = self._repository_for_identifier(identifier)
-        checkout_path = self.checkouts_path / identifier.project_name
+        checkout_path = self.config.checkouts_path / identifier.project_name
 
         # TODO: This isn't really 'can_fetch'
-        if self.can_fetch:
+        if self.config.can_fetch:
             project.checkout(revision)
             logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
             if checkout_path.exists():
@@ -219,7 +196,7 @@ class Punic(object):
             logger.info('<sub>Building</sub> <ref>{}</ref> ({}, {}, {})'.format(project.path.name, scheme, sdk,
                 configuration))
 
-            derived_data_path = self.library_directory / "DerivedData"
+            derived_data_path = self.config.derived_data_path
 
             arguments = XcodeBuildArguments(scheme=scheme, configuration=configuration, sdk=sdk, derived_data_path=derived_data_path, arguments=self.xcode_arguments)
 
@@ -241,7 +218,7 @@ class Punic(object):
         ########################################################################################################
 
         output_product = copy(device_product)
-        output_product.target_build_dir = self.build_path / platform.output_directory_name
+        output_product.target_build_dir = self.config.build_path / platform.output_directory_name
 
         ########################################################################################################
 
@@ -291,7 +268,7 @@ class Checkout(object):
         self.identifier = identifier
         self.repository = self.punic._repository_for_identifier(self.identifier)
         self.revision = revision
-        self.checkout_path = self.punic.checkouts_path / self.identifier.project_name
+        self.checkout_path = self.punic.config.checkouts_path / self.identifier.project_name
 
     def prepare(self):
 
@@ -317,9 +294,9 @@ class Checkout(object):
             if carthage_symlink_path.exists():
                 carthage_symlink_path.unlink()
             logger.debug('<sub>Creating symlink: <ref>{}</ref> to <ref>{}</ref></sub>'.format(
-                carthage_symlink_path.relative_to(self.punic.root_path), self.punic.build_path.relative_to(self.punic.root_path)))
-            assert self.punic.build_path.exists()
-            os.symlink(str(self.punic.build_path), str(carthage_symlink_path))
+                carthage_symlink_path.relative_to(self.punic.config.root_path), self.punic.config.build_path.relative_to(self.punic.config.root_path)))
+            assert self.punic.config.build_path.exists()
+            os.symlink(str(self.punic.config.build_path), str(carthage_symlink_path))
 
     @property
     def projects(self):

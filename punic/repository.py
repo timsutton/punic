@@ -27,7 +27,7 @@ class Repository(object):
             self.path = repo_path
         else:
             url_hash = hashlib.md5(self.identifier.remote_url).hexdigest()
-            self.path = punic.repo_cache_directory / "{}_{}".format(self.identifier.project_name, url_hash)
+            self.path = punic.config.repo_cache_directory / "{}_{}".format(self.identifier.project_name, url_hash)
 
         self.specifications_cache = dict()
 

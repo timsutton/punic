@@ -121,24 +121,22 @@ def update(context, configuration, platform, fetch, deps):
 
 @punic_cli.command()
 @click.pass_context
-@click.option('--configuration', default=None,
-    help="""Dependency configurations to clean. Usually 'Release' or 'Debug'.""")
-@click.option('--platform', default=None, help="""Platform to clean. Comma separated list.""")
-@click.option('--xcode/--no-xcode', default=True, is_flag=True, help="""Clean xcode projects.""")
+@click.option('--derived-data', default=False, is_flag=True, help="""Clean the punic derived data directory.""")
 @click.option('--caches', default=False, is_flag=True, help="""Clean the global punic carthage files.""")
-def clean(context, configuration, platform, xcode, caches):
+def clean(context, derived_data, caches):
     """Clean project & punic environment."""
     logger.info("<cmd>Clean</cmd>")
     punic = context.obj
-    if xcode:
-        logger.info('Cleaning Xcode projects'.format(**punic.__dict__))
-        platforms = parse_platforms(platform)
-        punic.clean(configuration=configuration, platforms=platforms)
+
+    if derived_data:
+        logger.info('Erasing derived data directory'.format(**punic.__dict__))
+        if punic.config.derived_data_path.exists():
+            shutil.rmtree(punic.config.derived_data_path)
 
     if caches:
         if punic.repo_cache_directory.exists():
             logger.info('Cleaning {repo_cache_directory}'.format(**punic.__dict__))
-            shutil.rmtree(punic.repo_cache_directory)
+            shutil.rmtree(punic.config.repo_cache_directory )
         logger.info('Cleaning run cache')
         runner.reset()
 

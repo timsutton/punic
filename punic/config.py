@@ -6,7 +6,8 @@ from pathlib2 import Path
 import pureyaml
 from .basic_types import *
 from .logger import *
-
+from .runner import *
+import os
 
 class Config(object):
     def __init__(self):
@@ -16,6 +17,25 @@ class Config(object):
         }
         self.xcode = None
         self.repo_overrides = dict()
+
+        self.root_path = Path.cwd()  # type: Path
+
+        self.library_directory = Path(os.path.expanduser('~/Library/io.schwa.Punic'))
+        if not self.library_directory.exists():
+            self.library_directory.mkdir(parents=True)
+        self.repo_cache_directory = self.library_directory / 'repo_cache'
+        if not self.repo_cache_directory.exists():
+            self.repo_cache_directory.mkdir(parents=True)
+        self.punic_path = self.root_path / 'Carthage'
+        self.build_path = self.punic_path / 'Build'
+        self.checkouts_path = self.punic_path / 'Checkouts'
+
+        self.derived_data_path = self.library_directory / "DerivedData"
+
+        runner.cache_path = self.library_directory / "cache.shelf"
+
+        self.can_fetch = False
+
 
         self.read(Path('punic.yaml'))
 
