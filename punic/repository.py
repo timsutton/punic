@@ -62,16 +62,15 @@ class Repository(object):
             return output.strip()
 
     def checkout(self, revision):
-        # type: (str)
+        # type: (Revision)
         logger.debug('Checking out <ref>{}</ref> @ revision <rev>{}</rev>'.format(self, revision))
         with self.work_directory():
             try:
-                runner.check_run('git checkout {}'.format(revision))
+                runner.check_run('git checkout {}'.format(revision.sha))
             except Exception:
                 raise NoSuchRevision(repository=self, revision=revision)
 
     def fetch(self):
-
         if not self.path.exists():
             with work_directory(str(self.path.parent)):
                 logger.debug('<sub>Cloning</sub>: <ref>{}</ref>'.format(self))
@@ -137,12 +136,14 @@ class Revision(object):
 
     class Type(Enum):
         tag = 'tag'
-        other = 'other'
+        commitish = 'commitish'
+
 
     def __init__(self, repository, revision, revision_type):
         assert isinstance(repository, Repository)
         assert isinstance(revision, six.string_types)
 #        assert isinstance(revision_type, Revision.Type) # TODO: This doesn't work.
+
 
         self.repository = repository
         self.revision = revision
@@ -154,8 +155,16 @@ class Revision(object):
     def sha(self):
         assert self.repository
         with work_directory(self.repository.path):
-            output = runner.check_run('git rev-parse "{}"'.format(self.revision), echo=False)
-            return output.strip()
+            result = runner.run('git rev-parse "{}"'.format(self.revision), echo=False)
+            if result.return_code == 0:
+                return result.stdout.strip()
+
+            result = runner.run('git rev-parse "origin/{}"'.format(self.revision), echo=False)
+            if result.return_code == 0:
+                return result.stdout.strip()
+
+            raise Exception('Could not rev-parse "{}"'.format(self.revision))
+
 
     def __repr__(self):
         return str(self.revision)

@@ -20,9 +20,11 @@ class Cartfile(object):
             if not source.exists():
                 raise CartfileNotFound(path=source)
             source = source.open().read()
+
+        # TODO: This is of course super feeble parsing. URLs with #s in them can break for example
         lines = [line.rstrip() for line in source.splitlines()]
-        self.specifications = [Specification.cartfile_string(line, self.overrides) for line in lines if
-            re.match(r'^github .+', str(line))]
+        lines = [re.sub(r'\#.+', '', line) for line in lines]
+        self.specifications = [Specification.cartfile_string(line, self.overrides) for line in lines]
 
     def write(self, destination):
         # type: (File)
