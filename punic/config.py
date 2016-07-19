@@ -39,7 +39,7 @@ class Config(object):
 
 
         self.read(Path('punic.yaml'))
-        self.xcode = None
+        self.xcode = Xcode.default()
 
 
     @property
@@ -48,9 +48,13 @@ class Config(object):
 
     @xcode_version.setter
     def xcode_version(self, value):
-        self.xcode = Xcode.with_version(value)
+        xcode = Xcode.with_version(value)
+        if value and not xcode:
+            raise Exception('Could not find xcode version: {}'.format(value))
+        if not xcode:
+            xcode = Xcode.default()
 
-
+        self.xcode = xcode
 
 
     def read(self, path):
