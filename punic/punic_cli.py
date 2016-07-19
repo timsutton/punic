@@ -18,6 +18,7 @@ from .semantic_version import *
 from .utilities import *
 from .version_check import *
 
+
 @click.group(cls=DYMGroup)
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
 @click.option('--verbose', default=False, is_flag=True, help="""Verbose logging.""")
@@ -25,6 +26,9 @@ from .version_check import *
 # @click.option('--timing', default=False, is_flag=True) # TODO
 @click.pass_context
 def punic_cli(context, echo, verbose, color):
+
+    context.token_normalize_func = lambda x:x if not x else x.lower()
+
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(format='%(message)s', level=level)
     runner.echo = echo
@@ -189,3 +193,24 @@ def version(context):
 
     logger.info('Python version: {}'.format(sys_version), prefix=False)
     version_check(verbose = True, timeout = None, failure_is_an_option=False)
+
+from .config_init import config_init
+
+@punic_cli.command()
+@click.pass_context
+@click.option(
+    '--configuration', default=None,
+    help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option(
+    '--platform', default=None,
+    help="""Platform to build. Comma separated list.""")
+@click.option(
+    '--xcode', default=None)
+def init(context, **kwargs):
+    """Generate punic configuration file."""
+
+    config_init(**kwargs)
+
+
+def main():
+    punic_cli()
