@@ -57,8 +57,15 @@ class Repository(object):
     def rev_parse(self, s):
         # type: (str) -> str
         with self.work_directory():
-            output = runner.check_run('git rev-parse {}'.format(s))
-            return output.strip()
+            result = runner.run('git rev-parse "{}"'.format(s), echo=False)
+            if result.return_code == 0:
+                return result.stdout.strip()
+
+            result = runner.run('git rev-parse "origin/{}"'.format(s), echo=False)
+            if result.return_code == 0:
+                return result.stdout.strip()
+
+            raise Exception('Could not rev-parse "{}"'.format(s))
 
     def checkout(self, revision):
         # type: (Revision)
@@ -153,16 +160,7 @@ class Revision(object):
     @mproperty
     def sha(self):
         assert self.repository
-        with work_directory(self.repository.path):
-            result = runner.run('git rev-parse "{}"'.format(self.revision), echo=False)
-            if result.return_code == 0:
-                return result.stdout.strip()
-
-            result = runner.run('git rev-parse "origin/{}"'.format(self.revision), echo=False)
-            if result.return_code == 0:
-                return result.stdout.strip()
-
-            raise Exception('Could not rev-parse "{}"'.format(self.revision))
+        return self.repository.rev_parse(self.revision)
 
 
     def __repr__(self):
