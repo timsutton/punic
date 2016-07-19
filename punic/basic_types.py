@@ -62,6 +62,7 @@ class Specification(object):
         parts = [self.identifier.full_identifier]
         if self.predicate:
             parts += [str(self.predicate)]
+        parts = [part for part in parts if part]
         return ' '.join(parts)
 
 @functools.total_ordering

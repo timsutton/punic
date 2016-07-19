@@ -96,9 +96,9 @@ class Runner(object):
         stdout, stderr = popen.communicate()
 
         if stdout:
-            stdout = unicode(stdout, encoding='utf-8')
+            stdout = six.text_type(stdout, encoding='utf-8')
         if stderr:
-            stderr = unicode(stderr, encoding='utf-8')
+            stderr = six.text_type(stderr, encoding='utf-8')
 
         return_code = popen.returncode
 

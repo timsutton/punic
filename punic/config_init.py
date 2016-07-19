@@ -9,6 +9,7 @@ from .xcode import  *
 from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit import prompt
 from prompt_toolkit.auto_suggest import (AutoSuggest, Suggestion)
+import six
 
 class ListAutoSuggest(AutoSuggest):
     def __init__(self, items):
@@ -33,10 +34,10 @@ def platform_nicknames():
 
 def _xcode_versions():
     Xcode.find_all()
-    return sorted([unicode(version) for version in Xcode._all_xcodes.keys()])
+    return sorted([six.text_type(version) for version in Xcode._all_xcodes.keys()])
 
 def _prompt(s, items, default = None):
-    items = [unicode(item) for item in items]
+    items = [six.text_type(item) for item in items]
     # text = prompt(u'X: ', )
     # text = prompt(u'{}: '.format(s), auto_suggest = ListAutoSuggest(items), default = items[0])
     completer = WordCompleter(items, ignore_case=True)
@@ -47,7 +48,7 @@ def _prompt(s, items, default = None):
     }
 
     if default:
-        kwargs['default'] = unicode(default)
+        kwargs['default'] = six.text_type(default)
 
     text = prompt(u'{} ({}): '.format(s, u', '.join(items)), **kwargs)
     if not text:
