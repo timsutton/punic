@@ -84,6 +84,7 @@ def resolve(context, fetch):
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
+def build(context, configuration, platform, fetch, deps):
     """Fetch and build the project's dependencies."""
     logger.info("<cmd>Build</cmd>")
     punic = context.obj
