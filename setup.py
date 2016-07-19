@@ -20,6 +20,7 @@ setup(
         'memoize',
         'networkx',
         'pathlib2',
+        'prompt_toolkit',
         'pureyaml',
         'requests',
         'six',
