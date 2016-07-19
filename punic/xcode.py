@@ -138,7 +138,7 @@ class Scheme(object):
 
     @property
     def package_type(self):
-        return self.build_settings['PACKAGE_TYPE']
+        return self.build_settings.get('PACKAGE_TYPE', None)
 
     @property
     def product_is_framework(self):
