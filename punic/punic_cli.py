@@ -53,7 +53,7 @@ def fetch(context):
         with error_handling():
             logger.info("<cmd>fetch</cmd>")
             punic = context.obj
-            punic.can_fetch = True # obviously
+            punic.config.can_fetch = True # obviously
 
             punic.fetch()
 
@@ -71,7 +71,7 @@ def resolve(context, fetch):
         with error_handling():
             logger.info("<cmd>Resolve</cmd>")
             punic = context.obj
-            punic.can_fetch = fetch
+            punic.config.can_fetch = fetch
 
             punic.resolve()
 
@@ -90,7 +90,7 @@ def build(context, configuration, platform, fetch, deps):
             logger.info("<cmd>Build</cmd>")
             punic = context.obj
             punic.config.update(configuration=configuration, platform=platform)
-            punic.can_fetch = fetch
+            punic.config.can_fetch = fetch
 
             punic.build(dependencies=deps)
 
@@ -109,7 +109,7 @@ def update(context, configuration, platform, fetch, deps):
             logger.info("<cmd>Update</cmd>")
             punic = context.obj
             punic.config.update(configuration=configuration, platform=platform)
-            punic.can_fetch = fetch
+            punic.config.can_fetch = fetch
 
             punic.resolve()
             punic.build(dependencies=deps)
@@ -149,7 +149,7 @@ def graph(context, fetch, open):
         with error_handling():
             logger.info("<cmd>Graph</cmd>")
             punic = context.obj
-            punic.can_fetch = fetch
+            punic.config.can_fetch = fetch
             graph = punic.graph()
 
             import networkx as nx
