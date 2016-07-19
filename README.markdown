@@ -26,6 +26,8 @@ $ pip3 install --upgrade git+https://github.com/schwa/punic.git
 
 Note be careful installing punic (and in face _all_ python software) with `sudo`. In fact installing with `sudo` is not explicitly supported.
 
+Installing punic inside a python virtualenv is supported but you might have difficulty if you try to execute a virtualenv-ed punic from Xcode (e.g. `punic copy-frameworks`).
+
 ## Usage
 
 Punic has built-in help:
@@ -211,6 +213,30 @@ Punic only supports "github" style dependency specifications and does not suppor
 
 
 ## Frequently Answer Questions
+
+### Where did the `bootstrap` command go?
+
+Bootstrap proved to be confusing with users believing they should only run it once per project and not whenever the `Cartfile.resolved` has changed. It has been replaced by the `build` subcommand. The previous behavior of the build subcommand can be reproduced with: `punic build --no-fetch`.
+
+### Why can't I specify use the `--derived-data` switch?
+
+It seems best to always use a custom derived data directory for punic builds. This keeps punic builds of dependencies separated from your own builds. It also allows punic to very quickly clean the derived-data directory.
+
+### Where does punic store keep everything?
+
+```
+<project-dir>/
+    Cartfile
+    Cartfile.resolved
+    Carthage/
+        Build/
+        Checkouts/
+    punic.yaml
+~/Library/io.schwa.punic/
+    DerivedData/
+    cache.shelf
+    repo_cache/
+```
 
 ### Why rewrite Carthage?
 
