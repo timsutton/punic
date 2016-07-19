@@ -68,11 +68,14 @@ class Punic(object):
         return self._resolver().resolve()
 
     # TODO: This can be deprecated and the can_fetch flag relied on instead
-    def fetch(self):
-        # type: ()
-        # TODO: FIXME
-        for project in self._xcode_projects():
-            pass
+    def fetch(self, dependencies = None):
+
+        configuration, platforms = self.config.configuration, self.config.platforms
+
+        if not self.config.build_path.exists():
+            self.config.build_path.mkdir(parents=True)
+
+        self._ordered_dependencies(name_filter=dependencies)
 
     @property
     def xcode_arguments(self):
@@ -272,7 +275,7 @@ class Checkout(object):
     def prepare(self):
 
         # TODO: This isn't really 'can_fetch'
-        if self.punic.can_fetch:
+        if self.punic.config.can_fetch:
             self.repository.checkout(self.revision)
             logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
             if self.checkout_path.exists():
