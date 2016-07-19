@@ -127,15 +127,15 @@ def clean(context, derived_data, caches, all):
     punic = context.obj
 
     if derived_data or all:
-        logger.info('Erasing derived data directory'.format(**punic.__dict__))
+        logger.info('Erasing derived data directory')
         if punic.config.derived_data_path.exists():
             shutil.rmtree(punic.config.derived_data_path)
 
     if caches or all:
         if punic.config.repo_cache_directory.exists():
-            logger.info('Cleaning {}'.format(punic.config.repo_cache_directory))
+            logger.info('Erasing {}'.format(punic.config.repo_cache_directory))
             shutil.rmtree(punic.config.repo_cache_directory )
-        logger.info('Cleaning run cache')
+        logger.info('Erasing run cache')
         runner.reset()
 
 
