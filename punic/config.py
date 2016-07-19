@@ -36,10 +36,10 @@ class Config(object):
         runner.cache_path = self.library_directory / "cache.shelf"
 
         self.can_fetch = False
-
-
-        self.read(Path('punic.yaml'))
         self.xcode = Xcode.default()
+
+        # Read in defaults from punic.yaml
+        self.read(Path('punic.yaml'))
 
 
     @property
@@ -53,7 +53,6 @@ class Config(object):
             raise Exception('Could not find xcode version: {}'.format(value))
         if not xcode:
             xcode = Xcode.default()
-
         self.xcode = xcode
 
 
@@ -75,6 +74,10 @@ class Config(object):
 
         if 'repo-overrides' in d:
             self.repo_overrides = d['repo-overrides']
+
+        if 'xcode-version' in d:
+            xcode_version = d['xcode-version']
+            self.xcode_version = xcode_version
 
     def dump(self):
         logger.info('Config:')

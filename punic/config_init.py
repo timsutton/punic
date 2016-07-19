@@ -33,7 +33,7 @@ def platform_nicknames():
 
 def _xcode_versions():
     Xcode.find_all()
-    return sorted([unicode(version) for version in Xcode.all_xcodes.keys()])
+    return sorted([unicode(version) for version in Xcode._all_xcodes.keys()])
 
 def _prompt(s, items, default = None):
     items = [unicode(item) for item in items]
@@ -72,9 +72,9 @@ def config_init(**kwargs):
     if platform:
         d['defaults']['platform'] = platform
 
-    # xcode_version = _prompt("Xcode Version", _xcode_versions())
-    # if xcode_version:
-    #     d['defaults']['xcode_version'] = xcode_version
+    xcode_version = _prompt("Xcode Version", _xcode_versions())
+    if xcode_version:
+        d['defaults']['xcode-version'] = xcode_version
 
     s = pureyaml.dumps(d)
     print(s)

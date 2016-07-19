@@ -92,7 +92,8 @@ def build(context, configuration, platform, fetch, xcode_version, deps):
 
     punic.config.update(configuration=configuration, platform=platform)
     punic.config.can_fetch = fetch
-    punic.config.xcode_version = xcode_version
+    if xcode_version:
+        punic.config.xcode_version = xcode_version
 
     with timeit('build', log = punic.config.log_timings):
         with error_handling():
@@ -113,7 +114,8 @@ def update(context, configuration, platform, fetch, xcode_version, deps):
     punic = context.obj
     punic.config.update(configuration=configuration, platform=platform)
     punic.config.can_fetch = fetch
-    punic.config.xcode_version = xcode_version
+    if xcode_version:
+        punic.config.xcode_version = xcode_version
 
     with timeit('update', log = punic.config.log_timings):
         with error_handling():

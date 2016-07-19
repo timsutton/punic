@@ -11,9 +11,9 @@ class Logger(object):
         self.color = True
 
     def log(self, level, msg, prefix = True):
+        if not isinstance(msg, six.string_types):
+            msg = repr(msg)
         if prefix:
-            if not isinstance(msg, six.string_types):
-                msg = repr(msg)
             msg = u'<echo>#</echo> ' + msg
         msg = punic.styling.styled(msg, styled=self.color)
         logging.log(level, msg)

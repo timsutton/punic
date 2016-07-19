@@ -94,6 +94,8 @@ class Punic(object):
     def build(self, dependencies):
         # type: ([str])
 
+        logger.info('Using xcode version: {}'.format(self.config.xcode))
+
         configuration, platforms = self.config.configuration, self.config.platforms
 
         if not self.config.build_path.exists():

@@ -13,32 +13,34 @@ from .semantic_version import *
 
 
 class Xcode(object):
-    all_xcodes = None
-    default_xcode = None
+    _all_xcodes = None
+    _default_xcode = None
 
     @classmethod
     def default(cls):
-        if not Xcode.default_xcode:
+        if not Xcode._default_xcode:
             Xcode.find_all()
-        return Xcode.default_xcode
+        return Xcode._default_xcode
 
     @classmethod
     def with_version(cls, version):
         if isinstance(version, six.string_types):
             version = SemanticVersion.string(version)
-        if not Xcode.default_xcode:
-            Xcode.find_all()
-        return Xcode.all_xcodes[version] if version in Xcode.all_xcodes else None
+        if isinstance(version, int):
+            version = SemanticVersion(major=version, minor=0)
+        return Xcode.find_all()[version] if version in Xcode.find_all() else None
 
 
     @classmethod
     def find_all(cls):
-        output = runner.check_run('/usr/bin/mdfind \'kMDItemCFBundleIdentifier="com.apple.dt.Xcode" and kMDItemContentType="com.apple.application-bundle"\'')
-        xcodes = [Xcode(Path(path)) for path in output.strip().split("\n")]
-        Xcode.all_xcodes = dict([(xcode.version, xcode) for xcode in xcodes])
-        default_developer_dir_path = Path(runner.check_run(['xcode-select', '-p']).strip())
-        Xcode.default_xcode = [xcode for version, xcode in Xcode.all_xcodes.items() if xcode.developer_dir_path == default_developer_dir_path][0]
-        Xcode.default_xcode.is_default = True
+        if Xcode._all_xcodes is None:
+            output = runner.check_run('/usr/bin/mdfind \'kMDItemCFBundleIdentifier="com.apple.dt.Xcode" and kMDItemContentType="com.apple.application-bundle"\'')
+            xcodes = [Xcode(Path(path)) for path in output.strip().split("\n")]
+            Xcode._all_xcodes = dict([(xcode.version, xcode) for xcode in xcodes])
+            default_developer_dir_path = Path(runner.check_run(['xcode-select', '-p']).strip())
+            Xcode._default_xcode = [xcode for version, xcode in Xcode._all_xcodes.items() if xcode.developer_dir_path == default_developer_dir_path][0]
+            Xcode._default_xcode.is_default = True
+        return Xcode._all_xcodes
 
     def __init__(self, path):
         self.path = path
