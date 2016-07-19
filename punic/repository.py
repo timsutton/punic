@@ -4,7 +4,6 @@ __all__ = ['Repository', 'Revision']
 
 
 from flufl.enum import Enum
-import contextlib
 import functools
 import hashlib
 import affirm

@@ -7,7 +7,6 @@ import punic.shshutil as shutil
 from copy import copy
 from pathlib2 import Path
 import affirm
-from .utilities import *
 from .xcode import *
 from .basic_types import *
 from .runner import *
