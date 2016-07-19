@@ -8,6 +8,7 @@ import punic.shshutil as shutil
 import sys
 import click
 from click_didyoumean import DYMGroup
+import networkx as nx
 import punic
 from .copy_frameworks import *
 from .errors import *
@@ -17,46 +18,46 @@ from .runner import *
 from .semantic_version import *
 from .utilities import *
 from .version_check import *
+from .config_init import *
 
 
 @click.group(cls=DYMGroup)
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
 @click.option('--verbose', default=False, is_flag=True, help="""Verbose logging.""")
 @click.option('--color/--no-color', default=True, is_flag=True, help="""TECHNICOLOR.""")
-# @click.option('--timing', default=False, is_flag=True) # TODO
+@click.option('--timing/--no-timing', default=False, is_flag=True, help="""Log timing info""")
 @click.pass_context
-def punic_cli(context, echo, verbose, color):
+def punic_cli(context, echo, verbose, timing, color):
 
+    # Configure click
     context.token_normalize_func = lambda x:x if not x else x.lower()
 
+    # Configure logging
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(format='%(message)s', level=level)
     runner.echo = echo
     requests_log = logging.getLogger("requests.packages.urllib3")
     requests_log.setLevel(logging.WARNING)
     requests_log.propagate = True
-
     logger.color = color
 
+    # Set up punic
     punic = Punic()
+    punic.config.log_timings = timing
     context.obj = punic
-
-    # Dont do this here. use `punic version`
-    # version_check()
 
 
 @punic_cli.command()
 @click.pass_context
 def fetch(context):
     """Fetch the project's dependencies.."""
-    with timeit('fetch'):
+    logger.info("<cmd>fetch</cmd>")
+    punic = context.obj
+    punic.config.can_fetch = True  # obviously
+
+    with timeit('fetch', log = punic.config.log_timings):
         with error_handling():
-            logger.info("<cmd>fetch</cmd>")
-            punic = context.obj
-            punic.config.can_fetch = True # obviously
-
             punic.fetch()
-
 
 
 @punic_cli.command()
@@ -67,12 +68,12 @@ def resolve(context, fetch):
 
     This sub-command does not build dependencies. Use this sub-command when a dependency has changed and you just want to update `Cartfile.resolved`.
     """
-    with timeit('resolve'):
-        with error_handling():
-            logger.info("<cmd>Resolve</cmd>")
-            punic = context.obj
-            punic.config.can_fetch = fetch
+    punic = context.obj
+    logger.info("<cmd>Resolve</cmd>")
+    punic.config.can_fetch = fetch
 
+    with timeit('resolve', log = punic.config.log_timings):
+        with error_handling():
             punic.resolve()
 
 
@@ -83,15 +84,15 @@ def resolve(context, fetch):
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.argument('deps', nargs=-1)
-def build(context, configuration, platform, fetch, deps):
     """Fetch and build the project's dependencies."""
-    with timeit('build'):
-        with error_handling():
-            logger.info("<cmd>Build</cmd>")
-            punic = context.obj
-            punic.config.update(configuration=configuration, platform=platform)
-            punic.config.can_fetch = fetch
+    logger.info("<cmd>Build</cmd>")
+    punic = context.obj
 
+    punic.config.update(configuration=configuration, platform=platform)
+    punic.config.can_fetch = fetch
+
+    with timeit('build', log = punic.config.log_timings):
+        with error_handling():
             punic.build(dependencies=deps)
 
 
@@ -104,16 +105,15 @@ def build(context, configuration, platform, fetch, deps):
 @click.argument('deps', nargs=-1)
 def update(context, configuration, platform, fetch, deps):
     """Update and rebuild the project's dependencies."""
-    with timeit('update'):
-        with error_handling():
-            logger.info("<cmd>Update</cmd>")
-            punic = context.obj
-            punic.config.update(configuration=configuration, platform=platform)
-            punic.config.can_fetch = fetch
+    logger.info("<cmd>Update</cmd>")
+    punic = context.obj
+    punic.config.update(configuration=configuration, platform=platform)
+    punic.config.can_fetch = fetch
 
+    with timeit('update', log = punic.config.log_timings):
+        with error_handling():
             punic.resolve()
             punic.build(dependencies=deps)
-
 
 
 @punic_cli.command()
@@ -145,14 +145,14 @@ def clean(context, derived_data, caches, all):
 @click.option('--open', default=False, is_flag=True, help="""Open the graph image file.""")
 def graph(context, fetch, open):
     """Output resolved dependency graph."""
-    with timeit('graph'):
-        with error_handling():
-            logger.info("<cmd>Graph</cmd>")
-            punic = context.obj
-            punic.config.can_fetch = fetch
-            graph = punic.graph()
+    logger.info("<cmd>Graph</cmd>")
+    punic = context.obj
+    punic.config.can_fetch = fetch
 
-            import networkx as nx
+    with timeit('graph', log = punic.config.log_timings):
+        with error_handling():
+
+            graph = punic.graph()
 
             logger.info('Writing graph file to "{}".'.format(os.getcwd()))
             nx.drawing.nx_pydot.write_dot(graph, 'graph.dot')
@@ -192,8 +192,6 @@ def version(context):
 
     logger.info('Python version: {}'.format(sys_version), prefix=False)
     version_check(verbose = True, timeout = None, failure_is_an_option=False)
-
-from .config_init import config_init
 
 @punic_cli.command()
 @click.pass_context
