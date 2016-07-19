@@ -116,25 +116,24 @@ def update(context, configuration, platform, fetch, deps):
 
 
 
-
-
 @punic_cli.command()
 @click.pass_context
 @click.option('--derived-data', default=False, is_flag=True, help="""Clean the punic derived data directory.""")
 @click.option('--caches', default=False, is_flag=True, help="""Clean the global punic carthage files.""")
-def clean(context, derived_data, caches):
+@click.option('--all', default=False, is_flag=True, help="""Clean all.""")
+def clean(context, derived_data, caches, all):
     """Clean project & punic environment."""
     logger.info("<cmd>Clean</cmd>")
     punic = context.obj
 
-    if derived_data:
+    if derived_data or all:
         logger.info('Erasing derived data directory'.format(**punic.__dict__))
         if punic.config.derived_data_path.exists():
             shutil.rmtree(punic.config.derived_data_path)
 
-    if caches:
-        if punic.repo_cache_directory.exists():
-            logger.info('Cleaning {repo_cache_directory}'.format(**punic.__dict__))
+    if caches or all:
+        if punic.config.repo_cache_directory.exists():
+            logger.info('Cleaning {}'.format(punic.config.repo_cache_directory))
             shutil.rmtree(punic.config.repo_cache_directory )
         logger.info('Cleaning run cache')
         runner.reset()
