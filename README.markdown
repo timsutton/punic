@@ -4,6 +4,10 @@
 
 Punic is intended to be an easier to use, faster and more reliable implementation of the [Carthage](http://github.com/carthage/carthage) dependency management system.
 
+## Caveat!!!
+
+Punic can be considered an early preview release and probably is not ready for production use. Use at your own peril.
+
 ## Installation
 
 Quick install (for [homebrew](http://brew.sh) users):
@@ -20,27 +24,13 @@ $ brew install python3
 $ pip3 install --upgrade git+https://github.com/schwa/punic.git
 ```
 
+Note be careful installing punic (and in face _all_ python software) with `sudo`. In fact installing with `sudo` is not explicitly supported.
+
 ## Usage
 
-Punic uses Carthage configuration files (`cartfile` & `cartfile.resolved`).
-
-
-
+Punic has built-in help:
 
 ```shell
-punic build --platform iOS --configuration Debug
-```
-
-`punic build`
-punic update
-```
-
-
-
-
-
-
-```
 $ punic --help
 Usage: punic [OPTIONS] COMMAND [ARGS]...
 
@@ -56,18 +46,102 @@ Commands:
   copy-frameworks  In a Run Script build phase, copies each...
   fetch            Fetch the project's dependencies..
   graph            Output resolved dependency graph.
+  init             Generate punic configuration file.
   resolve          Resolve dependencies and output...
   update           Update and rebuild the project's...
   version          Display the current version of Carthage.
 ```
 
+Each sub-command also has built in help:
+
+```shell
+$ punic build --help
+schwa@orthanc ~/D/TEst> punic build --help
+Usage: punic build [OPTIONS] [DEPS]...
+
+  Fetch and build the project's dependencies.
+
+Options:
+  --configuration TEXT  Dependency configurations to build. Usually 'Release'
+                        or 'Debug'.
+  --platform TEXT       Platform to build. Comma separated list.
+  --fetch / --no-fetch  Controls whether to fetch dependencies.
+  --help                Show this message and exit.
+```
+
+To make your Xcode project consume other Carthage compatible dependencies add a file called `Cartfile` at the root level of your project. For example:
+
+```
+github "AlamoFire/AlamoFire"
+github "realm/realm-cocoa"
+```
+
+TODO: See carthage documentation for exact syntax.
+
+A `Cartfile` isn't required to exactly specify what version of which dependency it requires, To do that you can manually resolve your dependencies:
+
+```shell
+punic resolve
+```
+
+This resolve step creates a new file called `Carthage.resolved`. Using the above file as input the `Cartfile.resolved` contains the following:
+
+```
+github "AlamoFire/AlamoFire" "3.4.1"
+github "realm/realm-cocoa" "v1.0.2"
+```
+
+Note that the resolve sub-command has to fetch all dependencies. This can take a while the first time you run it.
+
+You generally do not need to manually invoke `punic resolve` - it is usually automatically performed for you as part of an update. See later.
+
+To checkout and build your dependencies run `punic build`. For example
+
+```shell
+punic build --platform iOS --configuration Debug
+```
+
+This fetches the latest versions of all dependencies and then builds them.
+
+You can only build your dependencies if your dependencies have been resolved (i.e. there's a `Cartfile.resolved` file in your project's directory).
+
+You should run `punic build` when:
+
+* You first clone a punic enabled project
+* Your `Carthage.resolved` file has changed (perhaps you fetched some changes from another developer)
+
+If you know punic already has the correct dependencies checked out you can run build with the `--no-fetch` switch:
+
+```shell
+punic build --platform iOS --configuration Debug --no-fetch
+```
+
+Note that you can specify a platform and a configuration for `punic build`. If you fail to specify a platform then all platforms will be compiled. If you fail to specify a configuration then the dependency's default will be used (this is usually "Release").
+
+If you always specify the same platform and configuration for builds you can create a `punic.yaml` file in the same directory as your `Cartfile`:
+
+```yaml
+defaults:
+  configuration: Debug
+  platform: iOS
+```
+
+You can use `punic init` to help you generate a `punic.yaml` (TODO: We intend `punic.yaml` will increase in expressiveness over time)
+
+If you want to perform a quick clean of a project (deleting the project's "Derived Data" directory) you can use the following:
+
+```shell
+punic clean
+```
+
+Running `punic resolve` then `punic build` together is a common operation and have been combined into the `punic update` sub-command:
+
+```shell
+punic update
+```
+
 See https://github.com/Carthage/Carthage for usage information
 
-Punic supports Carthage `Cartfile` and `Cartfile.resolved` files.
-
-## Caveat!!!
-
-Punic can be considered an early preview release and probably is not ready for production use. Use at your own peril.
 
 ## New Features
 
@@ -155,6 +229,7 @@ No thank you.
 ### Why Python and not Swift?
 
 TODO: ~7000 lines of swift in Carthage (excluding dependencies) vs ~1000 lines of Python in Punic.
+TODO: Batteries included
 TODO: bootstrap problems
 
 ## License
