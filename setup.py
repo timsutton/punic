@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='punic',
-    version='0.1.0',
+    version='0.1.1',
     url='http://github.com/schwa/punic',
     license='MIT',
     author='Jonathan Wight',
