@@ -20,6 +20,9 @@ from .cartfile import *
 ########################################################################################################################
 
 class Punic(object):
+
+    __slots__ = ['root_path', 'config', 'all_repositories', 'root_project']
+
     def __init__(self, root_path=None):
 
         if not root_path:
