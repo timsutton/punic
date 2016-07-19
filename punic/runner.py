@@ -94,6 +94,12 @@ class Runner(object):
 
         popen = subprocess.Popen(args, cwd=cwd, stdout=stdout, stderr=stderr, env=env)
         stdout, stderr = popen.communicate()
+
+        if stdout:
+            stdout = unicode(stdout, encoding='utf-8')
+        if stderr:
+            stderr = unicode(stderr, encoding='utf-8')
+
         return_code = popen.returncode
 
         if check and return_code != 0:

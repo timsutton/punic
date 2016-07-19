@@ -4,7 +4,7 @@ __all__ = ['Logger', 'logger']
 
 import logging
 import punic.styling
-
+import six
 
 class Logger(object):
     def __init__(self):
@@ -12,7 +12,9 @@ class Logger(object):
 
     def log(self, level, msg, prefix = True):
         if prefix:
-            msg = u'<echo>#</echo> ' + unicode(msg, encoding = 'utf-8')
+            if not isinstance(msg, six.string_types):
+                msg = repr(msg)
+            msg = u'<echo>#</echo> ' + msg
         msg = punic.styling.styled(msg, styled=self.color)
         logging.log(level, msg)
 

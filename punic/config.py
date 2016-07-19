@@ -2,12 +2,13 @@ from __future__ import division, absolute_import, print_function
 
 __all__ = ['Config', 'config']
 
+import os
 from pathlib2 import Path
 import pureyaml
 from .basic_types import *
 from .logger import *
 from .runner import *
-import os
+from .xcode import *
 
 class Config(object):
     def __init__(self):
@@ -38,6 +39,19 @@ class Config(object):
 
 
         self.read(Path('punic.yaml'))
+        self.xcode = None
+
+
+    @property
+    def xcode_version(self):
+        return self.xcode.version if self.xcode else None
+
+    @xcode_version.setter
+    def xcode_version(self, value):
+        self.xcode = Xcode.with_version(value)
+
+
+
 
     def read(self, path):
         # type: (Path)

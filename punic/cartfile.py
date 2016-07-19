@@ -23,7 +23,7 @@ class Cartfile(object):
 
         # TODO: This is of course super feeble parsing. URLs with #s in them can break for example
         lines = [line.rstrip() for line in source.splitlines()]
-        lines = [re.sub(r'\#.+', '', line) for line in lines]
+        lines = [re.sub(r'#.+', '', line) for line in lines]
         lines = [line.strip() for line in lines]
         lines = [line for line in lines if line]
         self.specifications = [Specification.cartfile_string(line, self.overrides) for line in lines]

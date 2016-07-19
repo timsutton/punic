@@ -87,7 +87,7 @@ class SemanticVersion(object):
 
     @classmethod
     def from_dict(cls, d):
-        if set(d.keys()).issubset(set(['major', 'minor', 'micro', 'releaselevel', 'serial'])):
+        if set(d.keys()).issubset({'major', 'minor', 'micro', 'releaselevel', 'serial'}):
             return SemanticVersion(
                 major = d.get('major'),
                 minor = d.get('minor'),

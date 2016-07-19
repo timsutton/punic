@@ -23,6 +23,17 @@ class Xcode(object):
         return Xcode.default_xcode
 
     @classmethod
+    def with_version(cls, version):
+        logger.info(version)
+        if isinstance(version, six.string_types):
+            version = SemanticVersion.string(version)
+        if not Xcode.default_xcode:
+            Xcode.find_all()
+        return Xcode.all_xcodes[version] if version in Xcode.all_xcodes else None
+
+
+
+    @classmethod
     def find_all(cls):
         output = runner.check_run(
             '/usr/bin/mdfind \'kMDItemCFBundleIdentifier="com.apple.dt.Xcode" and kMDItemContentType="com.apple.application-bundle"\'')
@@ -31,9 +42,11 @@ class Xcode(object):
         default_developer_dir_path = Path(runner.check_run(['xcode-select', '-p']).strip())
         Xcode.default_xcode = [xcode for version, xcode in Xcode.all_xcodes.items() if
             xcode.developer_dir_path == default_developer_dir_path][0]
+        Xcode.default_xcode.is_default = True
 
     def __init__(self, path):
         self.path = path
+        self.is_default = False
         self.developer_dir_path = self.path / 'Contents/Developer'
 
     @mproperty
@@ -46,15 +59,22 @@ class Xcode(object):
     def call(self, command, **kwargs):
         command = runner.convert_args(command)
         command = ['/usr/bin/xcrun'] + command
+
+        if self.is_default == False:
+            env = dict()
+            env['DEVELOPER_DIR'] = str(self.developer_dir_path)
+            if 'env' in kwargs:
+                env.update(kwargs['env'])
+            kwargs['env'] = env
+
         result = runner.run(command, **kwargs)
         return result
 
     # noinspection PyMethodMayBeStatic
     def check_call(self, command, **kwargs):
-        command = runner.convert_args(command)
-        command = ['/usr/bin/xcrun'] + command
-        result = runner.check_run(command, **kwargs)
-        return result
+        kwargs['check'] = True
+        result = self.call(command, **kwargs)
+        return result.stdout
 
     def __repr__(self):
         return '{} ({})'.format(self.path, self.version)
@@ -65,7 +85,7 @@ class Xcode(object):
 class XcodeProject(object):
     def __init__(self, punic, xcode, path, identifier):
         self.punic = punic
-        self.xcode = xcode if xcode else Xcode.default()
+        self.xcode = xcode
         self.path = path
         self.identifier = identifier
 
@@ -109,7 +129,7 @@ class XcodeProject(object):
             exit(e.returncode)
 
         build_settings = self.build_settings(arguments=arguments)
-        assert(build_settings)
+        assert build_settings
 
         return XcodeBuildProduct.build_settings(build_settings)
 
