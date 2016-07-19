@@ -12,7 +12,7 @@ class Logger(object):
 
     def log(self, level, msg, prefix = True):
         if prefix:
-            msg = '<echo>#</echo> ' + str(msg)
+            msg = u'<echo>#</echo> ' + unicode(msg, encoding = 'utf-8')
         msg = punic.styling.styled(msg, styled=self.color)
         logging.log(level, msg)
 
