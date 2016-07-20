@@ -93,7 +93,7 @@ class Repository(object):
         else:
             with self.work_directory():
                 logger.info('<sub>Fetching</sub>: <ref>{}</ref>'.format(self))
-                runner.check_run('git fetch')
+                runner.check_run('git fetch', cwd = self.path)
 
     def specifications_for_revision(self, revision):
         # type: (Revision) -> [Specification]
