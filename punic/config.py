@@ -10,6 +10,10 @@ from .logger import *
 from .runner import *
 from .xcode import *
 
+# TODO: This all needs to be cleaned up and made more generic. More configs will be added over time and this will only get worse
+# TODO: Allow config file to be relocated and specified on command line
+# TODO: Allow subcommands to easily override configs
+
 class Config(object):
     def __init__(self):
         self.defaults = {
