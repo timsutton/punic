@@ -13,7 +13,7 @@ Punic can be considered an early preview release and probably is not ready for p
 Quick install (for [homebrew](http://brew.sh) users):
 
 ```shell
-$ brew install python2.7 # optional - but generally easiest way to make a sane python setup if you're not a python expert
+$ brew install python
 $ pip install --upgrade git+https://github.com/schwa/punic.git
 ```
 
