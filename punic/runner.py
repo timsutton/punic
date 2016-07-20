@@ -74,6 +74,10 @@ class Runner(object):
         args = self.convert_args(command)
 
         if echo or self.echo:
+
+            if cwd:
+                logger.echo('cd {}'.format(cwd))
+
             # TODO: Wont properly reproduce command if command is a string
             logger.echo(' '.join(args))
 
@@ -92,6 +96,9 @@ class Runner(object):
         stdout = subprocess.PIPE
         stderr = subprocess.PIPE if not check else subprocess.STDOUT
 
+        if cwd:
+            cwd = str(cwd)
+
         popen = subprocess.Popen(args, cwd=cwd, stdout=stdout, stderr=stderr, env=env)
         stdout, stderr = popen.communicate()
 
@@ -104,7 +111,10 @@ class Runner(object):
 
         if check and return_code != 0:
             # TODO
-            logger.debug(stdout)
+            if stdout:
+                logger.debug(stdout)
+            if stderr:
+                logger.debug(stdout)
             raise CalledProcessError(return_code, command, stdout)
 
         if cache_key and self.shelf:
