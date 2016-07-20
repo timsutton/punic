@@ -98,7 +98,7 @@ class Repository(object):
             else:
                 repo = url
 
-            runner.check_run('git clone --recursive "{}" {}'.format(repo, str(self.path)), cwd = self.path)
+            runner.check_run('git clone --recursive "{}" {}'.format(repo, str(self.path)), cwd = self.path.parent)
         else:
 
             self.check_work_directory()
