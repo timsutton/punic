@@ -42,58 +42,69 @@ class Repository(object):
     def __hash__(self):
         return hash(self.identifier)
 
+    def check_work_directory(self):
+        if not self.path.exists():
+            raise RepositoryNotClonedError()
+
     @mproperty
     def tags(self):
         """Return a list of Tag objects representing git tags. Only tags that are valid semantic versions are returned"""
         # type: () -> [Tag]
 
-        with self.work_directory():
-            output = runner.check_run('git tag')
-            tags = output.split('\n')
-            tags = [Revision(repository=self, revision=tag, revision_type=Revision.Type.tag) for tag in tags if
-                SemanticVersion.is_semantic(tag)]
-            return sorted(tags)
+        self.check_work_directory()
+
+        output = runner.check_run('git tag', cwd = self.path)
+        tags = output.split('\n')
+        tags = [Revision(repository=self, revision=tag, revision_type=Revision.Type.tag) for tag in tags if
+            SemanticVersion.is_semantic(tag)]
+        return sorted(tags)
 
     def rev_parse(self, s):
         # type: (str) -> str
-        with self.work_directory():
-            result = runner.run('git rev-parse "{}"'.format(s), echo=False)
-            if result.return_code == 0:
-                return result.stdout.strip()
 
-            result = runner.run('git rev-parse "origin/{}"'.format(s), echo=False)
-            if result.return_code == 0:
-                return result.stdout.strip()
+        self.check_work_directory()
 
-            raise Exception('Could not rev-parse "{}"'.format(s))
+        result = runner.run('git rev-parse "{}"'.format(s), echo=False, cwd = self.path)
+        if result.return_code == 0:
+            return result.stdout.strip()
+
+        result = runner.run('git rev-parse "origin/{}"'.format(s), echo=False, cwd = self.path)
+        if result.return_code == 0:
+            return result.stdout.strip()
+
+        raise Exception('Could not rev-parse "{}"'.format(s))
 
     def checkout(self, revision):
         # type: (Revision)
         logger.debug('Checking out <ref>{}</ref> @ revision <rev>{}</rev>'.format(self, revision))
-        with self.work_directory():
-            try:
-                runner.check_run('git checkout {}'.format(revision.sha))
-            except Exception:
-                raise NoSuchRevision(repository=self, revision=revision)
+        self.check_work_directory()
+        try:
+            runner.check_run('git checkout {}'.format(revision.sha), cwd = self.path)
+        except Exception:
+            raise NoSuchRevision(repository=self, revision=revision)
 
     def fetch(self):
         if not self.path.exists():
-            with work_directory(str(self.path.parent)):
-                logger.debug('<sub>Cloning</sub>: <ref>{}</ref>'.format(self))
 
-                url = self.identifier.remote_url
-                import urlparse
-                parsed_url = urlparse.urlparse(url)
-                if parsed_url.scheme == 'file':
-                    repo = parsed_url.path
-                else:
-                    repo = url
 
-                runner.check_run('git clone --recursive "{}" {}'.format(repo, str(self.path)))
+
+            logger.debug('<sub>Cloning</sub>: <ref>{}</ref>'.format(self))
+
+            url = self.identifier.remote_url
+            import urlparse
+            parsed_url = urlparse.urlparse(url)
+            if parsed_url.scheme == 'file':
+                repo = parsed_url.path
+            else:
+                repo = url
+
+            runner.check_run('git clone --recursive "{}" {}'.format(repo, str(self.path)), cwd = self.path)
         else:
-            with self.work_directory():
-                logger.info('<sub>Fetching</sub>: <ref>{}</ref>'.format(self))
-                runner.check_run('git fetch', cwd = self.path)
+
+            self.check_work_directory()
+
+            logger.info('<sub>Fetching</sub>: <ref>{}</ref>'.format(self))
+            runner.check_run('git fetch', cwd = self.path)
 
     def specifications_for_revision(self, revision):
         # type: (Revision) -> [Specification]
@@ -109,15 +120,16 @@ class Repository(object):
             cartfile.read(self.path / 'Cartfile')
             specifications = cartfile.specifications
         else:
-            with self.work_directory():
-                result = runner.run('git show {}:Cartfile'.format(revision))
-                if result.return_code != 0:
-                    specifications = []
-                else:
-                    data = result.stdout
-                    cartfile = Cartfile(overrides=config.repo_overrides)
-                    cartfile.read(data)
-                    specifications = cartfile.specifications
+            self.check_work_directory()
+
+            result = runner.run('git show {}:Cartfile'.format(revision), cwd = self.path)
+            if result.return_code != 0:
+                specifications = []
+            else:
+                data = result.stdout
+                cartfile = Cartfile(overrides=config.repo_overrides)
+                cartfile.read(data)
+                specifications = cartfile.specifications
 
         self.specifications_cache[revision] = specifications
         return specifications
@@ -125,13 +137,6 @@ class Repository(object):
     def revisions_for_predicate(self, predicate):
         # type: (VersionPredicate) -> [Tag]
         return [tag for tag in self.tags if predicate.test(tag.semantic_version)]
-
-    @contextlib.contextmanager
-    def work_directory(self):
-        if not self.path.exists():
-            raise RepositoryNotClonedError()
-        with work_directory(self.path):
-            yield
 
 
 ########################################################################################################################
@@ -184,14 +189,14 @@ class Revision(object):
         if self.semantic_version and other.semantic_version and not Revision.always_use_is_ancestor:
             return self.semantic_version < other.semantic_version
         else:
-            with work_directory(self.repository.path):
-                result = runner.run('git merge-base --is-ancestor "{}" "{}"'.format(other, self))
-                if result.return_code == 0:
-                    return False
-                if result.return_code == 1:
-                    return True
-                else:
-                    raise Exception('git merge-base returned {}'.format(result.return_code))
+            self.repository.check_work_directory()
+            result = runner.run('git merge-base --is-ancestor "{}" "{}"'.format(other, self), cwd = self.repository.path)
+            if result.return_code == 0:
+                return False
+            if result.return_code == 1:
+                return True
+            else:
+                raise Exception('git merge-base returned {}'.format(result.return_code))
 
     def __hash__(self):
         # TODO: Should include repo too?

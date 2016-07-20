@@ -22,6 +22,7 @@ class Runner(object):
     def __init__(self, cache_path=None):
         self.cache_path = cache_path
         self.echo = False
+        self.echo_directories = True
 
     @mproperty
     def shelf(self):
@@ -73,9 +74,8 @@ class Runner(object):
     def run(self, command, cwd=None, echo=None, cache_key=None, check=False, env=None):
         args = self.convert_args(command)
 
-        if echo or self.echo:
-
-            if cwd:
+        if echo or echo is None and self.echo:
+            if cwd and self.echo_directories:
                 logger.echo('cd {}'.format(cwd))
 
             # TODO: Wont properly reproduce command if command is a string
