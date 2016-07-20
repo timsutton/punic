@@ -1,4 +1,4 @@
-# punic
+# punic [![Travis](https://img.shields.io/travis/schwa/punic.svg)]() [![license](https://img.shields.io/github/license/schwa/punic.svg)]() [![GitHub tag](https://img.shields.io/github/tag/schwa/punic.svg)]()
 
 ## Description
 
