@@ -217,8 +217,9 @@ def init(context, **kwargs):
 
 @punic_cli.command()
 @click.pass_context
-def home(context):
-    click.launch('https://github.com/schwa/punic')
+def readme(context):
+    """Opens punic readme in your browser (https://github.com/schwa/punic/blob/HEAD/README.markdown)"""
+    click.launch('https://github.com/schwa/punic/blob/HEAD/README.markdown')
 
 
 
