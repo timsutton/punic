@@ -169,7 +169,7 @@ def graph(context, fetch, open):
                 logger.info('Rendering dot file to png file.')
                 runner.check_run(command)
                 if open:
-                    runner.run('open graph.png')
+                    click.launch('graph.png')
             else:
                 logging.warning('graphviz not installed. Cannot convert graph to a png.')
 
@@ -214,6 +214,12 @@ def init(context, **kwargs):
     """Generate punic configuration file."""
 
     config_init(**kwargs)
+
+@punic_cli.command()
+@click.pass_context
+def home(context):
+    click.launch('https://github.com/schwa/punic')
+
 
 
 def main():
