@@ -3,7 +3,9 @@ from __future__ import division, absolute_import, print_function
 __all__ = ['punic_cli', 'main']
 
 import logging
+import logging.handlers
 import punic.shshutil as shutil
+from pathlib2 import Path
 import sys
 import click
 from click_didyoumean import DYMGroup
@@ -33,12 +35,41 @@ def punic_cli(context, echo, verbose, timing, color):
 
     # Configure logging
     level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(format='%(message)s', level=level)
-    runner.echo = echo
-    requests_log = logging.getLogger("requests.packages.urllib3")
-    requests_log.setLevel(logging.WARNING)
-    requests_log.propagate = True
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
+    # create console handler and set level to debug
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(level)
+    stream_handler.setFormatter(HTMLFormatter())
+    # add ch to logger
+    logger.addHandler(stream_handler)
+
+    logs_path = Path('~/Library/io.schwa.Punic/Logs').expanduser()
+    if not logs_path.exists():
+        logs_path.mkdir(parents = True)
+
+    log_path = logs_path / "punic.log"
+    needs_rollover = log_path.exists()
+
+    file_handler = logging.handlers.RotatingFileHandler(str(log_path), backupCount=4)
+    if needs_rollover:
+        file_handler.doRollover()
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(HTMLStripperFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")))
+    logger.addHandler(file_handler)
+
+
+    for name in ['boto', 'requests.packages.urllib3']:
+        named_logger = logging.getLogger(name)
+        named_logger.setLevel(logging.WARNING)
+        named_logger.propagate = True
+
+
     logger.color = color
+    runner.echo = echo
+
 
     # Set up punic
     punic = Punic()

@@ -50,7 +50,7 @@ class MyHTMLParser(HTMLParser):
 def styled(s, styled):
     parser = MyHTMLParser(styled=styled)
     parser.feed(s)
-    return parser.s + MyHTMLParser.term.normal
+    return parser.s + (MyHTMLParser.term.normal if styled else '')
 
 # '<head>***</head> Checkout out <title>SwiftLogging</title> at "<version>v1.0.1</version>"')
 #
