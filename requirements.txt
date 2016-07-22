@@ -1,5 +1,6 @@
 affirm
 blessings
+boto
 click
 click_didyoumean
 flufl.enum
@@ -10,3 +11,4 @@ prompt_toolkit
 pureyaml
 requests
 six
+tqdm

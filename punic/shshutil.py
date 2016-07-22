@@ -16,3 +16,6 @@ def copyfile(src, dst):
 
 def ignore_patterns(*patterns):
     return shutil.ignore_patterns(*patterns)
+
+def move(src, dst):
+    shutil.move(str(src), str(dst))

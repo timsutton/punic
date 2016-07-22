@@ -3,7 +3,6 @@ from __future__ import division, absolute_import, print_function
 __all__ = ['punic_cli', 'main']
 
 import logging
-import os
 import punic.shshutil as shutil
 import sys
 import click
@@ -19,7 +18,7 @@ from .semantic_version import *
 from .utilities import *
 from .version_check import *
 from .config_init import *
-
+from .carthage_cache import *
 
 @click.group(cls=DYMGroup)
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
@@ -202,14 +201,9 @@ def version(context):
 
 @punic_cli.command()
 @click.pass_context
-@click.option(
-    '--configuration', default=None,
-    help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
-@click.option(
-    '--platform', default=None,
-    help="""Platform to build. Comma separated list.""")
-@click.option(
-    '--xcode', default=None)
+@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
+@click.option('--xcode', default=None)
 def init(context, **kwargs):
     """Generate punic configuration file."""
 
@@ -221,6 +215,40 @@ def readme(context):
     """Opens punic readme in your browser (https://github.com/schwa/punic/blob/HEAD/README.markdown)"""
     click.launch('https://github.com/schwa/punic/blob/HEAD/README.markdown')
 
+
+
+@punic_cli.group(cls=DYMGroup)
+@click.pass_context
+def cache(context):
+    """TODO"""
+    pass
+
+@cache.command()
+@click.pass_context
+@click.option('--xcode-version', default=None, help="""Xcode version to use""")
+def publish(context, xcode_version):
+    """TODO"""
+    logger.info("<cmd>Cache Publish</cmd>")
+    punic = context.obj
+    if xcode_version:
+        punic.config.xcode_version = xcode_version
+    carthage_cache = CarthageCache(config = punic.config)
+    logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
+    carthage_cache.publish()
+
+@cache.command()
+@click.pass_context
+@click.option('--xcode-version', default=None, help="""Xcode version to use""")
+def install(context, xcode_version):
+    """TODO"""
+    logger.info("<cmd>Cache Publish</cmd>")
+    punic = context.obj
+    if xcode_version:
+        punic.config.xcode_version = xcode_version
+
+    carthage_cache = CarthageCache(config = punic.config)
+    logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
+    carthage_cache.install()
 
 
 def main():

@@ -14,6 +14,7 @@ setup(
     install_requires=[
         'affirm',
         'blessings',
+        'boto',
         'click',
         'click_didyoumean',
         'flufl.enum',
@@ -24,6 +25,7 @@ setup(
         'pureyaml',
         'requests',
         'six',
+        'tqdm',
         ],
     entry_points='''
         [console_scripts]
