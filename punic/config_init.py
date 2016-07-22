@@ -10,7 +10,6 @@ from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit import prompt
 from prompt_toolkit.auto_suggest import (AutoSuggest, Suggestion)
 import six
-import StringIO
 
 class ListAutoSuggest(AutoSuggest):
     def __init__(self, items):
@@ -79,7 +78,7 @@ def config_init(**kwargs):
         d['defaults']['xcode-version'] = xcode_version
 
 
-    stream = StringIO.StringIO()
+    stream = six.StringIO()
 
     yaml.safe_dump(d, stream, default_flow_style=False)
 
