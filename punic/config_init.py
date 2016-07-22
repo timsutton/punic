@@ -2,7 +2,7 @@ from __future__ import division, absolute_import, print_function
 
 __all__ = ['config_init']
 
-import pureyaml
+import yaml
 from pathlib2 import Path
 from .basic_types import *
 from .xcode import  *
@@ -77,7 +77,7 @@ def config_init(**kwargs):
     if xcode_version:
         d['defaults']['xcode-version'] = xcode_version
 
-    s = pureyaml.dumps(d)
+    s = yaml.dumps(d)
     print(s)
     if _prompt('Write config to `punic.yaml`', ['yes', 'no'], default = 'no') == 'yes':
         Path('punic.yaml').open('wb').write(s)

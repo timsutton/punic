@@ -10,7 +10,7 @@ import boto.s3
 import os
 import tempfile
 from tqdm import tqdm
-import pureyaml
+import yaml
 from .shshutil import *
 
 class CarthageCache(object):
@@ -18,7 +18,7 @@ class CarthageCache(object):
     def __init__(self, config):
         self.config = config
 
-        d = pureyaml.load(Path('.carthage_cache.yml').open())
+        d = yaml.safe_load(Path('.carthage_cache.yml').open())
 
         client_options = d[':aws_s3_client_options']
         self.AWS_ACCESS_KEY_ID = client_options[':access_key_id']

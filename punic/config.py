@@ -4,7 +4,7 @@ __all__ = ['Config', 'config']
 
 import os
 from pathlib2 import Path
-import pureyaml
+import yaml
 from .basic_types import *
 from .logger import *
 from .runner import *
@@ -66,7 +66,7 @@ class Config(object):
         if not path.exists():
             return
 
-        d = pureyaml.load(path.open())
+        d = yaml.safe_load(path.open())
         if 'defaults' in d:
             defaults = d['defaults']
             if 'configuration' in defaults:

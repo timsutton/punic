@@ -2,6 +2,16 @@
 
 from setuptools import setup
 
+def check_libyaml():
+    import subprocess
+    if not subprocess.check_output(['brew', 'ls', '--versions', 'libyaml']):
+        import sys
+        sys.stderr.write('Error: libyaml not installed. Use `brew install libyaml` to install it\n')
+        exit(0)
+
+check_libyaml()
+
+
 setup(
     name='punic',
     version='0.1.2',
@@ -22,7 +32,7 @@ setup(
         'networkx',
         'pathlib2',
         'prompt_toolkit',
-        'pureyaml',
+        'pyyaml',
         'requests',
         'six',
         'tqdm',
