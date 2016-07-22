@@ -18,7 +18,11 @@ class CarthageCache(object):
     def __init__(self, config):
         self.config = config
 
-        d = yaml.safe_load(Path('.carthage_cache.yml').open())
+        config_path = Path('.carthage_cache.yml')
+        if not config_path.exists():
+            raise Exception('No cache configile at <ref>{}</ref>'.format(config_path))
+
+        d = yaml.safe_load(config_path.open())
 
         client_options = d[':aws_s3_client_options']
         self.AWS_ACCESS_KEY_ID = client_options[':access_key_id']

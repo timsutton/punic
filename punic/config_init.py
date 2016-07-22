@@ -10,6 +10,7 @@ from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit import prompt
 from prompt_toolkit.auto_suggest import (AutoSuggest, Suggestion)
 import six
+import StringIO
 
 class ListAutoSuggest(AutoSuggest):
     def __init__(self, items):
@@ -77,7 +78,12 @@ def config_init(**kwargs):
     if xcode_version:
         d['defaults']['xcode-version'] = xcode_version
 
-    s = yaml.dumps(d)
-    print(s)
+
+    stream = StringIO.StringIO()
+
+    yaml.safe_dump(d, stream, default_flow_style=False)
+
+
+    print(stream.getvalue())
     if _prompt('Write config to `punic.yaml`', ['yes', 'no'], default = 'no') == 'yes':
-        Path('punic.yaml').open('wb').write(s)
+        Path('punic.yaml').open('wb').write(stream.getvalue())
