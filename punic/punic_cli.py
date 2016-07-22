@@ -251,14 +251,14 @@ def readme(context):
 @punic_cli.group(cls=DYMGroup)
 @click.pass_context
 def cache(context):
-    """TODO"""
+    """Cache punic build artifacts to Amazon S3"""
     pass
 
 @cache.command()
 @click.pass_context
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
 def publish(context, xcode_version):
-    """TODO"""
+    """Generates and uploads the cache archive for the current Cartfile.resolved"""
     logger.info("<cmd>Cache Publish</cmd>")
     punic = context.obj
     if xcode_version:
@@ -271,7 +271,7 @@ def publish(context, xcode_version):
 @click.pass_context
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
 def install(context, xcode_version):
-    """TODO"""
+    """Installs the cache archive for the current Cartfile.resolved"""
     logger.info("<cmd>Cache Publish</cmd>")
     punic = context.obj
     if xcode_version:
