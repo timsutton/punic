@@ -6,8 +6,8 @@ def check_libyaml():
     import subprocess
     if not subprocess.check_output(['brew', 'ls', '--versions', 'libyaml']):
         import sys
-        sys.stderr.write('Error: libyaml not installed. Use `brew install libyaml` to install it\n')
-        exit(0)
+        sys.stderr.write('Error: {}\nError: libyaml not installed. Use `brew install libyaml` to install it\nError: {}\n'.format('*' * 80, '*' * 80))
+        exit(-1)
 
 check_libyaml()
 
