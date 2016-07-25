@@ -68,6 +68,9 @@ class Resolver(object):
         def prune_2():
             def prune(node):
                 mini = defaultdict(set)
+                if not node in graph:
+                    return
+
                 for dependency, version in graph.successors(node):
                     mini[dependency].add(version)
                 for dependency, versions in mini.items():
