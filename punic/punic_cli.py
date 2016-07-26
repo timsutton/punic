@@ -115,8 +115,9 @@ def resolve(context, fetch):
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
 @click.option('--toolchain', default=None, help="""Xcode toolchain to use""")
+@click.option('--dry-run', default=None, is_flag=True, help="""TODO""")
 @click.argument('deps', nargs=-1)
-def build(context, configuration, platform, fetch, xcode_version, toolchain, deps):
+def build(context, configuration, platform, fetch, xcode_version, toolchain, dry_run, deps):
     """Fetch and build the project's dependencies."""
     logger.info("<cmd>Build</cmd>")
     punic = context.obj
@@ -127,6 +128,8 @@ def build(context, configuration, platform, fetch, xcode_version, toolchain, dep
         punic.config.toolchain = toolchain
     if xcode_version:
         punic.config.xcode_version = xcode_version
+    if dry_run:
+        punic.config.dry_run = dry_run
 
     with timeit('build', log = punic.config.log_timings):
         with error_handling():

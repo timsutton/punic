@@ -166,6 +166,12 @@ class Punic(object):
         return [make(specification) for specification in specifications]
 
     def _build_one(self, platform, project, scheme, configuration):
+
+        if self.config.dry_run:
+            for sdk in platform.sdks:
+                logger.warn('<sub>DRY-RUN: (Not) Building</sub>: <ref>{}</ref> ({}, {}, {})'.format(project.path.name, scheme, sdk, configuration))
+            return
+
         products = dict()
 
         toolchain = self.config.toolchain

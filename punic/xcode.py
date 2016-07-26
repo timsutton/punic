@@ -206,6 +206,8 @@ def parse_info(string):
     except StopIteration:
         pass
 
+    logger.debug(targets, configurations, schemes)
+
     return targets, configurations, schemes
 
 

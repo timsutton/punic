@@ -43,6 +43,7 @@ class Config(object):
         self.xcode = Xcode.default()
 
         self.toolchain = None
+        self.dry_run = False
 
         # Read in defaults from punic.yaml
         self.read(Path('punic.yaml'))
