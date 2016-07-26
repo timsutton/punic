@@ -42,9 +42,9 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | update / --project-directory    | ❗️ _Unimplemented_                 |
 | update / [dependencies]         | 🔨️️ Partially implemented. Note 3   |
 
-✅ = Implemented or replaced by a punic only workflow.
-❗️ = Unimplemented but probably a good idea to implement one day. Contributions welcome!
-🔨️️ = Partially implemented. More work likely be needed for this feature to be useable by everyone.
+* ✅ = Implemented or replaced by a punic only workflow.
+* ❗️ = Unimplemented but probably a good idea to implement one day. Contributions welcome!
+* 🔨️️ = Partially implemented. More work likely be needed for this feature to be useable by everyone.
 
 ### Notes:
 
