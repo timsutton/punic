@@ -45,8 +45,9 @@ Installing punic inside a python virtualenv is supported but you might have diff
 
 Punic has built-in help:
 
-```shell
+```
 $ punic --help
+
 Usage: punic [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -69,9 +70,9 @@ Commands:
 
 Each sub-command also has built in help:
 
-```shell
+```
 $ punic build --help
-schwa@orthanc ~/D/TEst> punic build --help
+
 Usage: punic build [OPTIONS] [DEPS]...
 
   Fetch and build the project's dependencies.
@@ -202,28 +203,31 @@ Note that repositories pointed to by file URL are still cloned and fetched just 
 
 The current roadmap for Punic is as follows (in rough order of priority):
 
+- [X] Allow specification of default platforms and configurations in new style config file (`punic.yaml`)
 - [X] `copy-frameworks` subcommand.
 - [X] `fetch` subcommand
-- [ ] Add a `migrate` subcommand that can migrate Cartfiles to the punic.yaml.
-- [ ] Add a `table-of-contents` subcommand that will produce a filtered list of all projects, schemes etc of all dependencies. This TOC could then be used inside punic.yaml as a whitelist or blacklist. This will allow us to do things like skip frameworks that should not be built.
-- [ ] Include full Cartfile (.private) functional in punic.yaml
-- [ ] Provide carthage compatibility mode and break punic command line compatibility. For example 'bootstrap' should be renamed 'update' (and update becomes something else).
-- [ ] Reliability. Punic needs to be tested against as many other Cartfiles as possible and needs to reliably produce the same build order
-- [ ] Run on travis
-- [ ] Support `build` subcommand's `--no-skip-current` switch
+- [X] Replace `bootstrap` with a better `build`
 - [X] Support `Cartfile.private` functionality
-- [ ] Support specifying target dependencies at command line. Full resolve/fetch
-- [ ] Unit test Resolver
-- [X] Allow specification of default platforms and configurations in new style config file (`punic.yaml`)
 - [X] Support branch style Cartfile specifications.
 - [X] Support specifying target dependencies at command line. Building only.
+- [ ] Add a `migrate` subcommand that can migrate Cartfiles to the punic.yaml.
+- [ ] Add a `table-of-contents` subcommand that will produce a filtered list of all projects, schemes etc of all dependencies. This TOC could then be used inside punic.yaml as a whitelist or blacklist. This will allow us to do things like skip frameworks that should not be built.
+- [ ] Reliability. Punic needs to be tested against as many other Cartfiles as possible and needs to reliably produce the same build order
+- [ ] Replace Cartfiles (including .private) with Punic.yaml. Need to support Cartfiles and punic.yaml concurrently.
+- [ ] Run on travis
+- [ ] Support `build` subcommand's `--no-skip-current` switch
+- [ ] Support specifying target dependencies at command line. Full resolve/fetch
+- [ ] Unit test Resolver
 
 ## Differences between Punic & Carthage
+
+Importantly: `carthage bootstrap` has been replaced by `punic build`. See the [FAQ](#where-did-the-bootstrap-command-go) for more information.
 
 Aside from differences of implementation one of the fundamental differences is that Carthage always runs `xcodebuild clean` before building dependencies. Punic deliberately does not perform this clean step and provides an explicit `punic clean` command. The goal of this is to not force collaborators to sit through long clean builds when very little has changed. This can provide dramatic speed ups to a users workflow (during testing builds that can take Carthage 20-25 minutes to build on top-end hardware take less than a minute to do a 'dirty' build.)
 
 Punic only supports "github" style dependency specifications and does not support the use of branch names in version specifications.
 
+For more detailed information see the [Punic documentation](https://github.com/schwa/punic/blob/master/documentation/Notes.markdown).
 
 ## Frequently Answer Questions
 
