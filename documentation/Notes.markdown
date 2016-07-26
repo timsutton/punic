@@ -9,7 +9,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | build / --configuration         | ✅ Implemented                     |
 | build / --platform              | ✅ Implemented                     |
 | build / --toolchain             | ✅ Implemented                     |
-| build / --derived-data          | 🔨️️ Implemented. Note 6             |
+| build / --derived-data          | ✅ Implemented. Note 6             |
 | build / --no-skip-current       | ❗️ _Unimplemented_                 |
 | build / --color                 | ✅ Implemented. Note 4             |
 | build / --verbose               | ✅ Implemented. Note 4             |
@@ -31,7 +31,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | update / --configuration        | ✅ Implemented                     |
 | update / --platform             | ✅ Implemented                     |
 | update / --toolchain            | ✅ Implemented                     |
-| update / --derived-data         | 🔨️️ Implemented. Note 6             |
+| update / --derived-data         | ✅ Implemented. Note 6             |
 | update / --verbose              | ✅ Implemented. Note 4             |
 | update / --no-checkout          | ✅ Implemented. Note 7             |
 | update / --no-build             | ✅ Implemented. Note 7             |
@@ -44,7 +44,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 
 ✅ = Implemented or replaced by a punic only workflow.
 ❗️ = Unimplemented but probably a good idea to implement one day. Contributions welcome!
-🔨️️ = Partially implemented. More work might be needed.
+🔨️️ = Partially implemented. More work likely be needed for this feature to be useable by everyone.
 
 ### Notes:
 
