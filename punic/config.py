@@ -42,6 +42,8 @@ class Config(object):
         self.can_fetch = False
         self.xcode = Xcode.default()
 
+        self.toolchain = None
+
         # Read in defaults from punic.yaml
         self.read(Path('punic.yaml'))
 

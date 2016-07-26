@@ -8,7 +8,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | build                           | ✅ Implemented                     |
 | build / --configuration         | ✅ Implemented                     |
 | build / --platform              | ✅ Implemented                     |
-| build / --toolchain             | ❗️ _Unimplemented_                 |
+| build / --toolchain             | ✅ Implemented                     |
 | build / --derived-data          | 🔨️️ Implemented. Note 6             |
 | build / --no-skip-current       | ❗️ _Unimplemented_                 |
 | build / --color                 | ✅ Implemented. Note 4             |
@@ -18,7 +18,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | checkout                        | ✅ Implemented                     |
 | checkout / --use-ssh            | 🔨️️ Implemented. Note 8             |
 | checkout / --use-submodules     | ❗️ _Unimplemented_                 |
-| checkout / --no-use-binaries    | ❗️ _Won't_ implement. Note 1       |
+| checkout / --no-use-binaries    | ✅️ _Won't_ implement. Note 1       |
 | checkout / --color              | ✅ Implemented. Note 4             |
 | checkout / --verbose            | ✅ Implemented. Note 4             |
 | checkout / --project-directory  | ❗️ _Unimplemented_                 |
@@ -30,7 +30,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | update                          | ✅ Implemented                     |
 | update / --configuration        | ✅ Implemented                     |
 | update / --platform             | ✅ Implemented                     |
-| update / --toolchain            | ❗️ _Unimplemented_                 |
+| update / --toolchain            | ✅ Implemented                     |
 | update / --derived-data         | 🔨️️ Implemented. Note 6             |
 | update / --verbose              | ✅ Implemented. Note 4             |
 | update / --no-checkout          | ✅ Implemented. Note 7             |
