@@ -117,8 +117,22 @@ class Repository(object):
             return self.specifications_cache[revision]
         elif revision is None and self == self.punic.root_project:
             cartfile = Cartfile(overrides=config.repo_overrides)
-            cartfile.read(self.path / 'Cartfile')
-            specifications = cartfile.specifications
+            specifications = []
+
+            if (self.path / 'Cartfile').exists():
+                cartfile.read(self.path / 'Cartfile')
+                specifications += cartfile.specifications
+
+            if (self.path / 'Cartfile.private').exists():
+                cartfile.read(self.path / 'Cartfile.private')
+                if set(specifications).intersection(cartfile.specifications):
+                    raise PunicRepresentableError("Specifications in your Cartfile.private conflict with specifications within your Cartfile.")
+                specifications += cartfile.specifications
+
+            if not specifications:
+                raise PunicRepresentableError("No specifications found in Cartfile or Cartfile.private")
+
+
         else:
             self.check_work_directory()
 
