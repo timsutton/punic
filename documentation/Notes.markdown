@@ -3,20 +3,20 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 
 | Command/Switch                  | Status                             |
 | ------------------------------- | ---------------------------------- |
-| archive                         | _Won't_ implement. Note 1          |
+| archive                         | ✅ _Won't_ implement. Note 1       |
 | bootstrap                       | ✅ Implemented. Note 10            |
 | build                           | ✅ Implemented                     |
 | build / --configuration         | ✅ Implemented                     |
 | build / --platform              | ✅ Implemented                     |
 | build / --toolchain             | ❗️ _Unimplemented_                  |
-| build / --derived-data          | ✅ Implemented. Note 6             |
+| build / --derived-data          | ✅❗️ Implemented. Note 6           |
 | build / --no-skip-current       | ❗️ _Unimplemented_                 |
 | build / --color                 | ✅ Implemented. Note 4             |
 | build / --verbose               | ✅ Implemented. Note 4             |
 | build / --project-directory     | ❗️ _Unimplemented_                 |
-| build / [dependencies]          | Partially implemented. Note 3      |
+| build / [dependencies]          | ✅❗️ Partially implemented. Note 3 |
 | checkout                        | ✅ Implemented                     |
-| checkout / --use-ssh            | ✅ Implemented. Note 8             |
+| checkout / --use-ssh            | ✅❗️ Implemented. Note 8           |
 | checkout / --use-submodules     | ❗️ _Unimplemented_                 |
 | checkout / --no-use-binaries    | ❗️ _Won't_ implement. Note 1       |
 | checkout / --color              | ✅ Implemented. Note 4             |
@@ -24,24 +24,27 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | checkout / --project-directory  | ❗️ _Unimplemented_                 |
 | checkout / [dependencies]       | ❗️ _Unimplemented_                 |
 | copy-frameworks                 | ✅ Implemented                     |
-| fetch                           | _Won't_ implement. Note 1          |
+| fetch                           | ✅ _Won't_ implement. Note 1       |
 | help                            | ✅ Implemented. Note 5             |
-| outdated                        | _Won't_ implement. Note 9          |
+| outdated                        | ✅ _Won't_ implement. Note 9       |
 | update                          | ✅ Implemented                     |
 | update / --configuration        | ✅ Implemented                     |
 | update / --platform             | ✅ Implemented                     |
 | update / --toolchain            | ❗️ _Unimplemented_                 |
-| update / --derived-data         | ✅ Implemented. Note 6             |
+| update / --derived-data         | ✅❗️ Implemented. Note 6           |
 | update / --verbose              | ✅ Implemented. Note 4             |
 | update / --no-checkout          | ✅ Implemented. Note 7             |
 | update / --no-build             | ✅ Implemented. Note 7             |
-| update / --use-ssh              | ✅ Implemented. Note 8             |
+| update / --use-ssh              | ✅❗️ Implemented. Note 8           |
 | update / --use-submodules       | ❗️ _Unimplemented_                 |
-| update / --no-use-binaries      | _Won't_ implement. Note 1          |
+| update / --no-use-binaries      | ✅ _Won't_ implement. Note 1       |
 | update / --color                | ✅ Implemented. Note 4             |
-| update / --project-directory    | _Unimplemented_                    |
-| update / [dependencies]         | Partially implemented. Note 3      |
+| update / --project-directory    | ❗️ _Unimplemented_                  |
+| update / [dependencies]         | ✅❗️ Partially implemented. Note 3  |
 
+✅ = Implemented or replaced by a punic only workflow.
+❗️ = Unimplemented but probably a good idea to implement one day. Contributions welcome!
+✅❗️ = Partially implemented. More work might be needed.
 
 ### Notes:
 
