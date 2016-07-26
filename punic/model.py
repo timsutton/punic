@@ -200,7 +200,7 @@ class Punic(object):
 
         # Build device & simulator (if sim exists)
         for sdk in platform.sdks:
-            logger.info('<sub>Building</sub> <ref>{}</ref> ({}, {}, {})'.format(project.path.name, scheme, sdk,
+            logger.info('<sub>Building</sub>: <ref>{}</ref> ({}, {}, {})'.format(project.path.name, scheme, sdk,
                 configuration))
 
             derived_data_path = self.config.derived_data_path
