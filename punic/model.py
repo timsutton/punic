@@ -165,36 +165,6 @@ class Punic(object):
 
         return [make(specification) for specification in specifications]
 
-    def _prepare_dependency(self, identifier, revision):
-        project = self._repository_for_identifier(identifier)
-        checkout_path = self.config.checkouts_path / identifier.project_name
-
-        # TODO: This isn't really 'can_fetch'
-        if self.config.can_fetch:
-            project.checkout(revision)
-            logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
-            if checkout_path.exists():
-                shutil.rmtree(checkout_path)
-            shutil.copytree(project.path, checkout_path, ignore=shutil.ignore_patterns('.git'))
-
-        if not checkout_path.exists():
-            raise Exception('No checkout at path: {}'.format(checkout_path))
-
-        # We only need to bother making a symlink to <root>/Carthage/Build if dependency also has dependencies.
-        if len(self.dependencies_for_project_and_tag(identifier, revision)):
-            # Make a Carthage/Build symlink inside checked out project.
-            carthage_path = checkout_path / 'Carthage'
-            if not carthage_path.exists():
-                carthage_path.mkdir()
-
-            carthage_symlink_path = carthage_path / 'Build'
-            if carthage_symlink_path.exists():
-                carthage_symlink_path.unlink()
-            logger.debug('<sub>Creating symlink: <ref>{}</ref> to <ref>{}</ref></sub>'.format(
-                carthage_symlink_path.relative_to(self.root_path), self.build_path.relative_to(self.root_path)))
-            assert self.build_path.exists()
-            os.symlink(str(self.build_path), str(carthage_symlink_path))
-
     def _build_one(self, platform, project, scheme, configuration):
         products = dict()
 
