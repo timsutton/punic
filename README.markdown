@@ -1,4 +1,11 @@
-# punic [![Travis](https://img.shields.io/travis/schwa/punic.svg)]() [![license](https://img.shields.io/github/license/schwa/punic.svg)]() [![GitHub tag](https://img.shields.io/github/tag/schwa/punic.svg)]()
+# punic [![Travis][image_1]][link_1] [![license][image_2]][link_2] [![tag][image_3]][link_3]
+
+[image_1]: https://img.shields.io/travis/schwa/punic.svg
+[link_1]: https://travis-ci.org/schwa/punic/branches
+[image_2]: https://img.shields.io/github/license/schwa/punic.svg
+[link_2]: https://github.com/schwa/punic/blob/master/LICENSE
+[image_3]: https://img.shields.io/github/tag/schwa/punic.svg
+[link_3]: https://github.com/schwa/punic/releases
 
 ## Description
 
