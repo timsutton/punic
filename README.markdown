@@ -211,7 +211,7 @@ The current roadmap for Punic is as follows (in rough order of priority):
 - [ ] Reliability. Punic needs to be tested against as many other Cartfiles as possible and needs to reliably produce the same build order
 - [ ] Run on travis
 - [ ] Support `build` subcommand's `--no-skip-current` switch
-- [ ] Support `Cartfile.private` functionality
+- [X] Support `Cartfile.private` functionality
 - [ ] Support specifying target dependencies at command line. Full resolve/fetch
 - [ ] Unit test Resolver
 - [X] Allow specification of default platforms and configurations in new style config file (`punic.yaml`)
