@@ -114,14 +114,17 @@ def resolve(context, fetch):
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
+@click.option('--toolchain', default=None, help="""Xcode toolchain to use""")
 @click.argument('deps', nargs=-1)
-def build(context, configuration, platform, fetch, xcode_version, deps):
+def build(context, configuration, platform, fetch, xcode_version, toolchain, deps):
     """Fetch and build the project's dependencies."""
     logger.info("<cmd>Build</cmd>")
     punic = context.obj
 
     punic.config.update(configuration=configuration, platform=platform)
     punic.config.can_fetch = fetch
+    if toolchain:
+        punic.config.toolchain = toolchain
     if xcode_version:
         punic.config.xcode_version = xcode_version
 
@@ -137,13 +140,16 @@ def build(context, configuration, platform, fetch, xcode_version, deps):
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
+@click.option('--toolchain', default=None, help="""Xcode toolchain to use""")
 @click.argument('deps', nargs=-1)
-def update(context, configuration, platform, fetch, xcode_version, deps):
+def update(context, configuration, platform, fetch, xcode_version, toolchain, deps):
     """Update and rebuild the project's dependencies."""
     logger.info("<cmd>Update</cmd>")
     punic = context.obj
     punic.config.update(configuration=configuration, platform=platform)
     punic.config.can_fetch = fetch
+    if toolchain:
+        punic.config.toolchain = toolchain
     if xcode_version:
         punic.config.xcode_version = xcode_version
 

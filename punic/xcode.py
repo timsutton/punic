@@ -212,11 +212,12 @@ def parse_info(string):
 ########################################################################################################################
 
 class XcodeBuildArguments(object):
-    def __init__(self, scheme = None, target = None, configuration = None, sdk = None, jobs = None, derived_data_path = None, arguments = None):
+    def __init__(self, scheme = None, target = None, configuration = None, sdk = None, toolchain = None, jobs = None, derived_data_path = None, arguments = None):
         self.scheme = scheme
         self.target = target
         self.configuration = configuration
         self.sdk = sdk
+        self.toolchain = toolchain
         self.jobs = jobs
         self.derived_data_path = derived_data_path
         self.arguments = arguments
@@ -231,6 +232,7 @@ class XcodeBuildArguments(object):
         parts += ['-target', self.target] if self.target else []
         parts += ['-configuration', self.configuration] if self.configuration else []
         parts += ['-sdk', self.sdk] if self.sdk else []
+        parts += ['-toolchain', self.toolchain] if self.toolchain else []
         parts += ['-jobs', self.jobs] if self.jobs else []
         parts += ['-derivedDataPath', self.derived_data_path] if self.derived_data_path else []
         parts += (['{}={}'.format(key, value) for key, value in self.arguments.items()]) if self.arguments else []

@@ -92,10 +92,10 @@ class CarthageCache(object):
         key_name = archive_path.name
 
         if bucket.get_key(archive_path.name):
-            logger.info('Archive already exists on S3. Skipping download.')
+            logger.info('Archive already exists on S3. Skipping upload.')
             return
 
-
+        logger.info('Uploading archive to S3.')
 
         k = bucket.new_key(key_name)
         file_size = archive_path.stat().st_size

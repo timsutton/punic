@@ -198,14 +198,16 @@ class Punic(object):
     def _build_one(self, platform, project, scheme, configuration):
         products = dict()
 
+        toolchain = self.config.toolchain
+
         # Build device & simulator (if sim exists)
         for sdk in platform.sdks:
-            logger.info('<sub>Building</sub> <ref>{}</ref> ({}, {}, {})'.format(project.path.name, scheme, sdk,
+            logger.info('<sub>Building</sub>: <ref>{}</ref> ({}, {}, {})'.format(project.path.name, scheme, sdk,
                 configuration))
 
             derived_data_path = self.config.derived_data_path
 
-            arguments = XcodeBuildArguments(scheme=scheme, configuration=configuration, sdk=sdk, derived_data_path=derived_data_path, arguments=self.xcode_arguments)
+            arguments = XcodeBuildArguments(scheme=scheme, configuration=configuration, sdk=sdk, toolchain=toolchain, derived_data_path=derived_data_path, arguments=self.xcode_arguments)
 
             product = project.build(arguments=arguments)
             products[sdk] = product
