@@ -46,7 +46,7 @@ def punic_cli(context, echo, verbose, timing, color):
     # add ch to logger
     logger.addHandler(stream_handler)
 
-    logs_path = Path('~/Library/io.schwa.Punic/Logs').expanduser()
+    logs_path = Path('~/Library/io.schwa.Punic/Application Support/Logs').expanduser()
     if not logs_path.exists():
         logs_path.mkdir(parents = True)
 

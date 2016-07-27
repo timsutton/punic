@@ -249,7 +249,7 @@ It seems best to always use a custom derived data directory for punic builds. Th
         Build/
         Checkouts/
     punic.yaml
-~/Library/io.schwa.punic/
+~/Library/Application Support/io.schwa.punic/
     DerivedData/
     cache.shelf
     repo_cache/

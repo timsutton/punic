@@ -25,7 +25,7 @@ class Config(object):
 
         self.root_path = Path.cwd()  # type: Path
 
-        self.library_directory = Path(os.path.expanduser('~/Library/io.schwa.Punic'))
+        self.library_directory = Path('~/Library/Application Support/io.schwa.Punic').expanduser()
         if not self.library_directory.exists():
             self.library_directory.mkdir(parents=True)
         self.repo_cache_directory = self.library_directory / 'repo_cache'
