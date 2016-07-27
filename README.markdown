@@ -214,7 +214,6 @@ The current roadmap for Punic is as follows (in rough order of priority):
 - [ ] Add a `table-of-contents` subcommand that will produce a filtered list of all projects, schemes etc of all dependencies. This TOC could then be used inside punic.yaml as a whitelist or blacklist. This will allow us to do things like skip frameworks that should not be built.
 - [ ] Reliability. Punic needs to be tested against as many other Cartfiles as possible and needs to reliably produce the same build order
 - [ ] Replace Cartfiles (including .private) with Punic.yaml. Need to support Cartfiles and punic.yaml concurrently.
-- [ ] Run on travis
 - [ ] Support `build` subcommand's `--no-skip-current` switch
 - [ ] Support specifying target dependencies at command line. Full resolve/fetch
 - [ ] Unit test Resolver

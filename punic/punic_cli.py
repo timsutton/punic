@@ -77,7 +77,7 @@ def punic_cli(context, echo, verbose, timing, color):
 
 @punic_cli.command()
 @click.pass_context
-@click.option('--use-submodules', default=None, help="""TODO:""")
+@click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
 def fetch(context, use_submodules):
     """Fetch the project's dependencies.."""
     logger.info("<cmd>fetch</cmd>")
@@ -94,7 +94,7 @@ def fetch(context, use_submodules):
 @punic_cli.command()
 @click.pass_context
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
-@click.option('--use-submodules', default=None, help="""TODO:""")
+@click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
 def resolve(context, fetch, use_submodules):
     """Resolve dependencies and output `Carthage.resolved` file.
 
@@ -118,9 +118,9 @@ def resolve(context, fetch, use_submodules):
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
 @click.option('--toolchain', default=None, help="""Xcode toolchain to use""")
-@click.option('--dry-run', default=None, is_flag=True, help="""TODO""")
-@click.option('--use-submodules', default=None, help="""TODO:""")
-@click.option('--use-ssl', default=None, help="""TODO:""")
+@click.option('--dry-run', default=None, is_flag=True, help="""Do not actually perform final build""")
+@click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
+@click.option('--use-ssl', default=None, help="""Use SSH for downloading GitHub repositories""")
 @click.argument('deps', nargs=-1)
 def build(context, configuration, platform, fetch, xcode_version, toolchain, dry_run, use_submodules, use_ssl, deps):
     """Fetch and build the project's dependencies."""
@@ -159,8 +159,8 @@ def build(context, configuration, platform, fetch, xcode_version, toolchain, dry
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
 @click.option('--toolchain', default=None, help="""Xcode toolchain to use""")
-@click.option('--use-submodules', default=None, help="""TODO:""")
-@click.option('--use-ssl', default=None, help="""TODO:""")
+@click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
+@click.option('--use-ssl', default=None, help="""Use SSH for downloading GitHub repositories""")
 @click.argument('deps', nargs=-1)
 def update(context, configuration, platform, fetch, xcode_version, toolchain, use_submodules, use_ssl, deps):
     """Update and rebuild the project's dependencies."""
@@ -218,8 +218,8 @@ def clean(context, derived_data, caches, build, all):
 @punic_cli.command()
 @click.pass_context
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
-@click.option('--use-submodules', default=None, help="""TODO:""")
-@click.option('--use-ssl', default=None, help="""TODO:""")
+@click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
+@click.option('--use-ssl', default=None, help="""Use SSH for downloading GitHub repositories""")
 @click.option('--open', default=False, is_flag=True, help="""Open the graph image file.""")
 def graph(context, fetch, use_submodules, use_ssl, open):
     """Output resolved dependency graph."""
