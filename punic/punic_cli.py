@@ -78,13 +78,16 @@ def punic_cli(context, echo, verbose, timing, color):
 @punic_cli.command()
 @click.pass_context
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
-def fetch(context, use_submodules):
+@click.option('--use-ssh', default=None, help="""Use SSH for downloading GitHub repositories""")
+def fetch(context, use_submodules, use_ssh):
     """Fetch the project's dependencies.."""
     logger.info("<cmd>fetch</cmd>")
     punic = context.obj
     punic.config.can_fetch = True  # obviously
     if use_submodules:
         punic.config.use_submodules = use_submodules
+    if use_ssh:
+        punic.config.use_ssh = use_ssh
 
     with timeit('fetch', log=punic.config.log_timings):
         with error_handling():
@@ -95,7 +98,8 @@ def fetch(context, use_submodules):
 @click.pass_context
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
-def resolve(context, fetch, use_submodules):
+@click.option('--use-ssh', default=None, help="""Use SSH for downloading GitHub repositories""")
+def resolve(context, fetch, use_submodules, use_ssh):
     """Resolve dependencies and output `Carthage.resolved` file.
 
     This sub-command does not build dependencies. Use this sub-command when a dependency has changed and you just want to update `Cartfile.resolved`.
@@ -105,6 +109,8 @@ def resolve(context, fetch, use_submodules):
     punic.config.can_fetch = fetch
     if use_submodules:
         punic.config.use_submodules = use_submodules
+    if use_ssh:
+        punic.config.use_ssh = use_ssh
 
     with timeit('resolve', log=punic.config.log_timings):
         with error_handling():
