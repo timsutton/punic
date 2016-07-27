@@ -26,7 +26,7 @@ class Specification(object):
         self.raw_string = None
 
     @classmethod
-    def cartfile_string(cls, string, overrides = None):
+    def cartfile_string(cls, string, use_ssl, overrides = None):
         # type: (str) -> Specification
         """
         >>> Specification.cartfile_string('github "foo/bar"')
@@ -51,7 +51,7 @@ class Specification(object):
         if not match:
             raise Exception('Bad spec {}'.format(string))
 
-        identifier = ProjectIdentifier.string(match.group('address'), overrides=overrides)
+        identifier = ProjectIdentifier.string(match.group('address'), use_ssl=use_ssl, overrides=overrides)
         predicate = VersionPredicate(match.group('predicate'))
         specification = Specification(identifier=identifier, predicate=predicate)
         specification.raw_string = string
@@ -68,7 +68,7 @@ class Specification(object):
 @functools.total_ordering
 class ProjectIdentifier(object):
     @classmethod
-    def string(cls, string, overrides=None):
+    def string(cls, string, use_ssl, overrides=None):
         # type: (str) -> ProjectIdentifier
         """
         >>> ProjectIdentifier.string('github "foo/bar"')
@@ -85,6 +85,9 @@ class ProjectIdentifier(object):
         Example-Project
         """
 
+        assert isinstance(string, six.string_types)
+        assert isinstance(use_ssl, bool)
+
         match = re.match(r'^(?P<source>github|git)\s+"(?P<link>.+)"', string)
         if not match:
             raise Exception('No match')
@@ -98,7 +101,11 @@ class ProjectIdentifier(object):
                 raise Exception('No match')
             team_name = match.group('team_name')
             project_name = match.group('project_name')
-            remote_url = 'git@github.com:{}/{}.git'.format(team_name, project_name)
+
+            if not use_ssl:
+                remote_url = 'https://github.com/{}/{}.git'.format(team_name, project_name)
+            else:
+                remote_url = 'git@github.com:{}/{}.git'.format(team_name, project_name)
         elif source == 'git':
             team_name = None
             url_parts = urlparse.urlparse(link)

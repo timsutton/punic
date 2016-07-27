@@ -42,6 +42,7 @@ class Config(object):
         self.toolchain = None
         self.dry_run = False
         self.use_submodules = False
+        self.use_ssl = False
 
         # Read in defaults from punic.yaml
         self.read(Path('punic.yaml'))

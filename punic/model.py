@@ -64,7 +64,7 @@ class Punic(object):
             dependency, version in build_order[:-1]]
         logger.debug("<sub>Saving</sub> <ref>Cartfile.resolved</ref>")
 
-        cartfile = Cartfile(specifications=specifications)
+        cartfile = Cartfile(use_ssl=self.punic.config.use_ssl, specifications=specifications)
         cartfile.write((self.config.root_path / 'Cartfile.resolved').open('w'))
 
     def graph(self):
@@ -119,7 +119,7 @@ class Punic(object):
     def _ordered_dependencies(self, name_filter=None):
         # type: (bool, [str]) -> [(ProjectIdentifier, Revision)]
 
-        cartfile = Cartfile(overrides=config.repo_overrides)
+        cartfile = Cartfile(use_ssl=self.config.use_ssl, overrides=config.repo_overrides)
         cartfile.read(self.config.root_path / 'Cartfile.resolved')
 
         def _predicate_to_revision(spec):

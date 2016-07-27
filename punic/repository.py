@@ -112,7 +112,7 @@ class Repository(object):
         if revision in self.specifications_cache:
             return self.specifications_cache[revision]
         elif revision is None and self == self.punic.root_project:
-            cartfile = Cartfile(overrides=config.repo_overrides)
+            cartfile = Cartfile(use_ssl=self.punic.config.use_ssl, overrides=config.repo_overrides)
             specifications = []
 
             if (self.path / 'Cartfile').exists():
@@ -137,7 +137,7 @@ class Repository(object):
                 specifications = []
             else:
                 data = result.stdout
-                cartfile = Cartfile(overrides=config.repo_overrides)
+                cartfile = Cartfile(use_ssl=self.punic.config.use_ssl, overrides=config.repo_overrides)
                 cartfile.read(data)
                 specifications = cartfile.specifications
 
