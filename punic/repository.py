@@ -9,7 +9,6 @@ import hashlib
 import affirm
 import six
 from memoize import mproperty
-from .utilities import *
 from .runner import *
 from .config import *
 from .errors import *

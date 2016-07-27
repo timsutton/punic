@@ -4,7 +4,7 @@ __all__ = ['Cartfile']
 
 import re
 from pathlib2 import Path
-from .basic_types import *
+from .specification import *
 from .errors import *
 
 

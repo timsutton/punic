@@ -1,11 +1,13 @@
 from __future__ import division, absolute_import, print_function
 
-import re
+__all__ = ['Specification', 'ProjectIdentifier', 'VersionOperator', 'VersionPredicate']
+
 import functools
-from pathlib2 import Path
-from memoize import mproperty
-from flufl.enum import Enum
+import re
 import six
+from flufl.enum import Enum
+from memoize import mproperty
+from pathlib2 import Path
 from .logger import *
 from .semantic_version import *
 
@@ -15,8 +17,6 @@ if six.PY2:
 elif six.PY3:
     import urllib.parse as urlparse
 
-__all__ = ['Specification', 'Platform', 'ProjectIdentifier',
-    'VersionOperator', 'VersionPredicate', 'parse_platforms']
 
 
 class Specification(object):
@@ -258,43 +258,3 @@ class VersionPredicate(object):
             return self.value <= version <= self.value.next_major
         return False
 
-
-class Platform(object):
-
-    all = []
-
-    def __init__(self, name, nickname, sdks, output_directory_name):
-        self.name = name
-        self.nickname = nickname
-        self.sdks = sdks
-        self.output_directory_name = output_directory_name
-
-    @classmethod
-    def platform_for_nickname(cls, nickname):
-        # type: (str) -> Platform
-        for platform in cls.all:
-            if platform.nickname.lower() == nickname.lower():
-                return platform
-        return None
-
-    @property
-    def device_sdk(self):
-        return self.sdks[0]
-
-    def __repr__(self):
-        return self.nickname
-
-
-Platform.all = [
-    Platform(name='iOS', nickname='iOS', sdks=['iphoneos', 'iphonesimulator'], output_directory_name='iOS'),
-    Platform(name='macOS', nickname='Mac', sdks=['macosx'], output_directory_name='Mac'),
-    # TODO add watchos and tvos
-]
-
-
-def parse_platforms(s):
-    # type: (str) -> [Platform]
-    if not s:
-        return Platform.all
-    else:
-        return [Platform.platform_for_nickname(platform.strip()) for platform in s.split(',')]

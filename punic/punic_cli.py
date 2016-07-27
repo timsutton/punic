@@ -21,7 +21,7 @@ from .utilities import *
 from .version_check import *
 from .config_init import *
 from .carthage_cache import *
-from .basic_types import *
+from .specification import *
 
 @click.group(cls=DYMGroup)
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")

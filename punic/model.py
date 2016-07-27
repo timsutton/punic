@@ -9,7 +9,7 @@ from pathlib2 import Path
 import affirm # TODO: Do not remove
 import re
 from .xcode import *
-from .basic_types import *
+from .specification import *
 from .runner import *
 from .resolver import *
 from .config import *

@@ -4,7 +4,7 @@ __all__ = ['config_init']
 
 import yaml
 from pathlib2 import Path
-from .basic_types import *
+from .specification import *
 from .xcode import  *
 from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit import prompt

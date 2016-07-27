@@ -5,10 +5,10 @@ __all__ = ['Config', 'config']
 import os
 from pathlib2 import Path
 import yaml
-from .basic_types import *
 from .logger import *
 from .runner import *
 from .xcode import *
+from .platform import *
 
 # TODO: This all needs to be cleaned up and made more generic. More configs will be added over time and this will only get worse
 # TODO: Allow config file to be relocated and specified on command line
