@@ -177,17 +177,26 @@ def update(context, configuration, platform, fetch, xcode_version, toolchain, de
 @punic_cli.command()
 @click.pass_context
 @click.option('--derived-data', default=False, is_flag=True, help="""Clean the punic derived data directory.""")
-@click.option('--caches', default=False, is_flag=True, help="""Clean the global punic carthage files.""")
+@click.option('--caches', default=False, is_flag=True, help="""Clean the global punic files.""")
+@click.option('--build', default=False, is_flag=True, help="""Clean the locate Carthage/Build directorys.""")
 @click.option('--all', default=False, is_flag=True, help="""Clean all.""")
-def clean(context, derived_data, caches, all):
+def clean(context, derived_data, caches, build, all):
     """Clean project & punic environment."""
     logger.info("<cmd>Clean</cmd>")
     punic = context.obj
+
+    if build or all:
+        logger.info('Erasing Carthage/Build directory')
+        if punic.config.build_path.exists():
+            shutil.rmtree(punic.config.build_path)
 
     if derived_data or all:
         logger.info('Erasing derived data directory')
         if punic.config.derived_data_path.exists():
             shutil.rmtree(punic.config.derived_data_path)
+
+
+
 
     if caches or all:
         if punic.config.repo_cache_directory.exists():
