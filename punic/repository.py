@@ -79,7 +79,7 @@ class Repository(object):
         logger.debug('Checking out <ref>{}</ref> @ revision <rev>{}</rev>'.format(self, revision))
         self.check_work_directory()
         try:
-            runner.check_run('git checkout {}'.format(revision.sha), cwd = self.path)
+            runner.check_run('git checkout "{}"'.format(revision.sha), cwd = self.path)
         except Exception:
             raise NoSuchRevision(repository=self, revision=revision)
 
@@ -98,7 +98,7 @@ class Repository(object):
             else:
                 repo = url
 
-            runner.check_run('git clone --recursive "{}" {}'.format(repo, str(self.path)), cwd = self.path.parent)
+            runner.check_run('git clone --recursive "{}" "{}"'.format(repo, str(self.path)), cwd = self.path.parent)
         else:
 
             self.check_work_directory()
@@ -136,7 +136,7 @@ class Repository(object):
         else:
             self.check_work_directory()
 
-            result = runner.run('git show {}:Cartfile'.format(revision), cwd = self.path)
+            result = runner.run('git show "{}:Cartfile"'.format(revision), cwd = self.path)
             if result.return_code != 0:
                 specifications = []
             else:
