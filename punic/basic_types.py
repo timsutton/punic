@@ -26,7 +26,7 @@ class Specification(object):
         self.raw_string = None
 
     @classmethod
-    def cartfile_string(cls, string, use_ssl, overrides = None):
+    def cartfile_string(cls, string, use_ssl = False, overrides = None):
         # type: (str) -> Specification
         """
         >>> Specification.cartfile_string('github "foo/bar"')
@@ -68,7 +68,7 @@ class Specification(object):
 @functools.total_ordering
 class ProjectIdentifier(object):
     @classmethod
-    def string(cls, string, use_ssl, overrides=None):
+    def string(cls, string, use_ssl=False, overrides=None):
         # type: (str) -> ProjectIdentifier
         """
         >>> ProjectIdentifier.string('github "foo/bar"')
