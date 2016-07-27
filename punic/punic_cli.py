@@ -80,11 +80,14 @@ def punic_cli(context, echo, verbose, timing, color):
 
 @punic_cli.command()
 @click.pass_context
-def fetch(context):
+@click.option('--use-submodules', default=None, help="""TODO:""")
+def fetch(context, use_submodules):
     """Fetch the project's dependencies.."""
     logger.info("<cmd>fetch</cmd>")
     punic = context.obj
     punic.config.can_fetch = True  # obviously
+    if use_submodules:
+        punic.config.use_submodules = use_submodules
 
     with timeit('fetch', log = punic.config.log_timings):
         with error_handling():
@@ -94,7 +97,8 @@ def fetch(context):
 @punic_cli.command()
 @click.pass_context
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
-def resolve(context, fetch):
+@click.option('--use-submodules', default=None, help="""TODO:""")
+def resolve(context, fetch, use_submodules):
     """Resolve dependencies and output `Carthage.resolved` file.
 
     This sub-command does not build dependencies. Use this sub-command when a dependency has changed and you just want to update `Cartfile.resolved`.
@@ -102,6 +106,8 @@ def resolve(context, fetch):
     punic = context.obj
     logger.info("<cmd>Resolve</cmd>")
     punic.config.can_fetch = fetch
+    if use_submodules:
+        punic.config.use_submodules = use_submodules
 
     with timeit('resolve', log = punic.config.log_timings):
         with error_handling():
@@ -117,8 +123,9 @@ def resolve(context, fetch):
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
 @click.option('--toolchain', default=None, help="""Xcode toolchain to use""")
 @click.option('--dry-run', default=None, is_flag=True, help="""TODO""")
+@click.option('--use-submodules', default=None, help="""TODO:""")
 @click.argument('deps', nargs=-1)
-def build(context, configuration, platform, fetch, xcode_version, toolchain, dry_run, deps):
+def build(context, configuration, platform, fetch, xcode_version, toolchain, dry_run, use_submodules, deps):
     """Fetch and build the project's dependencies."""
     logger.info("<cmd>Build</cmd>")
     punic = context.obj
@@ -135,10 +142,12 @@ def build(context, configuration, platform, fetch, xcode_version, toolchain, dry
         punic.config.xcode_version = xcode_version
     if dry_run:
         punic.config.dry_run = dry_run
-
+    if use_submodules:
+        punic.config.use_submodules = use_submodules
 
     logger.debug('Platforms: {}'.format(punic.config.platforms))
     logger.debug('Configuration: {}'.format(punic.config.configuration))
+
 
     with timeit('build', log = punic.config.log_timings):
         with error_handling():
@@ -153,8 +162,9 @@ def build(context, configuration, platform, fetch, xcode_version, toolchain, dry
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
 @click.option('--toolchain', default=None, help="""Xcode toolchain to use""")
+@click.option('--use-submodules', default=None, help="""TODO:""")
 @click.argument('deps', nargs=-1)
-def update(context, configuration, platform, fetch, xcode_version, toolchain, deps):
+def update(context, configuration, platform, fetch, xcode_version, toolchain, use_submodules, deps):
     """Update and rebuild the project's dependencies."""
     logger.info("<cmd>Update</cmd>")
     punic = context.obj
@@ -167,6 +177,8 @@ def update(context, configuration, platform, fetch, xcode_version, toolchain, de
         punic.config.toolchain = toolchain
     if xcode_version:
         punic.config.xcode_version = xcode_version
+    if use_submodules:
+        punic.config.use_submodules = use_submodules
 
     with timeit('update', log = punic.config.log_timings):
         with error_handling():
@@ -209,12 +221,15 @@ def clean(context, derived_data, caches, build, all):
 @punic_cli.command()
 @click.pass_context
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
+@click.option('--use-submodules', default=None, help="""TODO:""")
 @click.option('--open', default=False, is_flag=True, help="""Open the graph image file.""")
-def graph(context, fetch, open):
+def graph(context, fetch, open, use_submodules):
     """Output resolved dependency graph."""
     logger.info("<cmd>Graph</cmd>")
     punic = context.obj
     punic.config.can_fetch = fetch
+    if use_submodules:
+        punic.config.use_submodules = use_submodules
 
     with timeit('graph', log = punic.config.log_timings):
         with error_handling():

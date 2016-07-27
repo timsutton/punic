@@ -85,9 +85,6 @@ class Repository(object):
 
     def fetch(self):
         if not self.path.exists():
-
-
-
             logger.debug('<sub>Cloning</sub>: <ref>{}</ref>'.format(self))
 
             url = self.identifier.remote_url
@@ -100,7 +97,6 @@ class Repository(object):
 
             runner.check_run('git clone --recursive "{}" "{}"'.format(repo, str(self.path)), cwd = self.path.parent)
         else:
-
             self.check_work_directory()
 
             logger.info('<sub>Fetching</sub>: <ref>{}</ref>'.format(self))

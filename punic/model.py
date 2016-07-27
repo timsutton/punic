@@ -6,7 +6,8 @@ import os
 import punic.shshutil as shutil
 from copy import copy
 from pathlib2 import Path
-import affirm
+import affirm # TODO: Do not remove
+import re
 from .xcode import *
 from .basic_types import *
 from .runner import *
@@ -15,7 +16,7 @@ from .config import *
 from .repository import *
 from .logger import *
 from .cartfile import *
-
+from .errors import *
 
 ########################################################################################################################
 
@@ -256,13 +257,42 @@ class Checkout(object):
 
     def prepare(self):
 
-        # TODO: This isn't really 'can_fetch'
-        if self.punic.config.can_fetch:
+        if self.punic.config.use_submodules:
+            relative_checkout_path = self.checkout_path.relative_to(self.punic.config.root_path)
+
+            result = runner.run('git submodule status "{}"'.format(relative_checkout_path))
+            if result.return_code == 0:
+                match = re.match(r'^(?P<flag> |\-|\+|U)(?P<sha>[a-f0-9]+) (?P<path>.+) \((?P<description>.+)\)', result.stdout)
+                flag = match.groupdict()['flag']
+                if flag == ' ':
+                    pass
+                elif flag == '-':
+                    raise Exception('Uninitialized submodule P{. Please report this!'.format(self.checkout_path))
+                elif flag == '+':
+                    raise Exception('Submodule {} doesn\'t match expected revision'.format(self.checkout_path))
+                elif flag == 'U':
+                    raise Exception('Submodule {} has merge conflicts'.format(self.checkout_path))
+            else:
+                if self.checkout_path.exists():
+                    raise Exception('Want to create a submodule in {} but something already exists in there.'.format(self.checkout_path))
+                logger.debug('Adding submodule for {}'.format(self))
+                runner.check_run(['git', 'submodule', 'add', '--force', self.identifier.remote_url, self.checkout_path.relative_to(self.punic.config.root_path)])
+
+            # runner.check_run(['git', 'submodule', 'add', '--force', self.identifier.remote_url, self.checkout_path.relative_to(self.punic.config.root_path)])
+            # runner.check_run(['git', 'submodule', 'update', self.checkout_path.relative_to(self.punic.config.root_path)])
+
+            logger.debug('Updating {}'.format(self))
             self.repository.checkout(self.revision)
-            logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
-            if self.checkout_path.exists():
-                shutil.rmtree(self.checkout_path)
-            shutil.copytree(self.repository.path, self.checkout_path, ignore=shutil.ignore_patterns('.git'))
+        else:
+
+            # TODO: This isn't really 'can_fetch'
+            if self.punic.config.can_fetch:
+
+                self.repository.checkout(self.revision)
+                logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
+                if self.checkout_path.exists():
+                    shutil.rmtree(self.checkout_path)
+                shutil.copytree(self.repository.path, self.checkout_path, ignore=shutil.ignore_patterns('.git'))
 
         if not self.checkout_path.exists():
             raise Exception('No checkout at path: {}'.format(self.checkout_path))
