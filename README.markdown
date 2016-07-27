@@ -65,7 +65,7 @@ Commands:
   init             Generate punic configuration file.
   resolve          Resolve dependencies and output...
   update           Update and rebuild the project's...
-  version          Display the current version of Carthage.
+  version          Display the current version of Punic.
 ```
 
 Each sub-command also has built in help:

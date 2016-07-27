@@ -236,7 +236,7 @@ def copy_frameworks(context):
 @punic_cli.command()
 @click.pass_context
 def version(context):
-    """Display the current version of Carthage."""
+    """Display the current version of Punic."""
     logger.info('Punic version: {}'.format(punic.__version__), prefix = False)
 
     sys_version = sys.version_info
