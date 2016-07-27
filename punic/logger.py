@@ -24,7 +24,6 @@ class HTMLStripperFormatter(object):
         self.formatter = formatter
 
     def format(self, record):
-
         if self.formatter:
             message = self.formatter.format(record)
         else:

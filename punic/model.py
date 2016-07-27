@@ -237,12 +237,16 @@ class Checkout(object):
         self.identifier = identifier
         self.repository = self.punic._repository_for_identifier(self.identifier)
         self.revision = revision
-        self.checkout_path = self.punic.config.checkouts_path / self.identifier.project_name
+        self.checkout_path = self.config.checkouts_path / self.identifier.project_name
+
+    @property
+    def config(self):
+        return self.punic.config
 
     def prepare(self):
 
-        if self.punic.config.use_submodules:
-            relative_checkout_path = self.checkout_path.relative_to(self.punic.config.root_path)
+        if self.config.use_submodules:
+            relative_checkout_path = self.checkout_path.relative_to(self.config.root_path)
 
             result = runner.run('git submodule status "{}"'.format(relative_checkout_path))
             if result.return_code == 0:
@@ -260,17 +264,17 @@ class Checkout(object):
                 if self.checkout_path.exists():
                     raise Exception('Want to create a submodule in {} but something already exists in there.'.format(self.checkout_path))
                 logger.debug('Adding submodule for {}'.format(self))
-                runner.check_run(['git', 'submodule', 'add', '--force', self.identifier.remote_url, self.checkout_path.relative_to(self.punic.config.root_path)])
+                runner.check_run(['git', 'submodule', 'add', '--force', self.identifier.remote_url, self.checkout_path.relative_to(self.config.root_path)])
 
-            # runner.check_run(['git', 'submodule', 'add', '--force', self.identifier.remote_url, self.checkout_path.relative_to(self.punic.config.root_path)])
-            # runner.check_run(['git', 'submodule', 'update', self.checkout_path.relative_to(self.punic.config.root_path)])
+            # runner.check_run(['git', 'submodule', 'add', '--force', self.identifier.remote_url, self.checkout_path.relative_to(self.config.root_path)])
+            # runner.check_run(['git', 'submodule', 'update', self.checkout_path.relative_to(self.config.root_path)])
 
             logger.debug('Updating {}'.format(self))
             self.repository.checkout(self.revision)
         else:
 
             # TODO: This isn't really 'can_fetch'
-            if self.punic.config.can_fetch:
+            if self.config.can_fetch:
 
                 self.repository.checkout(self.revision)
                 logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
@@ -291,9 +295,9 @@ class Checkout(object):
             carthage_symlink_path = carthage_path / 'Build'
             if carthage_symlink_path.exists():
                 carthage_symlink_path.unlink()
-            logger.debug('<sub>Creating symlink: <ref>{}</ref> to <ref>{}</ref></sub>'.format(carthage_symlink_path.relative_to(self.punic.config.root_path), self.punic.config.build_path.relative_to(self.punic.config.root_path)))
-            assert self.punic.config.build_path.exists()
-            os.symlink(str(self.punic.config.build_path), str(carthage_symlink_path))
+            logger.debug('<sub>Creating symlink: <ref>{}</ref> to <ref>{}</ref></sub>'.format(carthage_symlink_path.relative_to(self.config.root_path), self.config.build_path.relative_to(self.config.root_path)))
+            assert self.config.build_path.exists()
+            os.symlink(str(self.config.build_path), str(carthage_symlink_path))
 
     @property
     def projects(self):
