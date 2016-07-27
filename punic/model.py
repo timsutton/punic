@@ -169,7 +169,7 @@ class Punic(object):
 
         if self.config.dry_run:
             for sdk in platform.sdks:
-                logger.warn('<sub>DRY-RUN: (Not) Building</sub>: <ref>{}</ref> ({}, {}, {})'.format(project.path.name, scheme, sdk, configuration))
+                logger.warn('<sub>DRY-RUN: (Not) Building</sub>: <ref>{}</ref> (scheme: {}, sdk: {}, configuration: {})...'.format(project.path.name, scheme, sdk, configuration))
             return
 
         products = dict()
@@ -178,7 +178,7 @@ class Punic(object):
 
         # Build device & simulator (if sim exists)
         for sdk in platform.sdks:
-            logger.info('<sub>Building</sub>: <ref>{}</ref> ({}, {}, {})'.format(project.path.name, scheme, sdk, configuration))
+            logger.info('<sub>Building</sub>: <ref>{}</ref> (scheme: {}, sdk: {}, configuration: {})...'.format(project.path.name, scheme, sdk, configuration))
 
             derived_data_path = self.config.derived_data_path
 
@@ -193,7 +193,7 @@ class Punic(object):
 
         ########################################################################################################
 
-        logger.debug("<sub>Post processing</sub>")
+        logger.debug("<sub>Post processing</sub>...")
 
         # By convention sdk[0] is always the device sdk (e.g. 'iphoneos' and not 'iphonesimulator')
         device_sdk = platform.device_sdk
@@ -206,7 +206,7 @@ class Punic(object):
 
         ########################################################################################################
 
-        logger.debug('<sub>Copying binary</sub>')
+        logger.debug('<sub>Copying binary</sub>...')
         if output_product.product_path.exists():
             shutil.rmtree(output_product.product_path)
         shutil.copytree(device_product.product_path, output_product.product_path)
@@ -214,7 +214,7 @@ class Punic(object):
         ########################################################################################################
 
         if len(products) > 1:
-            logger.debug('<sub>Lipo-ing</sub>')
+            logger.debug('<sub>Lipo-ing</sub>...')
             executable_paths = [product.executable_path for product in products.values()]
             command = ['/usr/bin/xcrun', 'lipo', '-create'] + executable_paths + ['-output',
                 output_product.executable_path]
@@ -224,7 +224,7 @@ class Punic(object):
 
         ########################################################################################################
 
-        logger.debug('<sub>Copying swiftmodule files</sub>')
+        logger.debug('<sub>Copying swiftmodule files</sub>...')
         for product in products.values():
             for path in product.module_paths:
                 relative_path = path.relative_to(product.product_path)
@@ -232,14 +232,14 @@ class Punic(object):
 
         ########################################################################################################
 
-        logger.debug('<sub>Copying bcsymbolmap files</sub>')
+        logger.debug('<sub>Copying bcsymbolmap files</sub>...')
         for product in products.values():
             for path in product.bcsymbolmap_paths:
                 shutil.copy(path, output_product.target_build_dir)
 
         ########################################################################################################
 
-        logger.debug('<sub>Producing dSYM files</sub>')
+        logger.debug('<sub>Producing dSYM files</sub>...')
         command = ['/usr/bin/xcrun', 'dsymutil', str(output_product.executable_path), '-o',
             str(output_product.target_build_dir / (output_product.executable_name + '.dSYM'))]
         runner.check_run(command)
