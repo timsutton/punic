@@ -28,7 +28,7 @@ def error_handling():
     try:
         yield
     except RepositoryNotClonedError:
-        logger.error('Error: No locally cloned repository found. Did you neglect to run `punic checkout` first?')
+        logger.error('Error: No locally cloned repository found. Did you neglect to run `punic fetch` first?')
         exit(-1)
     except CartfileNotFound as e:
         logger.error('<err>Error</err>: No Cartfile found at path: <ref>{}</ref>'.format(e.path))
