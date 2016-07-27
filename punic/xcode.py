@@ -30,15 +30,16 @@ class Xcode(object):
             version = SemanticVersion(major=version, minor=0)
         return Xcode.find_all()[version] if version in Xcode.find_all() else None
 
-
     @classmethod
     def find_all(cls):
         if Xcode._all_xcodes is None:
-            output = runner.check_run('/usr/bin/mdfind \'kMDItemCFBundleIdentifier="com.apple.dt.Xcode" and kMDItemContentType="com.apple.application-bundle"\'')
+            output = runner.check_run(
+                '/usr/bin/mdfind \'kMDItemCFBundleIdentifier="com.apple.dt.Xcode" and kMDItemContentType="com.apple.application-bundle"\'')
             xcodes = [Xcode(Path(path)) for path in output.strip().split("\n")]
             Xcode._all_xcodes = dict([(xcode.version, xcode) for xcode in xcodes])
             default_developer_dir_path = Path(runner.check_run(['xcode-select', '-p']).strip())
-            Xcode._default_xcode = [xcode for version, xcode in Xcode._all_xcodes.items() if xcode.developer_dir_path == default_developer_dir_path][0]
+            Xcode._default_xcode = [xcode for version, xcode in Xcode._all_xcodes.items() if
+                xcode.developer_dir_path == default_developer_dir_path][0]
             Xcode._default_xcode.is_default = True
         return Xcode._all_xcodes
 
@@ -58,7 +59,7 @@ class Xcode(object):
         command = runner.convert_args(command)
         command = ['/usr/bin/xcrun'] + command
 
-        if self.is_default == False:
+        if not self.is_default:
             env = dict()
             env['DEVELOPER_DIR'] = str(self.developer_dir_path)
             if 'env' in kwargs:
@@ -127,7 +128,7 @@ class XcodeProject(object):
     def build(self, arguments):
         # type: (XcodeBuildArguments) -> dict()
         try:
-            self.check_call(subcommand='build', arguments = arguments)
+            self.check_call(subcommand='build', arguments=arguments)
         except CalledProcessError as e:
             logger.error('<err>Error</err>: Failed to build - result code <echo>{}</echo>'.format(e.returncode))
             logger.error('Command: <echo>{}</echo>'.format(e.cmd))
@@ -141,12 +142,13 @@ class XcodeProject(object):
         assert build_settings
         return XcodeBuildProduct.build_settings(build_settings)
 
-    def check_call(self, subcommand, arguments = None, **kwargs):
+    def check_call(self, subcommand, arguments=None, **kwargs):
         # type: (str, XcodeBuildArguments) -> [str]
         assert not arguments or isinstance(arguments, XcodeBuildArguments)
         arguments = arguments.to_list() if arguments else []
         command = ['xcodebuild', '-project', self.path] + arguments + [subcommand]
         return self.xcode.check_call(command, **kwargs)
+
 
 ########################################################################################################################
 
@@ -166,7 +168,6 @@ class Scheme(object):
     def framework_target(self):
         targets = [target for target in self.targets if target.product_is_framework]
         return targets[0] if targets else None
-
 
 
 ########################################################################################################################
@@ -199,11 +200,11 @@ class Target(object):
         return self.package_type == 'com.apple.package-type.wrapper.framework'
 
 
-
 ########################################################################################################################
 
 class XcodeBuildArguments(object):
-    def __init__(self, scheme = None, target = None, configuration = None, sdk = None, toolchain = None, jobs = None, derived_data_path = None, arguments = None):
+    def __init__(self, scheme=None, target=None, configuration=None, sdk=None, toolchain=None, jobs=None,
+            derived_data_path=None, arguments=None):
         self.scheme = scheme
         self.target = target
         self.configuration = configuration
@@ -242,7 +243,8 @@ class XcodeBuildProduct(object):
         product.full_product_name = build_settings['FULL_PRODUCT_NAME']  # 'Example.framework'
         product.product_name = build_settings['PRODUCT_NAME']  # 'Example'
         product.executable_name = build_settings['EXECUTABLE_NAME']  # 'Example'
-        product.target_build_dir = Path(build_settings['TARGET_BUILD_DIR'])  # ~/Library/Developer/Xcode/DerivedData/Example-<random>/Build/Products/<configuration>-<sdk>
+        product.target_build_dir = Path(build_settings[
+            'TARGET_BUILD_DIR'])  # ~/Library/Developer/Xcode/DerivedData/Example-<random>/Build/Products/<configuration>-<sdk>
         return product
 
     def __repr__(self):
@@ -332,10 +334,10 @@ def _parse_info(string):
 
     return targets, configurations, schemes
 
+
 ########################################################################################################################
 
 def _parse_build_settings(string):
-
     # TODO : This is woefully inadequate
 
     lines = iter(string.splitlines())
@@ -362,7 +364,8 @@ def _parse_build_settings(string):
     if current_build_settings:
         all_build_settings.append(current_build_settings)
 
-    return dict([(build_settings['TARGET_NAME'], build_settings) for build_settings in all_build_settings if 'TARGET_NAME' in build_settings])
+    return dict([(build_settings['TARGET_NAME'], build_settings) for build_settings in all_build_settings if
+        'TARGET_NAME' in build_settings])
 
 
 ########################################################################################################################

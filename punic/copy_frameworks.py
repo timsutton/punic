@@ -10,8 +10,8 @@ from .logger import *
 from .xcode import uuids_from_binary
 import punic.shshutil as shutil
 
-def copy_frameworks_main():
 
+def copy_frameworks_main():
     sym_root = Path(os.environ['SYMROOT'])
     valid_architectures = set(os.environ['VALID_ARCHS'].split(' '))
     input_file_count = int(os.environ['SCRIPT_INPUT_FILE_COUNT'])
@@ -36,7 +36,8 @@ def copy_frameworks_main():
 
         framework_name = input_path.stem
 
-        logger.info('\tCopying framework "{}" to "$SYMROOT/{}"'.format(framework_name, output_path.relative_to(sym_root)))
+        logger.info(
+            '\tCopying framework "{}" to "$SYMROOT/{}"'.format(framework_name, output_path.relative_to(sym_root)))
         if output_path.exists():
             shutil.rmtree(output_path)
         shutil.copytree(input_path, output_path)
@@ -63,7 +64,8 @@ def copy_frameworks_main():
             # For each invalid architecture strip it from framework
             for architecture in excluded_architectures:
                 logger.info('\tStripping "{}" from "{}"'.format(architecture, framework_name))
-                output = runner.check_call(['/usr/bin/xcrun', 'lipo', '-remove', architecture, '-output', binary_path, binary_path])
+                output = runner.check_call(
+                    ['/usr/bin/xcrun', 'lipo', '-remove', architecture, '-output', binary_path, binary_path])
 
                 # Resign framework
                 logger.info('\tResigning "{}"/"{}" with "{}"'.format(framework_name, architecture, expanded_identity))
@@ -86,17 +88,16 @@ def copy_frameworks_main():
 
                 dsym_output_path = built_products_dir / dsym_path.name
 
-                logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(dsym_path.relative_to(project_dir)))
+                logger.info(
+                    '\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(dsym_path.relative_to(project_dir)))
                 if dsym_output_path.exists():
                     shutil.rmtree(dsym_output_path)
                 shutil.copytree(dsym_path, dsym_output_path)
-
 
             # Copy bcsymbolmap files from $PROJECT_DIRCarthage/Build to $BUILT_PRODUCTS_DIR
             if enable_bitcode:
                 for uuid in uuids:
                     bcsymbolmap_path = punic_builds_dir / (uuid + '.bcsymbolmap')
-                    logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(bcsymbolmap_path.relative_to(project_dir)))
+                    logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(
+                        bcsymbolmap_path.relative_to(project_dir)))
                     shutil.copy(bcsymbolmap_path, built_products_dir)
-
-

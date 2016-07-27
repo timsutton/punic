@@ -15,7 +15,6 @@ class Resolver(object):
         self.root = root
         self.dependencies_for_node = dependencies_for_node
 
-
     def build_graph(self, dependency_filter=None):
         # type: ([str]) -> DiGraph
 
@@ -31,7 +30,7 @@ class Resolver(object):
                     populate_graph(graph, child, depth=depth + 1)
 
         graph = DiGraph()
-        populate_graph(graph=graph, parent = self.root)
+        populate_graph(graph=graph, parent=self.root)
         return graph
 
     def resolve(self):
@@ -142,6 +141,7 @@ class Resolver(object):
     def _dependencies_for_node(self, node):
         # type: (Edge, bool) -> [Any, [Any]]
         return self.dependencies_for_node(node)
+
 
 def dump(stream, graph, node, depth=0):
     count = len(graph.predecessors(node))

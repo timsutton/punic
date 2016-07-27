@@ -18,7 +18,6 @@ elif six.PY3:
     import urllib.parse as urlparse
 
 
-
 class Specification(object):
     def __init__(self, identifier, predicate):
         self.identifier = identifier
@@ -26,7 +25,7 @@ class Specification(object):
         self.raw_string = None
 
     @classmethod
-    def cartfile_string(cls, string, use_ssl = False, overrides = None):
+    def cartfile_string(cls, string, use_ssl=False, overrides=None):
         # type: (str) -> Specification
         """
         >>> Specification.cartfile_string('github "foo/bar"')
@@ -64,6 +63,7 @@ class Specification(object):
             parts += [str(self.predicate)]
         parts = [part for part in parts if part]
         return ' '.join(parts)
+
 
 @functools.total_ordering
 class ProjectIdentifier(object):
@@ -115,7 +115,8 @@ class ProjectIdentifier(object):
         else:
             raise Exception('No match')
 
-        return ProjectIdentifier(source=source, remote_url=remote_url, team_name=team_name, project_name=project_name, overrides=overrides)
+        return ProjectIdentifier(source=source, remote_url=remote_url, team_name=team_name, project_name=project_name,
+            overrides=overrides)
 
     def __init__(self, source=None, team_name=None, project_name=None, remote_url=None, overrides=None):
         self.source = source
@@ -136,12 +137,11 @@ class ProjectIdentifier(object):
         else:
             raise Exception("Unknown source")
 
-
     @mproperty
     def identifier(self):
         components = [] \
-            + ([self.team_name] if self.team_name else []) \
-            + [self.project_name]
+                     + ([self.team_name] if self.team_name else []) \
+                     + [self.project_name]
         return '/'.join(components)
 
     def __repr__(self):
@@ -257,4 +257,3 @@ class VersionPredicate(object):
         elif self.operator == VersionOperator.semantic_greater_than_or_equals:
             return self.value <= version <= self.value.next_major
         return False
-

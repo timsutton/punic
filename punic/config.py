@@ -2,13 +2,13 @@ from __future__ import division, absolute_import, print_function
 
 __all__ = ['Config', 'config']
 
-import os
 from pathlib2 import Path
 import yaml
 from .logger import *
 from .runner import *
 from .xcode import *
 from .platform import *
+
 
 # TODO: This all needs to be cleaned up and made more generic. More configs will be added over time and this will only get worse
 # TODO: Allow config file to be relocated and specified on command line
@@ -61,7 +61,6 @@ class Config(object):
         if not xcode:
             xcode = Xcode.default()
         self.xcode = xcode
-
 
     def read(self, path):
         # type: (Path)

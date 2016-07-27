@@ -8,7 +8,7 @@ from .logger import *
 from .semantic_version import *
 
 
-def version_check(verbose = False, timeout=0.3, failure_is_an_option=True):
+def version_check(verbose=False, timeout=0.3, failure_is_an_option=True):
     try:
         log = logger.info if verbose else logger.debug
 
@@ -20,7 +20,8 @@ def version_check(verbose = False, timeout=0.3, failure_is_an_option=True):
         latest_version = SemanticVersion.string(result.text.strip())
 
         log(
-            'Current version: <rev>{}</rev>, latest version: <rev>{}</rev>'.format(current_version, latest_version), prefix=not verbose)
+            'Current version: <rev>{}</rev>, latest version: <rev>{}</rev>'.format(current_version, latest_version),
+            prefix=not verbose)
         if current_version < latest_version:
             logger.warn("""You are using version <rev>{}</rev>, version <rev>{}</rev> is available.
             Use <echo>`pip install -U http://github.com/schwa/punic`</echo> to update to latest version.""".format(

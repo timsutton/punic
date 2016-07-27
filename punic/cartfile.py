@@ -9,7 +9,7 @@ from .errors import *
 
 
 class Cartfile(object):
-    def __init__(self, specifications=None, use_ssl = False, overrides=None):
+    def __init__(self, specifications=None, use_ssl=False, overrides=None):
         self.specifications = specifications if specifications else []
         self.use_ssl = use_ssl
         self.overrides = overrides
@@ -27,7 +27,8 @@ class Cartfile(object):
         lines = [re.sub(r'#.+', '', line) for line in lines]
         lines = [line.strip() for line in lines]
         lines = [line for line in lines if line]
-        self.specifications = [Specification.cartfile_string(line, use_ssl = self.use_ssl, overrides = self.overrides) for line in lines]
+        self.specifications = [Specification.cartfile_string(line, use_ssl=self.use_ssl, overrides=self.overrides) for
+            line in lines]
         return self.specifications
 
     def write(self, destination):

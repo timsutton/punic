@@ -4,18 +4,17 @@ __all__ = ['config_init']
 
 import yaml
 from pathlib2 import Path
-from .specification import *
-from .xcode import  *
+from .xcode import *
 from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit import prompt
 from prompt_toolkit.auto_suggest import (AutoSuggest, Suggestion)
 import six
 import sys
 
+
 class ListAutoSuggest(AutoSuggest):
     def __init__(self, items):
         self.items = items
-
 
     def get_suggestion(self, cli, buffer, document):
 
@@ -30,14 +29,17 @@ class ListAutoSuggest(AutoSuggest):
                     if line.startswith(text):
                         return Suggestion(line[len(text):])
 
+
 def platform_nicknames():
     return sorted([p.nickname for p in Platform.all])
+
 
 def _xcode_versions():
     Xcode.find_all()
     return sorted([six.text_type(version) for version in Xcode._all_xcodes.keys()])
 
-def _prompt(s, items, default = None):
+
+def _prompt(s, items, default=None):
     items = [six.text_type(item) for item in items]
     # text = prompt(u'X: ', )
     # text = prompt(u'{}: '.format(s), auto_suggest = ListAutoSuggest(items), default = items[0])
@@ -78,12 +80,10 @@ def config_init(**kwargs):
     if xcode_version:
         d['defaults']['xcode-version'] = xcode_version
 
-
     stream = six.StringIO()
 
     yaml.safe_dump(d, stream, default_flow_style=False)
 
-
     sys.stdout.write(stream.getvalue())
-    if _prompt('Write config to `punic.yaml`', ['yes', 'no'], default = 'no') == 'yes':
+    if _prompt('Write config to `punic.yaml`', ['yes', 'no'], default='no') == 'yes':
         Path('punic.yaml').open('wb').write(stream.getvalue())

@@ -2,7 +2,6 @@ from __future__ import division, absolute_import, print_function
 
 __all__ = ['Repository', 'Revision']
 
-
 from flufl.enum import Enum
 import functools
 import hashlib
@@ -52,7 +51,7 @@ class Repository(object):
 
         self.check_work_directory()
 
-        output = runner.check_run('git tag', cwd = self.path)
+        output = runner.check_run('git tag', cwd=self.path)
         tags = output.split('\n')
         tags = [Revision(repository=self, revision=tag, revision_type=Revision.Type.tag) for tag in tags if
             SemanticVersion.is_semantic(tag)]
@@ -63,11 +62,11 @@ class Repository(object):
 
         self.check_work_directory()
 
-        result = runner.run('git rev-parse "{}"'.format(s), echo=False, cwd = self.path)
+        result = runner.run('git rev-parse "{}"'.format(s), echo=False, cwd=self.path)
         if result.return_code == 0:
             return result.stdout.strip()
 
-        result = runner.run('git rev-parse "origin/{}"'.format(s), echo=False, cwd = self.path)
+        result = runner.run('git rev-parse "origin/{}"'.format(s), echo=False, cwd=self.path)
         if result.return_code == 0:
             return result.stdout.strip()
 
@@ -78,7 +77,7 @@ class Repository(object):
         logger.debug('Checking out <ref>{}</ref> @ revision <rev>{}</rev>'.format(self, revision))
         self.check_work_directory()
         try:
-            runner.check_run('git checkout "{}"'.format(revision.sha), cwd = self.path)
+            runner.check_run('git checkout "{}"'.format(revision.sha), cwd=self.path)
         except Exception:
             raise NoSuchRevision(repository=self, revision=revision)
 
@@ -94,12 +93,12 @@ class Repository(object):
             else:
                 repo = url
 
-            runner.check_run('git clone --recursive "{}" "{}"'.format(repo, str(self.path)), cwd = self.path.parent)
+            runner.check_run('git clone --recursive "{}" "{}"'.format(repo, str(self.path)), cwd=self.path.parent)
         else:
             self.check_work_directory()
 
             logger.info('<sub>Fetching</sub>: <ref>{}</ref>'.format(self))
-            runner.check_run('git fetch', cwd = self.path)
+            runner.check_run('git fetch', cwd=self.path)
 
     def specifications_for_revision(self, revision):
         # type: (Revision) -> [Specification]
@@ -121,7 +120,8 @@ class Repository(object):
             if (self.path / 'Cartfile.private').exists():
                 cartfile.read(self.path / 'Cartfile.private')
                 if set(specifications).intersection(cartfile.specifications):
-                    raise PunicRepresentableError("Specifications in your Cartfile.private conflict with specifications within your Cartfile.")
+                    raise PunicRepresentableError(
+                        "Specifications in your Cartfile.private conflict with specifications within your Cartfile.")
                 specifications += cartfile.specifications
 
             if not specifications:
@@ -131,7 +131,7 @@ class Repository(object):
         else:
             self.check_work_directory()
 
-            result = runner.run('git show "{}:Cartfile"'.format(revision), cwd = self.path)
+            result = runner.run('git show "{}:Cartfile"'.format(revision), cwd=self.path)
             if result.return_code != 0:
                 specifications = []
             else:
@@ -158,11 +158,10 @@ class Revision(object):
         tag = 'tag'
         commitish = 'commitish'
 
-
     def __init__(self, repository, revision, revision_type):
         assert isinstance(repository, Repository)
         assert isinstance(revision, six.string_types)
-#        assert isinstance(revision_type, Revision.Type) # TODO: This doesn't work.
+        #        assert isinstance(revision_type, Revision.Type) # TODO: This doesn't work.
 
 
         self.repository = repository
@@ -175,7 +174,6 @@ class Revision(object):
     def sha(self):
         assert self.repository
         return self.repository.rev_parse(self.revision)
-
 
     def __repr__(self):
         return str(self.revision)
@@ -199,7 +197,7 @@ class Revision(object):
             return self.semantic_version < other.semantic_version
         else:
             self.repository.check_work_directory()
-            result = runner.run('git merge-base --is-ancestor "{}" "{}"'.format(other, self), cwd = self.repository.path)
+            result = runner.run('git merge-base --is-ancestor "{}" "{}"'.format(other, self), cwd=self.repository.path)
             if result.return_code == 0:
                 return False
             if result.return_code == 1:

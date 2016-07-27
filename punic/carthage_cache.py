@@ -2,7 +2,6 @@ __all__ = ['CarthageCache']
 
 import re
 import hashlib
-from pathlib2 import Path
 from .logger import *
 import zipfile
 import boto
@@ -13,8 +12,8 @@ from tqdm import tqdm
 import yaml
 from .shshutil import *
 
-class CarthageCache(object):
 
+class CarthageCache(object):
     def __init__(self, config):
         self.config = config
 
@@ -28,13 +27,14 @@ class CarthageCache(object):
         self.AWS_ACCESS_KEY_ID = client_options[':access_key_id']
         self.AWS_SECRET_ACCESS_KEY = client_options[':secret_access_key']
         self.bucket_name = d[':bucket_name']
-#        self.region = client_options.get(':region', None)
+
+    #        self.region = client_options.get(':region', None)
 
     @property
     def archives_directory_path(self):
         path = self.config.library_directory / "Archives"
         if not path.exists():
-            path.mkdir(parents = True)
+            path.mkdir(parents=True)
         return path
 
     def hash_for_project(self):
@@ -83,7 +83,7 @@ class CarthageCache(object):
 
         return archive_path
 
-    def publish(self, archive_path = None):
+    def publish(self, archive_path=None):
         if not archive_path:
             archive_path = self.archive()
 
@@ -101,6 +101,7 @@ class CarthageCache(object):
         file_size = archive_path.stat().st_size
 
         bar = tqdm(total=file_size, unit='B', unit_scale=True)
+
         def percent_cb(complete, total):
             if not complete:
                 return
@@ -109,7 +110,7 @@ class CarthageCache(object):
         k.set_contents_from_filename(str(archive_path), cb=percent_cb, num_cb=100)
         bar.close()
 
-    def fetch(self, force = False):
+    def fetch(self, force=False):
         archive_file_name = self.archive_name_for_project()
         archive_path = self.archives_directory_path / archive_file_name
         if archive_path.exists() and not force:
@@ -124,6 +125,7 @@ class CarthageCache(object):
         content_length = int(key.content_length)
 
         bar = tqdm(total=content_length, unit='B', unit_scale=True)
+
         def percent_cb(complete, total):
             if not complete:
                 return
@@ -143,7 +145,7 @@ class CarthageCache(object):
         return archive_path
 
     def install(self):
-        archive_path = self.fetch(force = False)
+        archive_path = self.fetch(force=False)
 
         temp_dir = Path(tempfile.mkdtemp())
 

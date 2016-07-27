@@ -21,7 +21,8 @@ from .utilities import *
 from .version_check import *
 from .config_init import *
 from .carthage_cache import *
-from .specification import *
+from .platform import *
+
 
 @click.group(cls=DYMGroup)
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
@@ -30,9 +31,8 @@ from .specification import *
 @click.option('--timing/--no-timing', default=False, is_flag=True, help="""Log timing info""")
 @click.pass_context
 def punic_cli(context, echo, verbose, timing, color):
-
     # Configure click
-    context.token_normalize_func = lambda x:x if not x else x.lower()
+    context.token_normalize_func = lambda x: x if not x else x.lower()
 
     # Configure logging
     level = logging.DEBUG if verbose else logging.INFO
@@ -49,7 +49,7 @@ def punic_cli(context, echo, verbose, timing, color):
 
     logs_path = Path('~/Library/io.schwa.Punic/Application Support/Logs').expanduser()
     if not logs_path.exists():
-        logs_path.mkdir(parents = True)
+        logs_path.mkdir(parents=True)
 
     log_path = logs_path / "punic.log"
     needs_rollover = log_path.exists()
@@ -58,19 +58,17 @@ def punic_cli(context, echo, verbose, timing, color):
     if needs_rollover:
         file_handler.doRollover()
     file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(HTMLStripperFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")))
+    file_handler.setFormatter(
+        HTMLStripperFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")))
     logger.addHandler(file_handler)
-
 
     for name in ['boto', 'requests.packages.urllib3']:
         named_logger = logging.getLogger(name)
         named_logger.setLevel(logging.WARNING)
         named_logger.propagate = True
 
-
     logger.color = color
     runner.echo = echo
-
 
     # Set up punic
     punic = Punic()
@@ -89,7 +87,7 @@ def fetch(context, use_submodules):
     if use_submodules:
         punic.config.use_submodules = use_submodules
 
-    with timeit('fetch', log = punic.config.log_timings):
+    with timeit('fetch', log=punic.config.log_timings):
         with error_handling():
             punic.fetch()
 
@@ -109,7 +107,7 @@ def resolve(context, fetch, use_submodules):
     if use_submodules:
         punic.config.use_submodules = use_submodules
 
-    with timeit('resolve', log = punic.config.log_timings):
+    with timeit('resolve', log=punic.config.log_timings):
         with error_handling():
             punic.resolve()
 
@@ -151,8 +149,7 @@ def build(context, configuration, platform, fetch, xcode_version, toolchain, dry
     logger.debug('Platforms: {}'.format(punic.config.platforms))
     logger.debug('Configuration: {}'.format(punic.config.configuration))
 
-
-    with timeit('build', log = punic.config.log_timings):
+    with timeit('build', log=punic.config.log_timings):
         with error_handling():
             punic.build(dependencies=deps)
 
@@ -186,7 +183,7 @@ def update(context, configuration, platform, fetch, xcode_version, toolchain, us
     if use_ssl:
         punic.config.use_ssl = use_ssl
 
-    with timeit('update', log = punic.config.log_timings):
+    with timeit('update', log=punic.config.log_timings):
         with error_handling():
             punic.resolve()
             punic.build(dependencies=deps)
@@ -213,13 +210,10 @@ def clean(context, derived_data, caches, build, all):
         if punic.config.derived_data_path.exists():
             shutil.rmtree(punic.config.derived_data_path)
 
-
-
-
     if caches or all:
         if punic.config.repo_cache_directory.exists():
             logger.info('Erasing {}'.format(punic.config.repo_cache_directory))
-            shutil.rmtree(punic.config.repo_cache_directory )
+            shutil.rmtree(punic.config.repo_cache_directory)
         logger.info('Erasing run cache')
         runner.reset()
 
@@ -240,7 +234,7 @@ def graph(context, fetch, use_submodules, use_ssl, open):
     if use_ssl:
         punic.config.use_ssl = use_ssl
 
-    with timeit('graph', log = punic.config.log_timings):
+    with timeit('graph', log=punic.config.log_timings):
         with error_handling():
 
             graph = punic.graph()
@@ -258,7 +252,7 @@ def graph(context, fetch, use_submodules, use_ssl, open):
                 logging.warning('graphviz not installed. Cannot convert graph to a png.')
 
 
-@punic_cli.command(name ='copy-frameworks')
+@punic_cli.command(name='copy-frameworks')
 @click.pass_context
 def copy_frameworks(context):
     """In a Run Script build phase, copies each framework specified by a SCRIPT_INPUT_FILE environment variable into the built app bundle."""
@@ -270,29 +264,32 @@ def copy_frameworks(context):
 @click.pass_context
 def version(context):
     """Display the current version of Punic."""
-    logger.info('Punic version: {}'.format(punic.__version__), prefix = False)
+    logger.info('Punic version: {}'.format(punic.__version__), prefix=False)
 
     sys_version = sys.version_info
     sys_version = SemanticVersion.from_dict(dict(
-        major = sys_version.major,
-        minor = sys_version.minor,
-        micro = sys_version.micro,
-        releaselevel = sys_version.releaselevel,
-        serial = sys_version.serial,
+        major=sys_version.major,
+        minor=sys_version.minor,
+        micro=sys_version.micro,
+        releaselevel=sys_version.releaselevel,
+        serial=sys_version.serial,
     ))
 
     logger.info('Python version: {}'.format(sys_version), prefix=False)
-    version_check(verbose = True, timeout = None, failure_is_an_option=False)
+    version_check(verbose=True, timeout=None, failure_is_an_option=False)
+
 
 @punic_cli.command()
 @click.pass_context
-@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--configuration', default=None,
+    help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--xcode', default=None)
 def init(context, **kwargs):
     """Generate punic configuration file."""
 
     config_init(**kwargs)
+
 
 @punic_cli.command()
 @click.pass_context
@@ -301,12 +298,12 @@ def readme(context):
     click.launch('https://github.com/schwa/punic/blob/HEAD/README.markdown')
 
 
-
 @punic_cli.group(cls=DYMGroup)
 @click.pass_context
 def cache(context):
     """Cache punic build artifacts to Amazon S3"""
     pass
+
 
 @cache.command()
 @click.pass_context
@@ -317,9 +314,10 @@ def publish(context, xcode_version):
     punic = context.obj
     if xcode_version:
         punic.config.xcode_version = xcode_version
-    carthage_cache = CarthageCache(config = punic.config)
+    carthage_cache = CarthageCache(config=punic.config)
     logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
     carthage_cache.publish()
+
 
 @cache.command()
 @click.pass_context
@@ -331,7 +329,7 @@ def install(context, xcode_version):
     if xcode_version:
         punic.config.xcode_version = xcode_version
 
-    carthage_cache = CarthageCache(config = punic.config)
+    carthage_cache = CarthageCache(config=punic.config)
     logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
     carthage_cache.install()
 

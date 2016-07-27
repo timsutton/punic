@@ -26,11 +26,12 @@ def work_directory(path):
 
 
 @contextlib.contextmanager
-def timeit(task=None, log = True):
+def timeit(task=None, log=True):
     # type: (Union[str, None])
     start = time.time()
     yield
     end = time.time()
     if log:
-        logger.info('Task \'<ref>{}</ref>\' took <echo>{:.6f}</echo> seconds.'.format(task if task else '<unnamed task>',
-        end - start))
+        logger.info(
+            'Task \'<ref>{}</ref>\' took <echo>{:.6f}</echo> seconds.'.format(task if task else '<unnamed task>',
+                end - start))

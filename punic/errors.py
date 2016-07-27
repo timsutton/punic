@@ -13,6 +13,7 @@ class CartfileNotFound(Exception):
     def __init__(self, path):
         self.path = path
 
+
 class PunicRepresentableError(Exception):
     pass
 

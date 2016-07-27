@@ -4,7 +4,6 @@ __all__ = ['Platform', 'parse_platforms']
 
 
 class Platform(object):
-
     all = []
 
     def __init__(self, name, nickname, sdks, output_directory_name):
@@ -34,8 +33,6 @@ Platform.all = [
     Platform(name='macOS', nickname='Mac', sdks=['macosx'], output_directory_name='Mac'),
     # TODO add watchos and tvos
 ]
-
-
 
 
 def parse_platforms(s):

@@ -6,7 +6,7 @@ import os
 import punic.shshutil as shutil
 from copy import copy
 from pathlib2 import Path
-import affirm # TODO: Do not remove
+import affirm  # TODO: Do not remove
 import re
 from .xcode import *
 from .specification import *
@@ -14,14 +14,13 @@ from .runner import *
 from .resolver import *
 from .config import *
 from .repository import *
-from .logger import *
 from .cartfile import *
 from .errors import *
+
 
 ########################################################################################################################
 
 class Punic(object):
-
     __slots__ = ['root_path', 'config', 'all_repositories', 'root_project']
 
     def __init__(self, root_path=None):
@@ -41,7 +40,8 @@ class Punic(object):
         self.root_project = self._repository_for_identifier(root_project_identifier)
 
     def _resolver(self):
-        return Resolver(root = Node(self.root_project.identifier, None), dependencies_for_node = self._dependencies_for_node)
+        return Resolver(root=Node(self.root_project.identifier, None),
+            dependencies_for_node=self._dependencies_for_node)
 
     def _dependencies_for_node(self, node):
         assert not node.version or isinstance(node.version, Revision)
@@ -72,7 +72,7 @@ class Punic(object):
         return self._resolver().resolve()
 
     # TODO: This can be deprecated and the can_fetch flag relied on instead
-    def fetch(self, dependencies = None):
+    def fetch(self, dependencies=None):
 
         configuration, platforms = self.config.configuration, self.config.platforms
 
@@ -104,7 +104,8 @@ class Punic(object):
 
         filtered_dependencies = self._ordered_dependencies(name_filter=dependencies)
 
-        checkouts = [Checkout(punic = self, identifier = identifier, revision = revision) for identifier, revision in filtered_dependencies]
+        checkouts = [Checkout(punic=self, identifier=identifier, revision=revision) for identifier, revision in
+            filtered_dependencies]
 
         for platform in platforms:
             for checkout in checkouts:
@@ -112,7 +113,8 @@ class Punic(object):
                 for project in checkout.projects:
                     schemes = project.schemes
                     schemes = [scheme for scheme in schemes if scheme.framework_target]
-                    schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.framework_target.supported_platform_names]
+                    schemes = [scheme for scheme in schemes if
+                        platform.device_sdk in scheme.framework_target.supported_platform_names]
                     for scheme in schemes:
                         self._build_one(platform, project, scheme.name, configuration)
 
@@ -125,7 +127,8 @@ class Punic(object):
         def _predicate_to_revision(spec):
             repository = self._repository_for_identifier(spec.identifier)
             if spec.predicate.operator == VersionOperator.commitish:
-                return Revision(repository=repository, revision=spec.predicate.value, revision_type=Revision.Type.commitish)
+                return Revision(repository=repository, revision=spec.predicate.value,
+                    revision_type=Revision.Type.commitish)
             else:
                 raise Exception("Cannot convert spec to revision: {}".format(spec))
 
@@ -159,7 +162,8 @@ class Punic(object):
             repository = self._repository_for_identifier(specification.identifier)
             tags = repository.revisions_for_predicate(specification.predicate)
             if specification.predicate.operator == VersionOperator.commitish:
-                tags.append(Revision(repository=repository, revision=specification.predicate.value, revision_type=Revision.Type.commitish))
+                tags.append(Revision(repository=repository, revision=specification.predicate.value,
+                    revision_type=Revision.Type.commitish))
                 tags.sort()
             assert len(tags)
             return repository.identifier, tags
@@ -170,7 +174,9 @@ class Punic(object):
 
         if self.config.dry_run:
             for sdk in platform.sdks:
-                logger.warn('<sub>DRY-RUN: (Not) Building</sub>: <ref>{}</ref> (scheme: {}, sdk: {}, configuration: {})...'.format(project.path.name, scheme, sdk, configuration))
+                logger.warn(
+                    '<sub>DRY-RUN: (Not) Building</sub>: <ref>{}</ref> (scheme: {}, sdk: {}, configuration: {})...'.format(
+                        project.path.name, scheme, sdk, configuration))
             return
 
         products = dict()
@@ -179,11 +185,13 @@ class Punic(object):
 
         # Build device & simulator (if sim exists)
         for sdk in platform.sdks:
-            logger.info('<sub>Building</sub>: <ref>{}</ref> (scheme: {}, sdk: {}, configuration: {})...'.format(project.path.name, scheme, sdk, configuration))
+            logger.info('<sub>Building</sub>: <ref>{}</ref> (scheme: {}, sdk: {}, configuration: {})...'.format(
+                project.path.name, scheme, sdk, configuration))
 
             derived_data_path = self.config.derived_data_path
 
-            arguments = XcodeBuildArguments(scheme=scheme, configuration=configuration, sdk=sdk, toolchain=toolchain, derived_data_path=derived_data_path, arguments=self.xcode_arguments)
+            arguments = XcodeBuildArguments(scheme=scheme, configuration=configuration, sdk=sdk, toolchain=toolchain,
+                derived_data_path=derived_data_path, arguments=self.xcode_arguments)
 
             product = project.build(arguments=arguments)
             products[sdk] = product
@@ -247,6 +255,7 @@ class Punic(object):
 
         ########################################################################################################
 
+
 class Checkout(object):
     def __init__(self, punic, identifier, revision):
         self.punic = punic
@@ -262,7 +271,8 @@ class Checkout(object):
 
             result = runner.run('git submodule status "{}"'.format(relative_checkout_path))
             if result.return_code == 0:
-                match = re.match(r'^(?P<flag> |\-|\+|U)(?P<sha>[a-f0-9]+) (?P<path>.+) \((?P<description>.+)\)', result.stdout)
+                match = re.match(r'^(?P<flag> |\-|\+|U)(?P<sha>[a-f0-9]+) (?P<path>.+) \((?P<description>.+)\)',
+                    result.stdout)
                 flag = match.groupdict()['flag']
                 if flag == ' ':
                     pass
@@ -274,9 +284,11 @@ class Checkout(object):
                     raise Exception('Submodule {} has merge conflicts'.format(self.checkout_path))
             else:
                 if self.checkout_path.exists():
-                    raise Exception('Want to create a submodule in {} but something already exists in there.'.format(self.checkout_path))
+                    raise Exception('Want to create a submodule in {} but something already exists in there.'.format(
+                        self.checkout_path))
                 logger.debug('Adding submodule for {}'.format(self))
-                runner.check_run(['git', 'submodule', 'add', '--force', self.identifier.remote_url, self.checkout_path.relative_to(self.punic.config.root_path)])
+                runner.check_run(['git', 'submodule', 'add', '--force', self.identifier.remote_url,
+                    self.checkout_path.relative_to(self.punic.config.root_path)])
 
             # runner.check_run(['git', 'submodule', 'add', '--force', self.identifier.remote_url, self.checkout_path.relative_to(self.punic.config.root_path)])
             # runner.check_run(['git', 'submodule', 'update', self.checkout_path.relative_to(self.punic.config.root_path)])
@@ -308,7 +320,8 @@ class Checkout(object):
             if carthage_symlink_path.exists():
                 carthage_symlink_path.unlink()
             logger.debug('<sub>Creating symlink: <ref>{}</ref> to <ref>{}</ref></sub>'.format(
-                carthage_symlink_path.relative_to(self.punic.config.root_path), self.punic.config.build_path.relative_to(self.punic.config.root_path)))
+                carthage_symlink_path.relative_to(self.punic.config.root_path),
+                self.punic.config.build_path.relative_to(self.punic.config.root_path)))
             assert self.punic.config.build_path.exists()
             os.symlink(str(self.punic.config.build_path), str(carthage_symlink_path))
 
@@ -320,7 +333,8 @@ class Checkout(object):
             return cache_identifier
 
         project_paths = self.checkout_path.glob("*.xcodeproj")
-        projects = [XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path)) for project_path
+        projects = [XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path)) for
+            project_path
             in
             project_paths]
         return projects
