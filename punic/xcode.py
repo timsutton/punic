@@ -113,13 +113,13 @@ class XcodeProject(object):
         arguments = XcodeBuildArguments()
         arguments.project = self.path
         output = self.check_call(subcommand='-list', cache_key=self.identifier)
-        targets, configurations, schemes = parse_info(output)
+        targets, configurations, schemes = _parse_info(output)
         return targets, configurations, schemes
 
     def build_settings(self, arguments):
         # type: (XcodeBuildArguments) -> dict()
         output = self.check_call(subcommand='-showBuildSettings', arguments=arguments, cache_key=self.identifier)
-        return parse_build_settings(output)
+        return _parse_build_settings(output)
 
     def build(self, arguments):
         # type: (XcodeBuildArguments) -> dict()
@@ -151,12 +151,38 @@ class Scheme(object):
         self.name = name
 
     @mproperty
-    def build_settings(self):
+    def targets(self):
         arguments = XcodeBuildArguments(scheme=self.name)
-        return self.project.build_settings(arguments=arguments)
+        build_settings = self.project.build_settings(arguments=arguments)
+        targets = [Target(self.project, self, target_name) for target_name in build_settings.keys()]
+        return targets
+
+    @mproperty
+    def framework_target(self):
+        targets = [target for target in self.targets if target.product_is_framework]
+        return targets[0] if targets else None
+
+
+
+########################################################################################################################
+
+class Target(object):
+    def __init__(self, project, scheme, name):
+        assert isinstance(project, XcodeProject)
+        assert isinstance(scheme, Scheme)
+        assert isinstance(name, six.string_types)
+        self.project = project
+        self.scheme = scheme
+        self.name = name
+
+    @mproperty
+    def build_settings(self):
+        arguments = XcodeBuildArguments(scheme=self.scheme.name)
+        build_settings = self.project.build_settings(arguments=arguments)
+        return build_settings[self.name]
 
     @property
-    def support_platform_names(self):
+    def supported_platform_names(self):
         return self.build_settings.get('SUPPORTED_PLATFORMS', '').split(' ')
 
     @property
@@ -167,48 +193,6 @@ class Scheme(object):
     def product_is_framework(self):
         return self.package_type == 'com.apple.package-type.wrapper.framework'
 
-########################################################################################################################
-
-def parse_info(string):
-    lines = iter(string.splitlines())
-    targets = []
-    configurations = []
-    schemes = []
-
-    try:
-        while True:
-            line = lines.next()
-            if re.match(r'^\s+Targets:$', line):
-                while True:
-                    line = lines.next()
-                    match = re.match(r'        (.+)', line)
-                    if not match:
-                        break
-                    else:
-                        targets.append(match.group(1))
-            if re.match(r'^\s+Build Configurations:$', line):
-                while True:
-                    line = lines.next()
-                    match = re.match(r'        (.+)', line)
-                    if not match:
-                        break
-                    else:
-                        configurations.append(match.group(1))
-            if re.match(r'^\s+Schemes:$', line):
-                while True:
-                    line = lines.next()
-                    match = re.match(r'        (.+)', line)
-                    if not match:
-                        break
-                    else:
-                        schemes.append(match.group(1))
-
-    except StopIteration:
-        pass
-
-    logger.debug(targets, configurations, schemes)
-
-    return targets, configurations, schemes
 
 
 ########################################################################################################################
@@ -247,6 +231,7 @@ class XcodeBuildArguments(object):
 class XcodeBuildProduct(object):
     @classmethod
     def build_settings(cls, build_settings):
+        assert isinstance(build_settings, dict)
         product = XcodeBuildProduct()
         product.build_settings = build_settings
         product.full_product_name = build_settings['FULL_PRODUCT_NAME']  # 'Example.framework'
@@ -303,11 +288,74 @@ class XcodeBuildProduct(object):
 
 ########################################################################################################################
 
-def parse_build_settings(string):
+def _parse_info(string):
     lines = iter(string.splitlines())
-    matches = (re.match(r'^    (.+) = (.+)$', line) for line in lines)
-    matches = (match.groups() for match in matches if match)
-    return dict(matches)
+    targets = []
+    configurations = []
+    schemes = []
+
+    try:
+        while True:
+            line = lines.next()
+            if re.match(r'^\s+Targets:$', line):
+                while True:
+                    line = lines.next()
+                    match = re.match(r'        (.+)', line)
+                    if not match:
+                        break
+                    else:
+                        targets.append(match.group(1))
+            if re.match(r'^\s+Build Configurations:$', line):
+                while True:
+                    line = lines.next()
+                    match = re.match(r'        (.+)', line)
+                    if not match:
+                        break
+                    else:
+                        configurations.append(match.group(1))
+            if re.match(r'^\s+Schemes:$', line):
+                while True:
+                    line = lines.next()
+                    match = re.match(r'        (.+)', line)
+                    if not match:
+                        break
+                    else:
+                        schemes.append(match.group(1))
+
+    except StopIteration:
+        pass
+
+    logger.debug((targets, configurations, schemes))
+
+    return targets, configurations, schemes
+
+########################################################################################################################
+
+def _parse_build_settings(string):
+
+    lines = iter(string.splitlines())
+    lines = (line.strip() for line in lines)
+
+    all_build_settings = list()
+    current_build_settings = None
+
+    for line in lines:
+        match = re.match(r'^Build settings for action (?P<action>.+) and target "?(?P<target>.+)"?:$', line)
+        if match:
+            if current_build_settings:
+                all_build_settings.append(current_build_settings)
+            current_build_settings = dict()
+            next_action, next_target = (match.groupdict()['action'], match.groupdict()['target'])
+            assert next_action == 'build'
+            continue
+        match = re.match(r'^(?P<setting>.+) = (?P<value>.+)$', line)
+        if match:
+            current_build_settings[match.groupdict()["setting"]] = match.groupdict()["value"]
+
+    if current_build_settings:
+        all_build_settings.append(current_build_settings)
+
+    return dict([(build_settings['TARGET_NAME'], build_settings)for build_settings in all_build_settings])
 
 
 ########################################################################################################################

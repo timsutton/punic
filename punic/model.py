@@ -110,8 +110,8 @@ class Punic(object):
                 checkout.prepare()
                 for project in checkout.projects:
                     schemes = project.schemes
-                    schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.support_platform_names]
-                    schemes = [scheme for scheme in schemes if scheme.product_is_framework]
+                    schemes = [scheme for scheme in schemes if scheme.framework_target]
+                    schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.framework_target.supported_platform_names]
                     for scheme in schemes:
                         self._build_one(platform, project, scheme.name, configuration)
 
