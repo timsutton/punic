@@ -11,6 +11,10 @@
 
 Punic is intended to be an easier to use, faster and more reliable implementation of the [Carthage](http://github.com/carthage/carthage) dependency management system.
 
+## What's New?
+
+See [VERSION_HISTORY.markdown](https://github.com/schwa/punic/blob/master/VERSION_HISTORY.markdown)
+
 ## Caveat!!!
 
 Punic can be considered an early preview release and probably is not ready for production use. Use at your own peril.
