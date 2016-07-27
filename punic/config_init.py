@@ -10,6 +10,7 @@ from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit import prompt
 from prompt_toolkit.auto_suggest import (AutoSuggest, Suggestion)
 import six
+import sys
 
 class ListAutoSuggest(AutoSuggest):
     def __init__(self, items):
@@ -83,6 +84,6 @@ def config_init(**kwargs):
     yaml.safe_dump(d, stream, default_flow_style=False)
 
 
-    print(stream.getvalue())
+    sys.stdout.write(stream.getvalue())
     if _prompt('Write config to `punic.yaml`', ['yes', 'no'], default = 'no') == 'yes':
         Path('punic.yaml').open('wb').write(stream.getvalue())

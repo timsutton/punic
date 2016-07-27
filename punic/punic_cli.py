@@ -21,6 +21,7 @@ from .utilities import *
 from .version_check import *
 from .config_init import *
 from .carthage_cache import *
+from .basic_types import *
 
 @click.group(cls=DYMGroup)
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
@@ -122,14 +123,22 @@ def build(context, configuration, platform, fetch, xcode_version, toolchain, dry
     logger.info("<cmd>Build</cmd>")
     punic = context.obj
 
-    punic.config.update(configuration=configuration, platform=platform)
     punic.config.can_fetch = fetch
+
+    if platform:
+        punic.config.platforms = parse_platforms(platform)
+    if configuration:
+        punic.config.configuration = configuration
     if toolchain:
         punic.config.toolchain = toolchain
     if xcode_version:
         punic.config.xcode_version = xcode_version
     if dry_run:
         punic.config.dry_run = dry_run
+
+
+    logger.debug('Platforms: {}'.format(punic.config.platforms))
+    logger.debug('Configuration: {}'.format(punic.config.configuration))
 
     with timeit('build', log = punic.config.log_timings):
         with error_handling():
@@ -149,7 +158,10 @@ def update(context, configuration, platform, fetch, xcode_version, toolchain, de
     """Update and rebuild the project's dependencies."""
     logger.info("<cmd>Update</cmd>")
     punic = context.obj
-    punic.config.update(configuration=configuration, platform=platform)
+    if platform:
+        punic.config.platforms = parse_platforms(platform)
+    if configuration:
+        punic.config.configuration = configuration
     punic.config.can_fetch = fetch
     if toolchain:
         punic.config.toolchain = toolchain

@@ -16,10 +16,6 @@ from .xcode import *
 
 class Config(object):
     def __init__(self):
-        self.defaults = {
-            'configuration': None,
-            'platforms': [],
-        }
         self.xcode = None
         self.repo_overrides = dict()
 
@@ -37,7 +33,8 @@ class Config(object):
 
         self.derived_data_path = self.library_directory / "DerivedData"
 
-        runner.cache_path = self.library_directory / "cache.shelf"
+        self.platforms = Platform.all
+        self.configuration = None
 
         self.can_fetch = False
         self.xcode = Xcode.default()
@@ -48,6 +45,7 @@ class Config(object):
         # Read in defaults from punic.yaml
         self.read(Path('punic.yaml'))
 
+        runner.cache_path = self.library_directory / "cache.shelf"
 
     @property
     def xcode_version(self):
@@ -92,29 +90,6 @@ class Config(object):
         for k, v in self.defaults.items():
             logger.info('\t\t{}: {}'.format(k, v))
         logger.info('\tOverrides: {}'.format(self.repo_overrides))
-
-    def update(self, configuration=None, platform=None):
-        # type: (str, string) -> bool
-        if configuration:
-            self.configuration = configuration
-        if platform:
-            self.platforms = parse_platforms(platform)
-
-    @property
-    def configuration(self):
-        return self.defaults['configuration']
-
-    @configuration.setter
-    def configuration(self, configuration):
-        self.defaults['configuration'] = configuration
-
-    @property
-    def platforms(self):
-        return self.defaults['platforms']
-
-    @platforms.setter
-    def platforms(self, platforms):
-        self.defaults['platforms'] = platforms
 
 
 config = Config()
