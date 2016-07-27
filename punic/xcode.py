@@ -108,6 +108,9 @@ class XcodeProject(object):
     def schemes(self):
         return [Scheme(self, scheme_name) for scheme_name in self.scheme_names]
 
+    def scheme_named(self, name):
+        return [scheme for scheme in self.schemes if scheme.name == name][0]
+
     @mproperty
     def info(self):
         arguments = XcodeBuildArguments()
@@ -132,8 +135,10 @@ class XcodeProject(object):
             exit(e.returncode)
 
         build_settings = self.build_settings(arguments=arguments)
+        scheme = self.scheme_named(arguments.scheme)
+        assert scheme
+        build_settings = build_settings[scheme.framework_target.name]
         assert build_settings
-
         return XcodeBuildProduct.build_settings(build_settings)
 
     def check_call(self, subcommand, arguments = None, **kwargs):
@@ -333,11 +338,13 @@ def _parse_info(string):
 
 def _parse_build_settings(string):
 
+    # TODO : This is woefully inadequate
+
     lines = iter(string.splitlines())
     lines = (line.strip() for line in lines)
 
     all_build_settings = list()
-    current_build_settings = None
+    current_build_settings = dict()
 
     for line in lines:
         match = re.match(r'^Build settings for action (?P<action>.+) and target "?(?P<target>.+)"?:$', line)
@@ -350,12 +357,14 @@ def _parse_build_settings(string):
             continue
         match = re.match(r'^(?P<setting>.+) = (?P<value>.+)$', line)
         if match:
-            current_build_settings[match.groupdict()["setting"]] = match.groupdict()["value"]
+            setting = match.groupdict()["setting"]
+            value = match.groupdict()["value"]
+            current_build_settings[setting] = value
 
     if current_build_settings:
         all_build_settings.append(current_build_settings)
 
-    return dict([(build_settings['TARGET_NAME'], build_settings)for build_settings in all_build_settings])
+    return dict([(build_settings['TARGET_NAME'], build_settings) for build_settings in all_build_settings if 'TARGET_NAME' in build_settings])
 
 
 ########################################################################################################################
