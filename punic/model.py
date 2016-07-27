@@ -56,7 +56,7 @@ class Punic(object):
         specifications = [Specification(identifier=dependency, predicate=VersionPredicate('"{}"'.format(version.revision))) for dependency, version in build_order[:-1]]
         logger.debug("<sub>Saving</sub> <ref>Cartfile.resolved</ref>")
 
-        cartfile = Cartfile(use_ssl=self.punic.config.use_ssl, specifications=specifications)
+        cartfile = Cartfile(use_ssl=self.config.use_ssl, specifications=specifications)
         cartfile.write((self.config.root_path / 'Cartfile.resolved').open('w'))
 
     def graph(self):
