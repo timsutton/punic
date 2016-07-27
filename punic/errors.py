@@ -36,8 +36,7 @@ def error_handling():
         exit(-1)
     except NoSuchRevision as e:
         logger.error('<err>Error</err>: No such revision {} found in repository {}'.format(e.revision, e.repository))
-        logger.error(
-            'Are you sure you are using the latest bits? Try an explicit `punic fetch` or use `punic bootstrap` instead of `punic build`')
+        logger.error('Are you sure you are using the latest bits? Try an explicit `punic fetch` or use `punic bootstrap` instead of `punic build`')
         exit(-1)
     except PunicRepresentableError as e:
         logger.error(e.message)

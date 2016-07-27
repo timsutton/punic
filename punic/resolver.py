@@ -90,20 +90,17 @@ class Resolver(object):
         prune_1()
         prune_2()
 
-        logger.debug(
-            'Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logger.debug('Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         ################################################################################################################
 
-        dependencies = set(
-            [(dependency, sorted(versions)[-1]) for dependency, versions in sorted(all_dependencies.items())])
+        dependencies = set([(dependency, sorted(versions)[-1]) for dependency, versions in sorted(all_dependencies.items())])
 
         ################################################################################################################
 
         graph = self.build_graph(dependency_filter=lambda child, child_version: (child, child_version) in dependencies)
 
-        logger.debug(
-            'Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logger.debug('Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         ################################################################################################################
 

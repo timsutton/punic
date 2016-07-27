@@ -16,14 +16,8 @@ class MyHTMLParser(HTMLParser):
         self.s = ''
         self.styled = styled
 
-        self.styles = {
-            'err': MyHTMLParser.term.red,
-            'ref': MyHTMLParser.term.yellow,
-            'rev': MyHTMLParser.term.bold,
-            'cmd': MyHTMLParser.term.cyan + self.term.underline,
-            # 'sub': term.cyan,
-            'echo': MyHTMLParser.term.yellow,
-        }
+        self.styles = {'err': MyHTMLParser.term.red, 'ref': MyHTMLParser.term.yellow, 'rev': MyHTMLParser.term.bold, 'cmd': MyHTMLParser.term.cyan + self.term.underline, # 'sub': term.cyan,
+            'echo': MyHTMLParser.term.yellow,}
 
         self.style_stack = []
 

@@ -58,8 +58,7 @@ def punic_cli(context, echo, verbose, timing, color):
     if needs_rollover:
         file_handler.doRollover()
     file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(
-        HTMLStripperFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")))
+    file_handler.setFormatter(HTMLStripperFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")))
     logger.addHandler(file_handler)
 
     for name in ['boto', 'requests.packages.urllib3']:
@@ -114,8 +113,7 @@ def resolve(context, fetch, use_submodules):
 
 @punic_cli.command()
 @click.pass_context
-@click.option('--configuration', default=None,
-    help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
@@ -156,8 +154,7 @@ def build(context, configuration, platform, fetch, xcode_version, toolchain, dry
 
 @punic_cli.command()
 @click.pass_context
-@click.option('--configuration', default=None,
-    help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
@@ -267,13 +264,7 @@ def version(context):
     logger.info('Punic version: {}'.format(punic.__version__), prefix=False)
 
     sys_version = sys.version_info
-    sys_version = SemanticVersion.from_dict(dict(
-        major=sys_version.major,
-        minor=sys_version.minor,
-        micro=sys_version.micro,
-        releaselevel=sys_version.releaselevel,
-        serial=sys_version.serial,
-    ))
+    sys_version = SemanticVersion.from_dict(dict(major=sys_version.major, minor=sys_version.minor, micro=sys_version.micro, releaselevel=sys_version.releaselevel, serial=sys_version.serial, ))
 
     logger.info('Python version: {}'.format(sys_version), prefix=False)
     version_check(verbose=True, timeout=None, failure_is_an_option=False)
@@ -281,8 +272,7 @@ def version(context):
 
 @punic_cli.command()
 @click.pass_context
-@click.option('--configuration', default=None,
-    help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
 @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
 @click.option('--xcode', default=None)
 def init(context, **kwargs):

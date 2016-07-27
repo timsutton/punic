@@ -27,8 +27,7 @@ class Cartfile(object):
         lines = [re.sub(r'#.+', '', line) for line in lines]
         lines = [line.strip() for line in lines]
         lines = [line for line in lines if line]
-        self.specifications = [Specification.cartfile_string(line, use_ssl=self.use_ssl, overrides=self.overrides) for
-            line in lines]
+        self.specifications = [Specification.cartfile_string(line, use_ssl=self.use_ssl, overrides=self.overrides) for line in lines]
         return self.specifications
 
     def write(self, destination):

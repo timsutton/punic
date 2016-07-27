@@ -45,10 +45,7 @@ def _prompt(s, items, default=None):
     # text = prompt(u'{}: '.format(s), auto_suggest = ListAutoSuggest(items), default = items[0])
     completer = WordCompleter(items, ignore_case=True)
 
-    kwargs = {
-        'completer': completer,
-        'complete_while_typing': True,
-    }
+    kwargs = {'completer': completer, 'complete_while_typing': True,}
 
     if default:
         kwargs['default'] = six.text_type(default)
@@ -64,9 +61,7 @@ def config_init(**kwargs):
 
     kwargs['xcode_version'] = None
 
-    d = {
-        'defaults': {},
-    }
+    d = {'defaults': {},}
 
     configuration = _prompt("Configuration", ['Debug', 'Release'])
     if configuration:

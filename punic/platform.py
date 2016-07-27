@@ -30,8 +30,7 @@ class Platform(object):
 
 Platform.all = [
     Platform(name='iOS', nickname='iOS', sdks=['iphoneos', 'iphonesimulator'], output_directory_name='iOS'),
-    Platform(name='macOS', nickname='Mac', sdks=['macosx'], output_directory_name='Mac'),
-    # TODO add watchos and tvos
+    Platform(name='macOS', nickname='Mac', sdks=['macosx'], output_directory_name='Mac'),  # TODO add watchos and tvos]
 ]
 
 

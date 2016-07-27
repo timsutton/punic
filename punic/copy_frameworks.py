@@ -36,8 +36,7 @@ def copy_frameworks_main():
 
         framework_name = input_path.stem
 
-        logger.info(
-            '\tCopying framework "{}" to "$SYMROOT/{}"'.format(framework_name, output_path.relative_to(sym_root)))
+        logger.info('\tCopying framework "{}" to "$SYMROOT/{}"'.format(framework_name, output_path.relative_to(sym_root)))
         if output_path.exists():
             shutil.rmtree(output_path)
         shutil.copytree(input_path, output_path)
@@ -64,8 +63,7 @@ def copy_frameworks_main():
             # For each invalid architecture strip it from framework
             for architecture in excluded_architectures:
                 logger.info('\tStripping "{}" from "{}"'.format(architecture, framework_name))
-                output = runner.check_call(
-                    ['/usr/bin/xcrun', 'lipo', '-remove', architecture, '-output', binary_path, binary_path])
+                output = runner.check_call(['/usr/bin/xcrun', 'lipo', '-remove', architecture, '-output', binary_path, binary_path])
 
                 # Resign framework
                 logger.info('\tResigning "{}"/"{}" with "{}"'.format(framework_name, architecture, expanded_identity))
@@ -73,8 +71,7 @@ def copy_frameworks_main():
             logger.info('\tCode signing: "$SYMROOT/{}"'.format(binary_path.relative_to(sym_root)))
 
             # noinspection PyUnusedLocal
-            result = runner.check_call(['/usr/bin/xcrun', 'codesign', '--force', '--sign', expanded_identity,
-                '--preserve-metadata=identifier,entitlements', binary_path])
+            result = runner.check_call(['/usr/bin/xcrun', 'codesign', '--force', '--sign', expanded_identity, '--preserve-metadata=identifier,entitlements', binary_path])
         else:
             logger.info('\tCode signing not allowed. Skipping.')
 
@@ -88,8 +85,7 @@ def copy_frameworks_main():
 
                 dsym_output_path = built_products_dir / dsym_path.name
 
-                logger.info(
-                    '\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(dsym_path.relative_to(project_dir)))
+                logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(dsym_path.relative_to(project_dir)))
                 if dsym_output_path.exists():
                     shutil.rmtree(dsym_output_path)
                 shutil.copytree(dsym_path, dsym_output_path)
@@ -98,6 +94,5 @@ def copy_frameworks_main():
             if enable_bitcode:
                 for uuid in uuids:
                     bcsymbolmap_path = punic_builds_dir / (uuid + '.bcsymbolmap')
-                    logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(
-                        bcsymbolmap_path.relative_to(project_dir)))
+                    logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(bcsymbolmap_path.relative_to(project_dir)))
                     shutil.copy(bcsymbolmap_path, built_products_dir)

@@ -33,13 +33,11 @@ class Xcode(object):
     @classmethod
     def find_all(cls):
         if Xcode._all_xcodes is None:
-            output = runner.check_run(
-                '/usr/bin/mdfind \'kMDItemCFBundleIdentifier="com.apple.dt.Xcode" and kMDItemContentType="com.apple.application-bundle"\'')
+            output = runner.check_run('/usr/bin/mdfind \'kMDItemCFBundleIdentifier="com.apple.dt.Xcode" and kMDItemContentType="com.apple.application-bundle"\'')
             xcodes = [Xcode(Path(path)) for path in output.strip().split("\n")]
             Xcode._all_xcodes = dict([(xcode.version, xcode) for xcode in xcodes])
             default_developer_dir_path = Path(runner.check_run(['xcode-select', '-p']).strip())
-            Xcode._default_xcode = [xcode for version, xcode in Xcode._all_xcodes.items() if
-                xcode.developer_dir_path == default_developer_dir_path][0]
+            Xcode._default_xcode = [xcode for version, xcode in Xcode._all_xcodes.items() if xcode.developer_dir_path == default_developer_dir_path][0]
             Xcode._default_xcode.is_default = True
         return Xcode._all_xcodes
 
@@ -203,8 +201,7 @@ class Target(object):
 ########################################################################################################################
 
 class XcodeBuildArguments(object):
-    def __init__(self, scheme=None, target=None, configuration=None, sdk=None, toolchain=None, jobs=None,
-            derived_data_path=None, arguments=None):
+    def __init__(self, scheme=None, target=None, configuration=None, sdk=None, toolchain=None, jobs=None, derived_data_path=None, arguments=None):
         self.scheme = scheme
         self.target = target
         self.configuration = configuration
@@ -243,8 +240,7 @@ class XcodeBuildProduct(object):
         product.full_product_name = build_settings['FULL_PRODUCT_NAME']  # 'Example.framework'
         product.product_name = build_settings['PRODUCT_NAME']  # 'Example'
         product.executable_name = build_settings['EXECUTABLE_NAME']  # 'Example'
-        product.target_build_dir = Path(build_settings[
-            'TARGET_BUILD_DIR'])  # ~/Library/Developer/Xcode/DerivedData/Example-<random>/Build/Products/<configuration>-<sdk>
+        product.target_build_dir = Path(build_settings['TARGET_BUILD_DIR'])  # ~/Library/Developer/Xcode/DerivedData/Example-<random>/Build/Products/<configuration>-<sdk>
         return product
 
     def __repr__(self):
@@ -364,8 +360,7 @@ def _parse_build_settings(string):
     if current_build_settings:
         all_build_settings.append(current_build_settings)
 
-    return dict([(build_settings['TARGET_NAME'], build_settings) for build_settings in all_build_settings if
-        'TARGET_NAME' in build_settings])
+    return dict([(build_settings['TARGET_NAME'], build_settings) for build_settings in all_build_settings if 'TARGET_NAME' in build_settings])
 
 
 ########################################################################################################################
@@ -374,7 +369,6 @@ def uuids_from_binary(path):
     command = ['/usr/bin/xcrun', 'dwarfdump', '--uuid', path]
     output = runner.check_run(command)
     lines = output.splitlines()
-    matches = [re.match(r'^UUID: ([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}) \((.+)\) (.+)$', line)
-        for line in lines]
+    matches = [re.match(r'^UUID: ([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}) \((.+)\) (.+)$', line) for line in lines]
     uuids = [match.group(1) for match in matches]
     return uuids

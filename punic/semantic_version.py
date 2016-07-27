@@ -84,15 +84,10 @@ class SemanticVersion(object):
         """
         return hash(self.major * 1000000) ^ hash(self.minor * 10000) ^ hash(self.patch * 100)
 
-
     @classmethod
     def from_dict(cls, d):
         if set(d.keys()).issubset({'major', 'minor', 'micro', 'releaselevel', 'serial'}):
-            return SemanticVersion(
-                major = d.get('major'),
-                minor = d.get('minor'),
-                patch = d.get('micro')
-            )
+            return SemanticVersion(major=d.get('major'), minor=d.get('minor'), patch=d.get('micro'))
         else:
             raise Exception('Invalid dict')
 

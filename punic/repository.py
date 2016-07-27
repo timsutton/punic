@@ -53,8 +53,7 @@ class Repository(object):
 
         output = runner.check_run('git tag', cwd=self.path)
         tags = output.split('\n')
-        tags = [Revision(repository=self, revision=tag, revision_type=Revision.Type.tag) for tag in tags if
-            SemanticVersion.is_semantic(tag)]
+        tags = [Revision(repository=self, revision=tag, revision_type=Revision.Type.tag) for tag in tags if SemanticVersion.is_semantic(tag)]
         return sorted(tags)
 
     def rev_parse(self, s):
@@ -120,8 +119,7 @@ class Repository(object):
             if (self.path / 'Cartfile.private').exists():
                 cartfile.read(self.path / 'Cartfile.private')
                 if set(specifications).intersection(cartfile.specifications):
-                    raise PunicRepresentableError(
-                        "Specifications in your Cartfile.private conflict with specifications within your Cartfile.")
+                    raise PunicRepresentableError("Specifications in your Cartfile.private conflict with specifications within your Cartfile.")
                 specifications += cartfile.specifications
 
             if not specifications:
@@ -167,8 +165,7 @@ class Revision(object):
         self.repository = repository
         self.revision = revision
         self.revision_type = revision_type
-        self.semantic_version = (
-            SemanticVersion.string(self.revision) if self.revision_type == Revision.Type.tag else None)
+        self.semantic_version = (SemanticVersion.string(self.revision) if self.revision_type == Revision.Type.tag else None)
 
     @mproperty
     def sha(self):
