@@ -80,6 +80,7 @@ class Runner(object):
 
             # TODO: Wont properly reproduce command if command is a string
             logger.echo(' '.join(args))
+            #logger.echo(args)
 
         if cache_key and self.shelf:
             # assert not env # TODO
