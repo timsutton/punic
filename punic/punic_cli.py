@@ -120,9 +120,9 @@ def resolve(context, fetch, use_submodules):
 @click.option('--toolchain', default=None, help="""Xcode toolchain to use""")
 @click.option('--dry-run', default=None, is_flag=True, help="""Do not actually perform final build""")
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
-@click.option('--use-ssl', default=None, help="""Use SSH for downloading GitHub repositories""")
+@click.option('--use-ssh', default=None, help="""Use SSH for downloading GitHub repositories""")
 @click.argument('deps', nargs=-1)
-def build(context, configuration, platform, fetch, xcode_version, toolchain, dry_run, use_submodules, use_ssl, deps):
+def build(context, configuration, platform, fetch, xcode_version, toolchain, dry_run, use_submodules, use_ssh, deps):
     """Fetch and build the project's dependencies."""
     logger.info("<cmd>Build</cmd>")
     punic = context.obj
@@ -141,8 +141,8 @@ def build(context, configuration, platform, fetch, xcode_version, toolchain, dry
         punic.config.dry_run = dry_run
     if use_submodules:
         punic.config.use_submodules = use_submodules
-    if use_ssl:
-        punic.config.use_ssl = use_ssl
+    if use_ssh:
+        punic.config.use_ssh = use_ssh
 
     logger.debug('Platforms: {}'.format(punic.config.platforms))
     logger.debug('Configuration: {}'.format(punic.config.configuration))
@@ -160,9 +160,9 @@ def build(context, configuration, platform, fetch, xcode_version, toolchain, dry
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
 @click.option('--toolchain', default=None, help="""Xcode toolchain to use""")
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
-@click.option('--use-ssl', default=None, help="""Use SSH for downloading GitHub repositories""")
+@click.option('--use-ssh', default=None, help="""Use SSH for downloading GitHub repositories""")
 @click.argument('deps', nargs=-1)
-def update(context, configuration, platform, fetch, xcode_version, toolchain, use_submodules, use_ssl, deps):
+def update(context, configuration, platform, fetch, xcode_version, toolchain, use_submodules, use_ssh, deps):
     """Update and rebuild the project's dependencies."""
     logger.info("<cmd>Update</cmd>")
     punic = context.obj
@@ -177,8 +177,8 @@ def update(context, configuration, platform, fetch, xcode_version, toolchain, us
         punic.config.xcode_version = xcode_version
     if use_submodules:
         punic.config.use_submodules = use_submodules
-    if use_ssl:
-        punic.config.use_ssl = use_ssl
+    if use_ssh:
+        punic.config.use_ssh = use_ssh
 
     with timeit('update', log=punic.config.log_timings):
         with error_handling():
@@ -219,17 +219,17 @@ def clean(context, derived_data, caches, build, all):
 @click.pass_context
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
-@click.option('--use-ssl', default=None, help="""Use SSH for downloading GitHub repositories""")
+@click.option('--use-ssh', default=None, help="""Use SSH for downloading GitHub repositories""")
 @click.option('--open', default=False, is_flag=True, help="""Open the graph image file.""")
-def graph(context, fetch, use_submodules, use_ssl, open):
+def graph(context, fetch, use_submodules, use_ssh, open):
     """Output resolved dependency graph."""
     logger.info("<cmd>Graph</cmd>")
     punic = context.obj
     punic.config.can_fetch = fetch
     if use_submodules:
         punic.config.use_submodules = use_submodules
-    if use_ssl:
-        punic.config.use_ssl = use_ssl
+    if use_ssh:
+        punic.config.use_ssh = use_ssh
 
     with timeit('graph', log=punic.config.log_timings):
         with error_handling():
