@@ -15,16 +15,16 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | build / --verbose               | ✅ Implemented. Note 4             |
 | build / --project-directory     | ❗️ _Unimplemented_                 |
 | build / [dependencies]          | 🔨️️ Partially implemented. Note 3   |
-| checkout                        | ✅ Implemented                     |
+| checkout                        | ✅ Implemented. Note 8             |
 | checkout / --use-ssh            | ✅️️ Implemented.                    |
-| checkout / --use-submodules     | ❗️ _Unimplemented_                 |
+| checkout / --use-submodules     | ✅️️ Implemented.                    |
 | checkout / --no-use-binaries    | ✅️ _Won't_ implement. Note 1       |
 | checkout / --color              | ✅ Implemented. Note 4             |
 | checkout / --verbose            | ✅ Implemented. Note 4             |
 | checkout / --project-directory  | ❗️ _Unimplemented_                 |
 | checkout / [dependencies]       | ❗️ _Unimplemented_                 |
 | copy-frameworks                 | ✅ Implemented                     |
-| fetch                           | ✅ _Won't_ implement. Note 1       |
+| fetch                           | ✅ _Won't_ implement. Note ?       |
 | help                            | ✅ Implemented. Note 5             |
 | outdated                        | ✅ _Won't_ implement. Note 9       |
 | update                          | ✅ Implemented                     |
@@ -36,7 +36,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 | update / --no-checkout          | ✅ Implemented. Note 7             |
 | update / --no-build             | ✅ Implemented. Note 7             |
 | update / --use-ssh              | ✅️️ Implemented.                    |
-| update / --use-submodules       | ❗️ _Unimplemented_                 |
+| update / --use-submodules       | ✅️️ Implemented.                    |
 | update / --no-use-binaries      | ✅ _Won't_ implement. Note 1       |
 | update / --color                | ✅ Implemented. Note 4             |
 | update / --project-directory    | ❗️ _Unimplemented_                 |
