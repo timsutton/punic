@@ -144,8 +144,7 @@ class Punic(object):
             repository = self._repository_for_identifier(specification.identifier)
             tags = repository.revisions_for_predicate(specification.predicate)
             if specification.predicate.operator == VersionOperator.commitish:
-                tags.append(Revision(repository=repository, revision=specification.predicate.value
-                revision_type = Revision.Type.commitish))
+                tags.append(Revision(repository=repository, revision=specification.predicate.value, revision_type=Revision.Type.commitish))
                 tags.sort()
             assert len(tags)
             return repository.identifier, tags

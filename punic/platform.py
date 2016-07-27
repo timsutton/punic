@@ -8,6 +8,7 @@ class Platform(object):
 
     def __init__(self, name, nickname, sdks, output_directory_name):
         self.name = name
+        # TODO: Change to "display name"?
         self.nickname = nickname
         self.sdks = sdks
         self.output_directory_name = output_directory_name
@@ -30,7 +31,8 @@ class Platform(object):
 
 Platform.all = [
     Platform(name='iOS', nickname='iOS', sdks=['iphoneos', 'iphonesimulator'], output_directory_name='iOS'),
-    Platform(name='macOS', nickname='Mac', sdks=['macosx'], output_directory_name='Mac'),  # TODO add watchos and tvos]
+    Platform(name='macOS', nickname='Mac', sdks=['macosx'], output_directory_name='Mac'),
+    # TODO add watchos and tvos
 ]
 
 
