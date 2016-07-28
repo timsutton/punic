@@ -1,5 +1,9 @@
 # Version History
 
+## 0.1.10
+
+* Fixes problem with --use-ssh
+
 ## 0.1.9
 
 * Adds `--use-submodules`.

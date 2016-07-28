@@ -98,7 +98,7 @@ def fetch(context, use_submodules, use_ssh):
 @click.pass_context
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
-@click.option('--use-ssh', default=None, help="""Use SSH for downloading GitHub repositories""")
+@click.option('--use-ssh', default=None, is_flag=True, help="""Use SSH for downloading GitHub repositories""")
 def resolve(context, fetch, use_submodules, use_ssh):
     """Resolve dependencies and output `Carthage.resolved` file.
 
@@ -126,7 +126,7 @@ def resolve(context, fetch, use_submodules, use_ssh):
 @click.option('--toolchain', default=None, help="""Xcode toolchain to use""")
 @click.option('--dry-run', default=None, is_flag=True, help="""Do not actually perform final build""")
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
-@click.option('--use-ssh', default=None, help="""Use SSH for downloading GitHub repositories""")
+@click.option('--use-ssh', default=None, is_flag=True, help="""Use SSH for downloading GitHub repositories""")
 @click.argument('deps', nargs=-1)
 def build(context, configuration, platform, fetch, xcode_version, toolchain, dry_run, use_submodules, use_ssh, deps):
     """Fetch and build the project's dependencies."""
@@ -166,7 +166,7 @@ def build(context, configuration, platform, fetch, xcode_version, toolchain, dry
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
 @click.option('--toolchain', default=None, help="""Xcode toolchain to use""")
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
-@click.option('--use-ssh', default=None, help="""Use SSH for downloading GitHub repositories""")
+@click.option('--use-ssh', default=None, is_flag=True, help="""Use SSH for downloading GitHub repositories""")
 @click.argument('deps', nargs=-1)
 def update(context, configuration, platform, fetch, xcode_version, toolchain, use_submodules, use_ssh, deps):
     """Update and rebuild the project's dependencies."""
@@ -225,7 +225,7 @@ def clean(context, derived_data, caches, build, all):
 @click.pass_context
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
-@click.option('--use-ssh', default=None, help="""Use SSH for downloading GitHub repositories""")
+@click.option('--use-ssh', default=None, is_flag=True, help="""Use SSH for downloading GitHub repositories""")
 @click.option('--open', default=False, is_flag=True, help="""Open the graph image file.""")
 def graph(context, fetch, use_submodules, use_ssh, open):
     """Output resolved dependency graph."""
