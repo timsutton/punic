@@ -128,7 +128,7 @@ def build(context, **kwargs):
     punic = context.obj
     punic.config.update(**kwargs)
 
-    deps = kwargs[deps]
+    deps = kwargs['deps']
 
     logger.debug('Platforms: {}'.format(punic.config.platforms))
     logger.debug('Configuration: {}'.format(punic.config.configuration))
