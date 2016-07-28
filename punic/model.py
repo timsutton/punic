@@ -63,7 +63,7 @@ class Punic(object):
         # type: (bool) -> DiGraph
         return self._resolver().resolve()
 
-    # TODO: This can be deprecated and the can_fetch flag relied on instead
+    # TODO: This can be deprecated and the fetch flag relied on instead
     def fetch(self, dependencies=None):
 
         configuration, platforms = self.config.configuration, self.config.platforms
@@ -126,7 +126,7 @@ class Punic(object):
             return self.all_repositories[identifier]
         else:
             repository = Repository(self, identifier=identifier)
-            if self.config.can_fetch:
+            if self.config.fetch:
                 repository.fetch()
             self.all_repositories[identifier] = repository
             return repository
@@ -273,8 +273,8 @@ class Checkout(object):
             self.repository.checkout(self.revision)
         else:
 
-            # TODO: This isn't really 'can_fetch'
-            if self.config.can_fetch:
+            # TODO: This isn't really 'fetch'
+            if self.config.fetch:
 
                 self.repository.checkout(self.revision)
                 logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')

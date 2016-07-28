@@ -36,7 +36,7 @@ class Config(object):
         self.platforms = Platform.all
         self.configuration = None
 
-        self.can_fetch = False
+        self.fetch = False
         self.xcode = Xcode.default()
 
         self.toolchain = None
@@ -48,6 +48,16 @@ class Config(object):
         self.read(Path('punic.yaml'))
 
         runner.cache_path = self.library_directory / "cache.shelf"
+
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            if value:
+                if hasattr(self, key):
+                    setattr(self, key, value)
+
+    def dump(self):
+        for key, value in self.__dict__.items():
+            logger.info('{}: {}'.format(key, value))
 
     @property
     def xcode_version(self):
@@ -85,12 +95,12 @@ class Config(object):
             xcode_version = d['xcode-version']
             self.xcode_version = xcode_version
 
-    def dump(self):
-        logger.info('Config:')
-        logger.info('\tDefaults')
-        for k, v in self.defaults.items():
-            logger.info('\t\t{}: {}'.format(k, v))
-        logger.info('\tOverrides: {}'.format(self.repo_overrides))
+    # def dump(self):
+    #     logger.info('Config:')
+    #     logger.info('\tDefaults')
+    #     for k, v in self.defaults.items():
+    #         logger.info('\t\t{}: {}'.format(k, v))
+    #     logger.info('\tOverrides: {}'.format(self.repo_overrides))
 
 
 config = Config()

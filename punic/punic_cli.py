@@ -79,15 +79,12 @@ def punic_cli(context, echo, verbose, timing, color):
 @click.pass_context
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
 @click.option('--use-ssh', default=None, help="""Use SSH for downloading GitHub repositories""")
-def fetch(context, use_submodules, use_ssh):
+def fetch(context, **kwargs):
     """Fetch the project's dependencies.."""
     logger.info("<cmd>fetch</cmd>")
     punic = context.obj
-    punic.config.can_fetch = True  # obviously
-    if use_submodules:
-        punic.config.use_submodules = use_submodules
-    if use_ssh:
-        punic.config.use_ssh = use_ssh
+    punic.config.fetch = True  # obviously
+    punic.config.update(**kwargs)
 
     with timeit('fetch', log=punic.config.log_timings):
         with error_handling():
@@ -99,18 +96,15 @@ def fetch(context, use_submodules, use_ssh):
 @click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
 @click.option('--use-ssh', default=None, is_flag=True, help="""Use SSH for downloading GitHub repositories""")
-def resolve(context, fetch, use_submodules, use_ssh):
+def resolve(context, **kwargs):
     """Resolve dependencies and output `Carthage.resolved` file.
 
     This sub-command does not build dependencies. Use this sub-command when a dependency has changed and you just want to update `Cartfile.resolved`.
     """
     punic = context.obj
     logger.info("<cmd>Resolve</cmd>")
-    punic.config.can_fetch = fetch
-    if use_submodules:
-        punic.config.use_submodules = use_submodules
-    if use_ssh:
-        punic.config.use_ssh = use_ssh
+    punic.config.update(**kwargs)
+
 
     with timeit('resolve', log=punic.config.log_timings):
         with error_handling():
@@ -128,27 +122,13 @@ def resolve(context, fetch, use_submodules, use_ssh):
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
 @click.option('--use-ssh', default=None, is_flag=True, help="""Use SSH for downloading GitHub repositories""")
 @click.argument('deps', nargs=-1)
-def build(context, configuration, platform, fetch, xcode_version, toolchain, dry_run, use_submodules, use_ssh, deps):
+def build(context, **kwargs):
     """Fetch and build the project's dependencies."""
     logger.info("<cmd>Build</cmd>")
     punic = context.obj
+    punic.config.update(**kwargs)
 
-    punic.config.can_fetch = fetch
-
-    if platform:
-        punic.config.platforms = parse_platforms(platform)
-    if configuration:
-        punic.config.configuration = configuration
-    if toolchain:
-        punic.config.toolchain = toolchain
-    if xcode_version:
-        punic.config.xcode_version = xcode_version
-    if dry_run:
-        punic.config.dry_run = dry_run
-    if use_submodules:
-        punic.config.use_submodules = use_submodules
-    if use_ssh:
-        punic.config.use_ssh = use_ssh
+    deps = kwargs[deps]
 
     logger.debug('Platforms: {}'.format(punic.config.platforms))
     logger.debug('Configuration: {}'.format(punic.config.configuration))
@@ -168,23 +148,13 @@ def build(context, configuration, platform, fetch, xcode_version, toolchain, dry
 @click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
 @click.option('--use-ssh', default=None, is_flag=True, help="""Use SSH for downloading GitHub repositories""")
 @click.argument('deps', nargs=-1)
-def update(context, configuration, platform, fetch, xcode_version, toolchain, use_submodules, use_ssh, deps):
+def update(context, **kwargs):
     """Update and rebuild the project's dependencies."""
     logger.info("<cmd>Update</cmd>")
     punic = context.obj
-    if platform:
-        punic.config.platforms = parse_platforms(platform)
-    if configuration:
-        punic.config.configuration = configuration
-    punic.config.can_fetch = fetch
-    if toolchain:
-        punic.config.toolchain = toolchain
-    if xcode_version:
-        punic.config.xcode_version = xcode_version
-    if use_submodules:
-        punic.config.use_submodules = use_submodules
-    if use_ssh:
-        punic.config.use_ssh = use_ssh
+    punic.config.update(**kwargs)
+
+    deps = kwargs['deps']
 
     with timeit('update', log=punic.config.log_timings):
         with error_handling():
@@ -231,7 +201,7 @@ def graph(context, fetch, use_submodules, use_ssh, open):
     """Output resolved dependency graph."""
     logger.info("<cmd>Graph</cmd>")
     punic = context.obj
-    punic.config.can_fetch = fetch
+    punic.config.fetch = fetch
     if use_submodules:
         punic.config.use_submodules = use_submodules
     if use_ssh:
