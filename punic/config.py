@@ -87,15 +87,17 @@ class Config(object):
                 self.platforms = parse_platforms(defaults['platforms'])
             elif 'platform' in defaults:
                 self.platforms = parse_platforms(defaults['platform'])
+            if 'xcode-version' in defaults:
+                self.xcode_version = defaults['xcode-version']
+
+            if 'use-ssh' in defaults:
+                self.use_ssh = defaults['use-ssh']
 
         if 'repo-overrides' in d:
             self.repo_overrides = d['repo-overrides']
 
-        if 'xcode-version' in d:
-            xcode_version = d['xcode-version']
-            self.xcode_version = xcode_version
 
-    # def dump(self):
+        # def dump(self):
     #     logger.info('Config:')
     #     logger.info('\tDefaults')
     #     for k, v in self.defaults.items():

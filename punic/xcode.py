@@ -52,6 +52,7 @@ class Xcode(object):
         match = re.match(r'^Xcode (?P<version>.+)\nBuild version (?P<build>.+)', output)
         return SemanticVersion.string(match.groupdict()['version'])
 
+
     # noinspection PyMethodMayBeStatic
     def call(self, command, **kwargs):
         command = runner.convert_args(command)
@@ -209,7 +210,17 @@ class XcodeBuildArguments(object):
         self.toolchain = toolchain
         self.jobs = jobs
         self.derived_data_path = derived_data_path
-        self.arguments = arguments
+        self.arguments = {
+            'ONLY_ACTIVE_ARCH': 'NO',
+            'BITCODE_GENERATION_MODE': 'bitcode',
+            'CODE_SIGNING_REQUIRED': 'NO',
+            'CODE_SIGN_IDENTITY': '',
+            'CARTHAGE': 'YES',
+            'SWIFT_VERSION': '3.0', # TODO: WHAT?
+        }
+
+        if arguments:
+            self.arguments.update(arguments)
 
     def __repr__(self):
         return 'XcodeBuildArguments({})'.format(self.__dict__)

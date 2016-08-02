@@ -1,6 +1,6 @@
 from __future__ import division, absolute_import, print_function
 
-__all__ = ['Punic']
+__all__ = ['Punic', 'Checkout']
 
 import os
 import punic.shshutil as shutil
@@ -72,11 +72,6 @@ class Punic(object):
             self.config.build_path.mkdir(parents=True)
 
         self._ordered_dependencies(name_filter=dependencies)
-
-    @property
-    def xcode_arguments(self):
-        # type: () -> dict
-        return {'ONLY_ACTIVE_ARCH': 'NO', 'BITCODE_GENERATION_MODE': 'bitcode', 'CODE_SIGNING_REQUIRED': 'NO', 'CODE_SIGN_IDENTITY': '', 'CARTHAGE': 'YES',}
 
     def build(self, dependencies):
         # type: ([str])
@@ -168,7 +163,7 @@ class Punic(object):
 
             derived_data_path = self.config.derived_data_path
 
-            arguments = XcodeBuildArguments(scheme=scheme, configuration=configuration, sdk=sdk, toolchain=toolchain, derived_data_path=derived_data_path, arguments=self.xcode_arguments)
+            arguments = XcodeBuildArguments(scheme=scheme, configuration=configuration, sdk=sdk, toolchain=toolchain, derived_data_path=derived_data_path)
 
             product = project.build(arguments=arguments)
             products[sdk] = product
