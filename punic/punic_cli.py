@@ -288,18 +288,28 @@ def list(context, **kwargs):
     filtered_dependencies = punic._ordered_dependencies(name_filter=deps)
 
     checkouts = [Checkout(punic=punic, identifier=identifier, revision=revision) for identifier, revision in filtered_dependencies]
+
+    tree = {}
+
     for platform in platforms:
-        print('Platform: {}'.format(platform))
+        tree[platform.name] = {}
         for checkout in checkouts:
-            print('  Checkout: {}'.format(checkout.identifier))
+            tree[platform.name][str(checkout.identifier)] = {}
             checkout.prepare()
             for project in checkout.projects:
-                print('    Project: {}'.format(project.path.name))
+                tree[platform.name][str(checkout.identifier)][project.path.name] = {}
                 schemes = project.schemes
                 schemes = [scheme for scheme in schemes if scheme.framework_target]
                 schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.framework_target.supported_platform_names]
-                for scheme in schemes:
-                    print('      Scheme: {}'.format(scheme.name))
+                tree[platform.name][str(checkout.identifier)][project.path.name] = [scheme.name for scheme in schemes]
+
+    # from pprint import pprint
+    #
+    # pprint(tree)
+
+    import yaml
+
+    yaml.safe_dump(tree, stream = sys.stdout)
 
 
 @punic_cli.group(cls=DYMGroup)
