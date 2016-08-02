@@ -203,6 +203,30 @@ repo-overrides:
 
 Note that repositories pointed to by file URL are still cloned and fetched just like any other repository and your changes _must_ be committed for them to be picked up by Punic.
 
+#### `punic.yaml` skip lists
+
+Punic by default will build every scheme of every xcode project of every dependency, if the scheme's Build target builds a .framework of the correct platform architecture. This can often cause punic to build too many frameworks - some of which are not used by your root project.
+
+You can use the `skips` section of your root project's `punic.yaml` to define what punic should skip during its build phase.
+
+For example:
+
+```yaml
+defaults:
+  configuration: Debug
+  platform: iOS
+skips:
+- [ iOS, NMSSH, NMSSH.xcodeproj ]
+- [ iOS, rxswift, Rx.xcodeproj, RxBlocking-iOS ]
+- [ iOS, rxswift, Rx.xcodeproj, RxCocoa-iOS ]
+- [ iOS, rxswift, Rx.xcodeproj, RxTests-iOS ]
+- [ iOS, Eureka, Example.xcodeproj ]
+- [ iOS, realm-cocoa, Realm.xcodeproj, Realm ]
+```
+
+A skips list is made of a list of filters. Each filter is a list of platform name, dependency name, Xcode project name and scheme name. You can leave out the scheme name if you want to skip all schemes in a particular xcode project.
+
+
 ## Roadmap
 
 The current roadmap for Punic is as follows (in rough order of priority):
