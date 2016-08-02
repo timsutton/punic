@@ -294,14 +294,14 @@ def list(context, **kwargs):
     for platform in platforms:
         tree[platform.name] = {}
         for checkout in checkouts:
-            tree[platform.name][str(checkout.identifier)] = {}
+            tree[platform.name][str(checkout.identifier)] = {'projects':{}}
             checkout.prepare()
             for project in checkout.projects:
-                tree[platform.name][str(checkout.identifier)][project.path.name] = {}
+                tree[platform.name][str(checkout.identifier)]['projects'][project.path.name] = {'schemes':{}}
                 schemes = project.schemes
                 schemes = [scheme for scheme in schemes if scheme.framework_target]
                 schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.framework_target.supported_platform_names]
-                tree[platform.name][str(checkout.identifier)][project.path.name] = [scheme.name for scheme in schemes]
+                tree[platform.name][str(checkout.identifier)]['projects'][project.path.name]['schemes'] = [scheme.name for scheme in schemes]
 
     # from pprint import pprint
     #

@@ -44,8 +44,11 @@ class Config(object):
         self.use_submodules = False
         self.use_ssh = False
 
+        self.skips = []
+
         # Read in defaults from punic.yaml
         self.read(Path('punic.yaml'))
+
 
         runner.cache_path = self.library_directory / "cache.shelf"
 
@@ -96,13 +99,7 @@ class Config(object):
         if 'repo-overrides' in d:
             self.repo_overrides = d['repo-overrides']
 
-
-        # def dump(self):
-    #     logger.info('Config:')
-    #     logger.info('\tDefaults')
-    #     for k, v in self.defaults.items():
-    #         logger.info('\t\t{}: {}'.format(k, v))
-    #     logger.info('\tOverrides: {}'.format(self.repo_overrides))
-
+        if 'skips' in d:
+            self.skips = d['skips']
 
 config = Config()

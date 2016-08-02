@@ -87,14 +87,37 @@ class Punic(object):
 
         checkouts = [Checkout(punic=self, identifier=identifier, revision=revision) for identifier, revision in filtered_dependencies]
 
+
+        skips = self.config.skips
+
+        def filter_dependency(platform, checkout, project, scheme):
+            platform = platform.name
+            checkout = checkout.identifier.project_name
+            project = project.path.name
+            scheme = scheme.name
+
+            for skip in skips:
+                current = [ platform, checkout, project, scheme ][:len(skip)]
+                if skip == current:
+                    # print(skip)
+                    # print(current)
+                    # print('SKIP?')
+                    return False
+            return True
+
+
         for platform in platforms:
             for checkout in checkouts:
                 checkout.prepare()
                 for project in checkout.projects:
                     schemes = project.schemes
+
                     schemes = [scheme for scheme in schemes if scheme.framework_target]
                     schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.framework_target.supported_platform_names]
                     for scheme in schemes:
+                        if not filter_dependency(platform, checkout, project, scheme):
+                            logger.warn('<sub>Skipping</sub>: {} / {} / {} / {}'.format(platform, checkout.identifier.project_name, project.path.name, scheme.name))
+                            continue
                         self._build_one(platform, project, scheme.name, configuration)
 
     def _ordered_dependencies(self, name_filter=None):
