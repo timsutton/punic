@@ -27,17 +27,20 @@ class Runner(object):
     @mproperty
     def shelf(self):
         if not self.cache_path:
-            logger.error("No shelf path")
             return None
         # noinspection PyBroadException
         try:
-            return shelve.open(str(self.cache_path))
+            shelf = shelve.open(str(self.cache_path))
+            return shelf
         except:
             if self.cache_path.exists():
+                logger.verbose("Resetting cache and trying again...")
                 self.cache_path.unlink()
-                shelve.open(str(self.cache_path))
+                shelf = shelve.open(str(self.cache_path))
+                return self
             else:
                 raise
+        return shelf
 
     def reset(self):
         if self.cache_path.exists():
@@ -82,7 +85,7 @@ class Runner(object):
             logger.echo(' '.join(arg.replace(' ', '\\ ') for arg in args))
             # logger.echo(args)
 
-        if cache_key and self.shelf:
+        if cache_key:
             # assert not env # TODO
             key = '{}{}'.format(cache_key, ' '.join(command))
             if key in self.shelf:
@@ -93,6 +96,9 @@ class Runner(object):
                 result.stdout = stdout
                 result.stderr = stderr
                 return result
+            else:
+                # logger.debug('CACHE MISS: {}'.format(key))
+                pass
 
         stdout = subprocess.PIPE
         stderr = subprocess.PIPE if not check else subprocess.STDOUT
@@ -118,7 +124,7 @@ class Runner(object):
                 logger.debug(stdout)
             raise CalledProcessError(return_code, command, stdout)
 
-        if cache_key and self.shelf:
+        if cache_key:
             key = '{}{}'.format(cache_key, ' '.join(command))
             self.shelf[key] = return_code, stdout, stderr
 
