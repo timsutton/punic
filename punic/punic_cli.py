@@ -4,8 +4,6 @@ __all__ = ['punic_cli', 'main']
 
 import logging
 import logging.handlers
-import punic.shshutil as shutil
-from pathlib2 import Path
 import sys
 import click
 from click_didyoumean import DYMGroup
@@ -14,14 +12,13 @@ import punic
 from .copy_frameworks import *
 from .errors import *
 from .logger import *
-from .model import *
-from .runner import *
 from .semantic_version import *
 from .utilities import *
 from .version_check import *
 from .config_init import *
 from .carthage_cache import *
-from .platform import *
+import punic.shshutil as shutil
+from punic import *
 
 
 @click.group(cls=DYMGroup)
