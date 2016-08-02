@@ -11,6 +11,7 @@ import tempfile
 from tqdm import tqdm
 import yaml
 from .shshutil import *
+from .errors import *
 
 
 class CarthageCache(object):
@@ -122,6 +123,10 @@ class CarthageCache(object):
         bucket = connection.get_bucket(self.bucket_name)
 
         key = bucket.get_key(archive_file_name)
+
+        if not key:
+            raise PunicRepresentableError("No cached archive with key {}. Are you sure you called `punic cache publish`?".format(archive_file_name))
+
         content_length = int(key.content_length)
 
         bar = tqdm(total=content_length, unit='B', unit_scale=True)

@@ -314,15 +314,14 @@ def cache(context):
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
 def publish(context, xcode_version):
     """Generates and uploads the cache archive for the current Cartfile.resolved"""
-    logger.info("<cmd>Cache Publish</cmd>")
-    punic = context.obj
-    if xcode_version:
-        punic.config.xcode_version = xcode_version
-    carthage_cache = CarthageCache(config=punic.config)
-    logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
-    carthage_cache.publish()
-
-
+    with error_handling():
+        logger.info("<cmd>Cache Publish</cmd>")
+        punic = context.obj
+        if xcode_version:
+            punic.config.xcode_version = xcode_version
+        carthage_cache = CarthageCache(config=punic.config)
+        logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
+        carthage_cache.publish()
 
 
 
@@ -331,14 +330,14 @@ def publish(context, xcode_version):
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
 def install(context, xcode_version):
     """Installs the cache archive for the current Cartfile.resolved"""
-    logger.info("<cmd>Cache Publish</cmd>")
-    punic = context.obj
-    if xcode_version:
-        punic.config.xcode_version = xcode_version
-
-    carthage_cache = CarthageCache(config=punic.config)
-    logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
-    carthage_cache.install()
+    with error_handling():
+        logger.info("<cmd>Cache Publish</cmd>")
+        punic = context.obj
+        if xcode_version:
+            punic.config.xcode_version = xcode_version
+        carthage_cache = CarthageCache(config=punic.config)
+        logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
+        carthage_cache.install()
 
 
 def main():
