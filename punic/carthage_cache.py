@@ -50,13 +50,13 @@ class CarthageCache(object):
     def archive_name_for_project(self):
         return '{}.zip'.format(self.hash_for_project())
 
-    def archive(self):
+    def archive(self, force = False):
 
         hash = self.hash_for_project()
         archive_file_name = self.archive_name_for_project()
 
         archive_path = self.archives_directory_path / archive_file_name
-        if archive_path.exists():
+        if archive_path.exists() and not force:
             logger.info('Archive already exists in {}. Not recreating.'.format(self.archives_directory_path))
             return archive_path
 
@@ -84,15 +84,15 @@ class CarthageCache(object):
 
         return archive_path
 
-    def publish(self, archive_path=None):
-        if not archive_path:
-            archive_path = self.archive()
+    def publish(self, archive_path=None, force=False):
+        if not archive_path or force:
+            archive_path = self.archive(force = force)
 
         conn = boto.connect_s3(self.AWS_ACCESS_KEY_ID, self.AWS_SECRET_ACCESS_KEY)
         bucket = conn.create_bucket(self.bucket_name, location=boto.s3.connection.Location.DEFAULT)
         key_name = archive_path.name
 
-        if bucket.get_key(archive_path.name):
+        if bucket.get_key(archive_path.name) and not force:
             logger.info('Archive already exists on S3. Skipping upload.')
             return
 

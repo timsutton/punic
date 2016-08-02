@@ -322,7 +322,8 @@ def cache(context):
 @cache.command()
 @click.pass_context
 @click.option('--xcode-version', default=None, help="""Xcode version to use""")
-def publish(context, xcode_version):
+@click.option('--force', default=False, is_flag=True, help="""Force publishing""")
+def publish(context, xcode_version, force):
     """Generates and uploads the cache archive for the current Cartfile.resolved"""
     with error_handling():
         logger.info("<cmd>Cache Publish</cmd>")
@@ -331,7 +332,7 @@ def publish(context, xcode_version):
             punic.config.xcode_version = xcode_version
         carthage_cache = CarthageCache(config=punic.config)
         logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
-        carthage_cache.publish()
+        carthage_cache.publish(force = force)
 
 
 
@@ -341,7 +342,7 @@ def publish(context, xcode_version):
 def install(context, xcode_version):
     """Installs the cache archive for the current Cartfile.resolved"""
     with error_handling():
-        logger.info("<cmd>Cache Publish</cmd>")
+        logger.info("<cmd>Cache Install</cmd>")
         punic = context.obj
         if xcode_version:
             punic.config.xcode_version = xcode_version

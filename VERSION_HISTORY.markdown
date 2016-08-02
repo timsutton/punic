@@ -1,5 +1,9 @@
 # Version History
 
+## 0.1.12
+
+* Adds `--force` switch to `punic cache publish`.
+
 ## 0.1.11
 
 * Adds `skips` section to `punic.yaml`. See README.
