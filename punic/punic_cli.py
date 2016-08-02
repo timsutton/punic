@@ -253,7 +253,6 @@ def version(context):
 @click.option('--xcode', default=None)
 def init(context, **kwargs):
     """Generate punic configuration file."""
-
     config_init(**kwargs)
 
 
@@ -262,6 +261,45 @@ def init(context, **kwargs):
 def readme(context):
     """Opens punic readme in your browser (https://github.com/schwa/punic/blob/HEAD/README.markdown)"""
     click.launch('https://github.com/schwa/punic/blob/HEAD/README.markdown')
+
+
+@punic_cli.command()
+@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
+@click.option('--fetch/--no-fetch', default=True, is_flag=True, help="""Controls whether to fetch dependencies.""")
+@click.option('--xcode-version', default=None, help="""Xcode version to use""")
+@click.option('--toolchain', default=None, help="""Xcode toolchain to use""")
+@click.option('--use-submodules', default=None, help="""Add dependencies as Git submodules""")
+@click.option('--use-ssh', default=None, is_flag=True, help="""Use SSH for downloading GitHub repositories""")
+@click.argument('deps', nargs=-1)
+@click.pass_context
+def list(context, **kwargs):
+    punic = context.obj
+    punic.config.update(**kwargs)
+    deps = kwargs['deps']
+
+    config = punic.config
+
+    configuration, platforms = config.configuration, config.platforms
+
+    if not config.build_path.exists():
+        config.build_path.mkdir(parents=True)
+
+    filtered_dependencies = punic._ordered_dependencies(name_filter=deps)
+
+    checkouts = [Checkout(punic=punic, identifier=identifier, revision=revision) for identifier, revision in filtered_dependencies]
+    for platform in platforms:
+        print('Platform: {}'.format(platform))
+        for checkout in checkouts:
+            print('  Checkout: {}'.format(checkout.identifier))
+            checkout.prepare()
+            for project in checkout.projects:
+                print('    Project: {}'.format(project.path.name))
+                schemes = project.schemes
+                schemes = [scheme for scheme in schemes if scheme.framework_target]
+                schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.framework_target.supported_platform_names]
+                for scheme in schemes:
+                    print('      Scheme: {}'.format(scheme.name))
 
 
 @punic_cli.group(cls=DYMGroup)
@@ -283,6 +321,9 @@ def publish(context, xcode_version):
     carthage_cache = CarthageCache(config=punic.config)
     logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
     carthage_cache.publish()
+
+
+
 
 
 @cache.command()
