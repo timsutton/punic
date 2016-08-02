@@ -1,5 +1,11 @@
 # Version History
 
+## 0.1.11
+
+* Adds `skips` section to `punic.yaml`. See README.
+* Adds `punic list` command to list all schemes, projects, etc etc.
+* Fixes bug with logs directory location.
+
 ## 0.1.10
 
 * Fixes problem with --use-ssh
