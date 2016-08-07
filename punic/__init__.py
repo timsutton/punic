@@ -15,6 +15,7 @@ from .resolver import Resolver, Node
 from .runner import runner
 from .specification import ProjectIdentifier, Specification, VersionPredicate, VersionOperator
 from .xcode import XcodeBuildArguments
+import punic.shshutil as shutil
 
 class Punic(object):
     __slots__ = ['root_path', 'config', 'all_repositories', 'root_project']
