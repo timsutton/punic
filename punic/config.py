@@ -46,6 +46,9 @@ class Config(object):
 
         self.skips = []
 
+        self.verbose = False
+        self.echo = False
+
         # Read in defaults from punic.yaml
         self.read(Path('punic.yaml'))
 
@@ -53,7 +56,7 @@ class Config(object):
         runner.cache_path = self.library_directory / "cache.shelf"
 
     def update(self, **kwargs):
-        for key, value in kwargs.items():
+        for key, value in sorted(kwargs.items()):
             if value:
                 if hasattr(self, key):
                     setattr(self, key, value)
@@ -61,6 +64,11 @@ class Config(object):
         # Special casing
         if 'platform' in kwargs:
             self.platforms = parse_platforms(kwargs['platform'])
+
+        if self.verbose:
+            logger.info(kwargs)
+            self.dump()
+
     def dump(self):
         for key, value in self.__dict__.items():
             logger.info('{}: {}'.format(key, value))

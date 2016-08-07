@@ -19,7 +19,8 @@ from .config_init import *
 from .carthage_cache import *
 import punic.shshutil as shutil
 from punic import *
-
+from pathlib2 import Path
+from .runner import *
 
 @click.group(cls=DYMGroup)
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
@@ -28,6 +29,8 @@ from punic import *
 @click.option('--timing/--no-timing', default=False, is_flag=True, help="""Log timing info""")
 @click.pass_context
 def punic_cli(context, echo, verbose, timing, color):
+    ### TODO: Clean this up!
+
     # Configure click
     context.token_normalize_func = lambda x: x if not x else x.lower()
 
@@ -70,6 +73,8 @@ def punic_cli(context, echo, verbose, timing, color):
     punic = Punic()
     punic.config.log_timings = timing
     context.obj = punic
+    punic.config.verbose = verbose
+    punic.config.echo = verbose
 
 
 @punic_cli.command()
