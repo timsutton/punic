@@ -58,6 +58,9 @@ class Config(object):
                 if hasattr(self, key):
                     setattr(self, key, value)
 
+        # Special casing
+        if 'platform' in kwargs:
+            self.platforms = parse_platforms(kwargs['platform'])
     def dump(self):
         for key, value in self.__dict__.items():
             logger.info('{}: {}'.format(key, value))
