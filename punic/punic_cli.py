@@ -21,6 +21,7 @@ import punic.shshutil as shutil
 from punic import *
 from pathlib2 import Path
 from .runner import *
+from .checkout import *
 
 @click.group(cls=DYMGroup)
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
