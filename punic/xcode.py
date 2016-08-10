@@ -156,6 +156,10 @@ class Scheme(object):
         self.project = project
         self.name = name
 
+    def __repr__(self):
+        return 'Scheme("{}")'.format(self.name)
+
+
     @mproperty
     def targets(self):
         arguments = XcodeBuildArguments(scheme=self.name)
@@ -179,6 +183,9 @@ class Target(object):
         self.project = project
         self.scheme = scheme
         self.name = name
+
+    def __repr__(self):
+        return 'Target("{}")'.format(self.name)
 
     @mproperty
     def build_settings(self):
@@ -216,7 +223,7 @@ class XcodeBuildArguments(object):
             'CODE_SIGNING_REQUIRED': 'NO',
             'CODE_SIGN_IDENTITY': '',
             'CARTHAGE': 'YES',
-            'SWIFT_VERSION': '3.0', # TODO: WHAT?
+            'SWIFT_VERSION': '2.3', # TODO: WHAT?
         }
 
         if arguments:
