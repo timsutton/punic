@@ -256,14 +256,14 @@ def version(context, check, simple):
             version_check(verbose=True, timeout=None, failure_is_an_option=False)
 
 
-@punic_cli.command()
-@click.pass_context
-@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
-@click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
-@click.option('--xcode', default=None)
-def init(context, **kwargs):
-    """Generate punic configuration file."""
-    config_init(**kwargs)
+# @punic_cli.command()
+# @click.pass_context
+# @click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+# @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
+# @click.option('--xcode', default=None)
+# def init(context, **kwargs):
+#     """Generate punic configuration file."""
+#     config_init(**kwargs)
 
 
 @punic_cli.command()

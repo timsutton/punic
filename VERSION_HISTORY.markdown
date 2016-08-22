@@ -2,6 +2,7 @@
 
 ## 0.1.13
 
+* Removes broken `punic init`. Coming back later.
 * Adds more control in `punic version`
 
 ## 0.1.12
