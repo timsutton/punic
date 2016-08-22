@@ -1,5 +1,9 @@
 # Version History
 
+## 0.1.13
+
+* Adds more control in `punic version`
+
 ## 0.1.12
 
 * Adds `--force` switch to `punic cache publish`.
