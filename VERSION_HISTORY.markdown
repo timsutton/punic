@@ -3,6 +3,8 @@
 ## 0.1.12
 
 * Adds `--force` switch to `punic cache publish`.
+* Fixes problem with configurations passed on command line
+* General bug fixes, cleanup & refactoring.
 
 ## 0.1.11
 
