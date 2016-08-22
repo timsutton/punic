@@ -39,7 +39,15 @@ def copy_frameworks_main():
         logger.info('\tCopying framework "{}" to "$SYMROOT/{}"'.format(framework_name, output_path.relative_to(sym_root)))
         if output_path.exists():
             shutil.rmtree(output_path)
-        shutil.copytree(input_path, output_path)
+
+        def ignore(src, names):
+            src = Path(src)
+            if src.suffix == ".framework":
+                return ['Headers', 'PrivateHeaders']
+            else:
+                return []
+
+        shutil.copytree(input_path, output_path, ignore = ignore)
 
         framework_path = output_path
 
