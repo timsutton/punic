@@ -43,7 +43,7 @@ def copy_frameworks_main():
         def ignore(src, names):
             src = Path(src)
             if src.suffix == ".framework":
-                return ['Headers', 'PrivateHeaders']
+                return ['Headers', 'PrivateHeaders', 'Modules']
             else:
                 return []
 

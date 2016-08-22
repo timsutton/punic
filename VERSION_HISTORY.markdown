@@ -4,7 +4,7 @@
 
 * Removes broken `punic init`. Coming back later.
 * Adds more control in `punic version`
-* `punic copy_frameworks` strips out Headers and PrivateHeaders when copying frameworks
+* `punic copy_frameworks` strips out Headers, PrivateHeaders and Modules when copying frameworks
 
 ## 0.1.12
 
