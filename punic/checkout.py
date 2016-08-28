@@ -32,7 +32,7 @@ class Checkout(object):
                 if flag == ' ':
                     pass
                 elif flag == '-':
-                    raise Exception('Uninitialized submodule P{. Please report this!'.format(self.checkout_path))
+                    raise Exception('Uninitialized submodule {}. Please report this!'.format(self.checkout_path))
                 elif flag == '+':
                     raise Exception('Submodule {} doesn\'t match expected revision'.format(self.checkout_path))
                 elif flag == 'U':
