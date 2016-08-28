@@ -83,6 +83,6 @@ class Checkout(object):
             cache_identifier = '{},{}'.format(str(rev), project_path.relative_to(self.checkout_path))
             return cache_identifier
 
-        project_paths = self.checkout_path.glob("*.xcodeproj")
+        project_paths = self.checkout_path.glob("**/*.xcodeproj")
         projects = [XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path)) for project_path in project_paths]
         return projects
