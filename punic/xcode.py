@@ -223,7 +223,6 @@ class XcodeBuildArguments(object):
             'CODE_SIGNING_REQUIRED': 'NO',
             'CODE_SIGN_IDENTITY': '',
             'CARTHAGE': 'YES',
-            'SWIFT_VERSION': '2.3', # TODO: WHAT?
         }
 
         if arguments:
