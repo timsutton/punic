@@ -27,12 +27,12 @@ class Checkout(object):
 
             result = runner.run('git submodule status "{}"'.format(relative_checkout_path))
             if result.return_code == 0:
-                match = re.match(r'^(?P<flag> |\-|\+|U)(?P<sha>[a-f0-9]+) (?P<path>.+) \((?P<description>.+)\)', result.stdout)
+                match = re.match(r'^(?P<flag> |\-|\+|U)(?P<sha>[a-f0-9]+) (?P<path>.+)( \((?P<description>.+)\))?', result.stdout)
                 flag = match.groupdict()['flag']
                 if flag == ' ':
                     pass
                 elif flag == '-':
-                    raise Exception('Uninitialized submodule P{. Please report this!'.format(self.checkout_path))
+                    raise Exception('Uninitialized submodule {}. Please report this!'.format(self.checkout_path))
                 elif flag == '+':
                     raise Exception('Submodule {} doesn\'t match expected revision'.format(self.checkout_path))
                 elif flag == 'U':
@@ -83,6 +83,6 @@ class Checkout(object):
             cache_identifier = '{},{}'.format(str(rev), project_path.relative_to(self.checkout_path))
             return cache_identifier
 
-        project_paths = self.checkout_path.glob("*.xcodeproj")
+        project_paths = self.checkout_path.glob("**/*.xcodeproj")
         projects = [XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path)) for project_path in project_paths]
         return projects
