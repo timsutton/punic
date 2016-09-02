@@ -183,6 +183,10 @@ class Punic(object):
 
             derived_data_path = self.config.derived_data_path
 
+            configuration = configuration if configuration else project.default_configuration
+            if not configuration:
+                logger.warn("No configuration specified for project and no default configuration found. This could be a problem.")
+
             arguments = XcodeBuildArguments(scheme=scheme, configuration=configuration, sdk=sdk, toolchain=toolchain, derived_data_path=derived_data_path)
 
             product = project.build(arguments=arguments)
@@ -210,6 +214,10 @@ class Punic(object):
         logger.debug('<sub>Copying binary</sub>...')
         if output_product.product_path.exists():
             shutil.rmtree(output_product.product_path)
+
+        if not device_product.product_path.exists():
+            raise Exception("No product at: {}".format(device_product.product_path))
+
         shutil.copytree(device_product.product_path, output_product.product_path)
 
         ########################################################################################################

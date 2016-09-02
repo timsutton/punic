@@ -101,6 +101,10 @@ class XcodeProject(object):
         return self.info[1]
 
     @property
+    def default_configuration(self):
+        return self.info[3]
+
+    @property
     def scheme_names(self):
         return self.info[2]
 
@@ -111,13 +115,15 @@ class XcodeProject(object):
     def scheme_named(self, name):
         return [scheme for scheme in self.schemes if scheme.name == name][0]
 
+
+
     @mproperty
     def info(self):
         arguments = XcodeBuildArguments()
         arguments.project = self.path
         output = self.check_call(subcommand='-list', cache_key=self.identifier)
-        targets, configurations, schemes = _parse_info(output)
-        return targets, configurations, schemes
+        targets, configurations, schemes, default_configuration = _parse_info(output)
+        return targets, configurations, schemes, default_configuration
 
     def build_settings(self, arguments):
         # type: (XcodeBuildArguments) -> dict()
@@ -313,6 +319,7 @@ def _parse_info(string):
     targets = []
     configurations = []
     schemes = []
+    default_configuration = None
 
     try:
         while True:
@@ -342,10 +349,15 @@ def _parse_info(string):
                     else:
                         schemes.append(match.group(1))
 
+            match = re.match(r'^\s+If no build configuration is specified and -scheme is not passed then "(.+)" is used.', line)
+            if match:
+                default_configuration = match.group(1)
+
     except StopIteration:
         pass
 
-    return targets, configurations, schemes
+
+    return targets, configurations, schemes, default_configuration
 
 
 ########################################################################################################################
