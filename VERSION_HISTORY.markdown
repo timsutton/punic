@@ -1,5 +1,9 @@
 # Version History
 
+## 0.1.14
+
+* Minor bug fixes. Thanks to @samsonjs and @Dschee for help.
+
 ## 0.1.13
 
 * Removes broken `punic init`. Coming back later.
