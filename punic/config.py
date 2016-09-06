@@ -49,10 +49,12 @@ class Config(object):
         self.verbose = False
         self.echo = False
 
-        # Read in defaults from punic.yaml
-        self.read(Path('punic.yaml'))
-
-
+        # Read in defaults from punic.yaml (or punic.yml if that exists)
+        punic_configuration_path = Path('punic.yaml')
+        if not punic_configuration_path.exists():
+            punic_configuration_path = Path('punic.yml')
+        if punic_configuration_path.exists():
+            self.read(punic_configuration_path)
         runner.cache_path = self.library_directory / "cache.shelf"
 
     def update(self, **kwargs):
@@ -90,9 +92,6 @@ class Config(object):
 
     def read(self, path):
         # type: (Path)
-
-        if not path.exists():
-            return
 
         d = yaml.safe_load(path.open())
         if 'defaults' in d:
