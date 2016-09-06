@@ -2,7 +2,7 @@
 
 ## 0.1.15
 
-* (Work in progress))
+* Fixes bug with platform being overriden if specified in punic.yaml and not command-line.
 
 ## 0.1.14
 

@@ -62,7 +62,7 @@ class Config(object):
                     setattr(self, key, value)
 
         # Special casing
-        if 'platform' in kwargs:
+        if 'platform' in kwargs and not self.platforms:
             self.platforms = parse_platforms(kwargs['platform'])
 
         if self.verbose:
@@ -70,8 +70,10 @@ class Config(object):
             self.dump()
 
     def dump(self):
+        logger.info('# Configuration ' + '#' * 64)
         for key, value in self.__dict__.items():
             logger.info('{}: {}'.format(key, value))
+        logger.info('#' * 80)
 
     @property
     def xcode_version(self):
