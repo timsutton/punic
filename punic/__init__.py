@@ -1,6 +1,6 @@
 from __future__ import division, absolute_import, print_function
 
-__version__ = '0.1.15'
+__version__ = '0.1.16'
 __all__ = ['Punic']
 
 import os
