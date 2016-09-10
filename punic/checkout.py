@@ -57,7 +57,7 @@ class Checkout(object):
                 logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
                 if self.checkout_path.exists():
                     shutil.rmtree(self.checkout_path)
-                shutil.copytree(self.repository.path, self.checkout_path, ignore=shutil.ignore_patterns('.git'))
+                shutil.copytree(self.repository.path, self.checkout_path, symlinks=True, ignore=shutil.ignore_patterns('.git'))
 
         if not self.checkout_path.exists():
             raise Exception('No checkout at path: {}'.format(self.checkout_path))

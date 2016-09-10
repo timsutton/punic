@@ -218,7 +218,7 @@ class Punic(object):
         if not device_product.product_path.exists():
             raise Exception("No product at: {}".format(device_product.product_path))
 
-        shutil.copytree(device_product.product_path, output_product.product_path)
+        shutil.copytree(device_product.product_path, output_product.product_path, symlinks=True)
 
         ########################################################################################################
 

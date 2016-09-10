@@ -47,7 +47,7 @@ def copy_frameworks_main():
             else:
                 return []
 
-        shutil.copytree(input_path, output_path, ignore = ignore)
+        shutil.copytree(input_path, output_path, symlinks=True, ignore = ignore)
 
         framework_path = output_path
 
@@ -96,7 +96,7 @@ def copy_frameworks_main():
                 logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(dsym_path.relative_to(project_dir)))
                 if dsym_output_path.exists():
                     shutil.rmtree(dsym_output_path)
-                shutil.copytree(dsym_path, dsym_output_path)
+                shutil.copytree(dsym_path, dsym_output_path, symlinks=True)
 
             # Copy bcsymbolmap files from $PROJECT_DIRCarthage/Build to $BUILT_PRODUCTS_DIR
             if enable_bitcode:
