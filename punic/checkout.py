@@ -84,5 +84,7 @@ class Checkout(object):
             return cache_identifier
 
         project_paths = self.checkout_path.glob("**/*.xcodeproj")
+        project_paths = [path for path in project_paths if "Carthage/Checkouts" not in str(path)]
+
         projects = [XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path)) for project_path in project_paths]
         return projects
