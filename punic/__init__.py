@@ -102,7 +102,6 @@ class Punic(object):
                     return False
             return True
 
-
         for platform in platforms:
             for checkout in checkouts:
                 checkout.prepare()
@@ -183,11 +182,11 @@ class Punic(object):
 
             derived_data_path = self.config.derived_data_path
 
-            configuration = configuration if configuration else project.default_configuration
-            if not configuration:
+            resolved_configuration = configuration if configuration else project.default_configuration
+            if not resolved_configuration:
                 logger.warn("No configuration specified for project and no default configuration found. This could be a problem.")
 
-            arguments = XcodeBuildArguments(scheme=scheme, configuration=configuration, sdk=sdk, toolchain=toolchain, derived_data_path=derived_data_path)
+            arguments = XcodeBuildArguments(scheme=scheme, configuration=resolved_configuration, sdk=sdk, toolchain=toolchain, derived_data_path=derived_data_path)
 
             product = project.build(arguments=arguments)
             products[sdk] = product
