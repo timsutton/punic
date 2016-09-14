@@ -2,7 +2,9 @@
 
 ## 0.1.17
 
-* WIP
+* Really fixes problems with ReactiveCocoa
+* And in fact everything.
+* Do not use 0.1.16 :-)
 
 ## 0.1.16
 
