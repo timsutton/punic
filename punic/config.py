@@ -73,7 +73,11 @@ class Config(object):
 
     def dump(self):
         logger.info('# Configuration ' + '#' * 64)
-        for key, value in self.__dict__.items():
+
+        items = self.__dict__.items()
+        items.sort()
+
+        for key, value in items:
             logger.info('{}: {}'.format(key, value))
         logger.info('#' * 80)
 
