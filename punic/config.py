@@ -63,9 +63,10 @@ class Config(object):
                 if hasattr(self, key):
                     setattr(self, key, value)
 
-        # Special casing
-        if 'platform' in kwargs and not self.platforms:
-            self.platforms = parse_platforms(kwargs['platform'])
+        # Special case for platforms
+        platform = kwargs['platform'] if 'platform' in kwargs else None
+        if platform:
+            self.platforms = parse_platforms(platform)
 
         if self.verbose:
             logger.info(kwargs)
