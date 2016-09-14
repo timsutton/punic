@@ -2,7 +2,9 @@
 
 ## 0.1.16
 
-* WIP
+* Import bug fixes.
+* Most importantly fixes problems with projects such as ReactiveCocoa. See https://github.com/schwa/punic/commit/75b7372c4926f1b6911a5e0e540d1311acda33e3 for more information.
+* Fixes problem with `--platform` switch. 
 
 ## 0.1.15
 
