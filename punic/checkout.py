@@ -83,8 +83,20 @@ class Checkout(object):
             cache_identifier = '{},{}'.format(str(rev), project_path.relative_to(self.checkout_path))
             return cache_identifier
 
+
+        def test(path):
+            relative_path = path.relative_to(self.checkout_path)
+            if 'Carthage/Checkouts' in str(relative_path):
+                return False
+            logger.debug(relative_path)
+
+            return True
+
         project_paths = self.checkout_path.glob("**/*.xcodeproj")
-        project_paths = [path for path in project_paths if "Carthage/Checkouts" not in str(path)]
+        project_paths = [path for path in project_paths if test(path)]
+        logger.debug(project_paths)
+        if not project_paths:
+            raise Exception("No projects found in {}".format(self.checkout_path))
 
         projects = [XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path)) for project_path in project_paths]
         return projects
