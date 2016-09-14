@@ -62,3 +62,5 @@ target/
 
 Testing/
 local_testing.py
+
+Examples/**/Carthage
