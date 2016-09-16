@@ -74,7 +74,9 @@ class Checkout(object):
                 carthage_symlink_path.unlink()
             logging.debug('<sub>Creating symlink: <ref>{}</ref> to <ref>{}</ref></sub>'.format(carthage_symlink_path.relative_to(self.config.root_path), self.config.build_path.relative_to(self.config.root_path)))
             assert self.config.build_path.exists()
-            os.symlink(str(self.config.build_path), str(carthage_symlink_path))
+
+            # TODO: Generate this programatically.
+            os.symlink("../../../Build", str(carthage_symlink_path))
 
     @property
     def projects(self):
