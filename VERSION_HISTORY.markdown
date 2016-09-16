@@ -1,5 +1,13 @@
 # Version History
 
+## 0.1.18
+
+* Make sub-project Build symlinks relative (fixes #11)
+* `punic init` is back and still as broken as ever.
+* Large logging cleanup and bug fix - upshot is `--no-color` works again
+* Adds a full `punic update` to test suite.
+* Fixes punic on Python 3.5 which was a little bit broken.
+
 ## 0.1.17
 
 * Really fixes problems with ReactiveCocoa
