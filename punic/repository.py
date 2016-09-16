@@ -7,11 +7,12 @@ import functools
 import hashlib
 import affirm
 import six
+import logging
+
 from memoize import mproperty
 from .runner import *
 from .config import *
 from .errors import *
-from .logger import *
 from .cartfile import *
 from .semantic_version import *
 
@@ -77,7 +78,7 @@ class Repository(object):
 
     def checkout(self, revision):
         # type: (Revision)
-        logger.debug('Checking out <ref>{}</ref> @ revision <rev>{}</rev>'.format(self, revision))
+        logging.debug('Checking out <ref>{}</ref> @ revision <rev>{}</rev>'.format(self, revision))
         self.check_work_directory()
         try:
             runner.check_run('git checkout "{}"'.format(revision.sha), cwd=self.path)
@@ -86,7 +87,7 @@ class Repository(object):
 
     def fetch(self):
         if not self.path.exists():
-            logger.debug('<sub>Cloning</sub>: <ref>{}</ref>'.format(self))
+            logging.debug('<sub>Cloning</sub>: <ref>{}</ref>'.format(self))
 
             url = self.identifier.remote_url
             import urlparse
@@ -100,7 +101,7 @@ class Repository(object):
         else:
             self.check_work_directory()
 
-            logger.info('<sub>Fetching</sub>: <ref>{}</ref>'.format(self))
+            logging.info('<sub>Fetching</sub>: <ref>{}</ref>'.format(self))
             runner.check_run('git fetch', cwd=self.path)
 
     def specifications_for_revision(self, revision):
@@ -186,7 +187,7 @@ class Revision(object):
             else:
                 return self.sha == other.sha
         except:
-            logger.error(self.repository)
+            logging.error(self.repository)
             raise
 
     # see: https://bugs.python.org/issue25732

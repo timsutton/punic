@@ -4,7 +4,8 @@ __all__ = ['Config', 'config']
 
 from pathlib2 import Path
 import yaml
-from .logger import *
+import logging
+
 from .runner import *
 from .xcode import *
 from .platform import *
@@ -68,19 +69,15 @@ class Config(object):
         if platform:
             self.platforms = parse_platforms(platform)
 
-        if self.verbose:
-            logger.info(kwargs)
-            self.dump()
-
     def dump(self):
-        logger.info('# Configuration ' + '#' * 64)
+        logging.info('# Configuration ' + '#' * 64)
 
         items = self.__dict__.items()
         items.sort()
 
         for key, value in items:
-            logger.info('{}: {}'.format(key, value))
-        logger.info('#' * 80)
+            logging.info('{}: {}'.format(key, value))
+        logging.info('#' * 80)
 
     @property
     def xcode_version(self):

@@ -8,6 +8,8 @@ import sys
 import click
 from click_didyoumean import DYMGroup
 import networkx as nx
+from pathlib2 import Path
+
 import punic
 from .copy_frameworks import *
 from .errors import *
@@ -19,7 +21,6 @@ from .config_init import *
 from .carthage_cache import *
 import punic.shshutil as shutil
 from punic import *
-from pathlib2 import Path
 from .runner import *
 from .checkout import *
 
@@ -41,10 +42,12 @@ def punic_cli(context, echo, verbose, timing, color):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 
+    formatter = HTMLFormatter()
+
     # create console handler and set level to debug
     stream_handler = logging.StreamHandler()
     stream_handler.setLevel(level)
-    stream_handler.setFormatter(HTMLFormatter())
+    stream_handler.setFormatter(formatter)
     # add ch to logger
     logger.addHandler(stream_handler)
 
@@ -67,6 +70,7 @@ def punic_cli(context, echo, verbose, timing, color):
         named_logger.setLevel(logging.WARNING)
         named_logger.propagate = True
 
+    formatter.color = color
     logger.color = color
     runner.echo = echo
 
@@ -84,7 +88,7 @@ def punic_cli(context, echo, verbose, timing, color):
 @click.option('--use-ssh', default=None, help="""Use SSH for downloading GitHub repositories""")
 def fetch(context, **kwargs):
     """Fetch the project's dependencies.."""
-    logger.info("<cmd>fetch</cmd>")
+    logging.info("<cmd>fetch</cmd>")
     punic = context.obj
     punic.config.fetch = True  # obviously
     punic.config.update(**kwargs)
@@ -105,7 +109,7 @@ def resolve(context, **kwargs):
     This sub-command does not build dependencies. Use this sub-command when a dependency has changed and you just want to update `Cartfile.resolved`.
     """
     punic = context.obj
-    logger.info("<cmd>Resolve</cmd>")
+    logging.info("<cmd>Resolve</cmd>")
     punic.config.update(**kwargs)
 
 
@@ -127,14 +131,14 @@ def resolve(context, **kwargs):
 @click.argument('deps', nargs=-1)
 def build(context, **kwargs):
     """Fetch and build the project's dependencies."""
-    logger.info("<cmd>Build</cmd>")
+    logging.info("<cmd>Build</cmd>")
     punic = context.obj
     punic.config.update(**kwargs)
 
     deps = kwargs['deps']
 
-    logger.debug('Platforms: {}'.format(punic.config.platforms))
-    logger.debug('Configuration: {}'.format(punic.config.configuration))
+    logging.debug('Platforms: {}'.format(punic.config.platforms))
+    logging.debug('Configuration: {}'.format(punic.config.configuration))
 
     with timeit('build', log=punic.config.log_timings):
         with error_handling():
@@ -153,7 +157,7 @@ def build(context, **kwargs):
 @click.argument('deps', nargs=-1)
 def update(context, **kwargs):
     """Update and rebuild the project's dependencies."""
-    logger.info("<cmd>Update</cmd>")
+    logging.info("<cmd>Update</cmd>")
     punic = context.obj
     punic.config.update(**kwargs)
 
@@ -173,24 +177,24 @@ def update(context, **kwargs):
 @click.option('--all', default=False, is_flag=True, help="""Clean all.""")
 def clean(context, derived_data, caches, build, all):
     """Clean project & punic environment."""
-    logger.info("<cmd>Clean</cmd>")
+    logging.info("<cmd>Clean</cmd>")
     punic = context.obj
 
     if build or all:
-        logger.info('Erasing Carthage/Build directory')
+        logging.info('Erasing Carthage/Build directory')
         if punic.config.build_path.exists():
             shutil.rmtree(punic.config.build_path)
 
     if derived_data or all:
-        logger.info('Erasing derived data directory')
+        logging.info('Erasing derived data directory')
         if punic.config.derived_data_path.exists():
             shutil.rmtree(punic.config.derived_data_path)
 
     if caches or all:
         if punic.config.repo_cache_directory.exists():
-            logger.info('Erasing {}'.format(punic.config.repo_cache_directory))
+            logging.info('Erasing {}'.format(punic.config.repo_cache_directory))
             shutil.rmtree(punic.config.repo_cache_directory)
-        logger.info('Erasing run cache')
+        logging.info('Erasing run cache')
         runner.reset()
 
 
@@ -202,7 +206,7 @@ def clean(context, derived_data, caches, build, all):
 @click.option('--open', default=False, is_flag=True, help="""Open the graph image file.""")
 def graph(context, fetch, use_submodules, use_ssh, open):
     """Output resolved dependency graph."""
-    logger.info("<cmd>Graph</cmd>")
+    logging.info("<cmd>Graph</cmd>")
     punic = context.obj
     punic.config.fetch = fetch
     if use_submodules:
@@ -215,12 +219,12 @@ def graph(context, fetch, use_submodules, use_ssh, open):
 
             graph = punic.graph()
 
-            logger.info('Writing graph file to "{}".'.format(os.getcwd()))
+            logging.info('Writing graph file to "{}".'.format(os.getcwd()))
             nx.drawing.nx_pydot.write_dot(graph, 'graph.dot')
 
             command = 'dot graph.dot -ograph.png -Tpng'
             if runner.can_run(command):
-                logger.info('Rendering dot file to png file.')
+                logging.info('Rendering dot file to png file.')
                 runner.check_run(command)
                 if open:
                     click.launch('graph.png')
@@ -246,11 +250,11 @@ def version(context, check, simple):
     if simple:
         print("{}".format(punic.__version__))
     else:
-        logger.info('Punic version: {}'.format(punic.__version__), prefix=False)
+        logging.info('Punic version: {}'.format(punic.__version__), prefix=False)
 
         sys_version = sys.version_info
         sys_version = SemanticVersion.from_dict(dict(major=sys_version.major, minor=sys_version.minor, micro=sys_version.micro, releaselevel=sys_version.releaselevel, serial=sys_version.serial, ))
-        logger.info('Python version: {}'.format(sys_version), prefix=False)
+        logging.info('Python version: {}'.format(sys_version), prefix=False)
 
         if check:
             version_check(verbose=True, timeout=None, failure_is_an_option=False)
@@ -336,12 +340,12 @@ def cache(context):
 def publish(context, xcode_version, force):
     """Generates and uploads the cache archive for the current Cartfile.resolved"""
     with error_handling():
-        logger.info("<cmd>Cache Publish</cmd>")
+        logging.info("<cmd>Cache Publish</cmd>")
         punic = context.obj
         if xcode_version:
             punic.config.xcode_version = xcode_version
         carthage_cache = CarthageCache(config=punic.config)
-        logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
+        logging.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
         carthage_cache.publish(force = force)
 
 
@@ -352,12 +356,12 @@ def publish(context, xcode_version, force):
 def install(context, xcode_version):
     """Installs the cache archive for the current Cartfile.resolved"""
     with error_handling():
-        logger.info("<cmd>Cache Install</cmd>")
+        logging.info("<cmd>Cache Install</cmd>")
         punic = context.obj
         if xcode_version:
             punic.config.xcode_version = xcode_version
         carthage_cache = CarthageCache(config=punic.config)
-        logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
+        logging.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
         carthage_cache.install()
 
 @punic_cli.command()

@@ -1,9 +1,9 @@
 import os
 import re
+import logging
 
 from punic import shshutil as shutil
 from punic.config import config
-from punic.logger import logger
 from punic.runner import runner
 from punic.xcode import XcodeProject
 
@@ -40,13 +40,13 @@ class Checkout(object):
             else:
                 if self.checkout_path.exists():
                     raise Exception('Want to create a submodule in {} but something already exists in there.'.format(self.checkout_path))
-                logger.debug('Adding submodule for {}'.format(self))
+                logging.debug('Adding submodule for {}'.format(self))
                 runner.check_run(['git', 'submodule', 'add', '--force', self.identifier.remote_url, self.checkout_path.relative_to(self.config.root_path)])
 
             # runner.check_run(['git', 'submodule', 'add', '--force', self.identifier.remote_url, self.checkout_path.relative_to(self.config.root_path)])
             # runner.check_run(['git', 'submodule', 'update', self.checkout_path.relative_to(self.config.root_path)])
 
-            logger.debug('Updating {}'.format(self))
+            logging.debug('Updating {}'.format(self))
             self.repository.checkout(self.revision)
         else:
 
@@ -54,7 +54,7 @@ class Checkout(object):
             if self.config.fetch:
 
                 self.repository.checkout(self.revision)
-                logger.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
+                logging.debug('<sub>Copying project to <ref>Carthage/Checkouts</ref></sub>')
                 if self.checkout_path.exists():
                     shutil.rmtree(self.checkout_path)
                 shutil.copytree(self.repository.path, self.checkout_path, symlinks=True, ignore=shutil.ignore_patterns('.git'))
@@ -72,7 +72,7 @@ class Checkout(object):
             carthage_symlink_path = carthage_path / 'Build'
             if carthage_symlink_path.exists():
                 carthage_symlink_path.unlink()
-            logger.debug('<sub>Creating symlink: <ref>{}</ref> to <ref>{}</ref></sub>'.format(carthage_symlink_path.relative_to(self.config.root_path), self.config.build_path.relative_to(self.config.root_path)))
+            logging.debug('<sub>Creating symlink: <ref>{}</ref> to <ref>{}</ref></sub>'.format(carthage_symlink_path.relative_to(self.config.root_path), self.config.build_path.relative_to(self.config.root_path)))
             assert self.config.build_path.exists()
             os.symlink(str(self.config.build_path), str(carthage_symlink_path))
 

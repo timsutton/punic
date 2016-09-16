@@ -2,7 +2,7 @@ __all__ = ['CarthageCache']
 
 import re
 import hashlib
-from .logger import *
+import logging
 import zipfile
 import boto
 import boto.s3
@@ -10,6 +10,7 @@ import os
 import tempfile
 from tqdm import tqdm
 import yaml
+
 from .shshutil import *
 from .errors import *
 
@@ -57,10 +58,10 @@ class CarthageCache(object):
 
         archive_path = self.archives_directory_path / archive_file_name
         if archive_path.exists() and not force:
-            logger.info('Archive already exists in {}. Not recreating.'.format(self.archives_directory_path))
+            logging.info('Archive already exists in {}. Not recreating.'.format(self.archives_directory_path))
             return archive_path
 
-        logger.info("Creating zipfile.")
+        logging.info("Creating zipfile.")
 
         temp_dir = tempfile.mkdtemp()
         temp_archive_path = Path(temp_dir) / archive_file_name
@@ -69,10 +70,10 @@ class CarthageCache(object):
             def zipdir(root, ziph):
                 all_files = list(walk_directory(root))
 
-                logger.info('Computing total size')
+                logging.info('Computing total size')
                 total_size = sum([file.stat().st_size for file in all_files])
 
-                logger.info('Zipping')
+                logging.info('Zipping')
                 bar = tqdm(total=total_size, unit='B', unit_scale=True)
                 for file in all_files:
                     ziph.write(str(file), str(file.relative_to(root)))
@@ -93,10 +94,10 @@ class CarthageCache(object):
         key_name = archive_path.name
 
         if bucket.get_key(archive_path.name) and not force:
-            logger.info('Archive already exists on S3. Skipping upload.')
+            logging.info('Archive already exists on S3. Skipping upload.')
             return
 
-        logger.info('Uploading archive to S3.')
+        logging.info('Uploading archive to S3.')
 
         k = bucket.new_key(key_name)
         file_size = archive_path.stat().st_size
@@ -117,7 +118,7 @@ class CarthageCache(object):
         if archive_path.exists() and not force:
             return archive_path
 
-        logger.info("Downloading archive {} from {}".format(archive_file_name, self.bucket_name))
+        logging.info("Downloading archive {} from {}".format(archive_file_name, self.bucket_name))
 
         connection = boto.connect_s3(self.AWS_ACCESS_KEY_ID, self.AWS_SECRET_ACCESS_KEY)
         bucket = connection.get_bucket(self.bucket_name)
@@ -154,14 +155,14 @@ class CarthageCache(object):
 
         temp_dir = Path(tempfile.mkdtemp())
 
-        logger.info('Expanding archive.')
+        logging.info('Expanding archive.')
         with zipfile.ZipFile(str(archive_path)) as archive:
             archive.extractall(str(temp_dir))
 
         if self.config.build_path.exists():
             rmtree(self.config.build_path)
 
-        logger.info('Replacing {}.'.format(self.config.build_path))
+        logging.info('Replacing {}.'.format(self.config.build_path))
         move(temp_dir, self.config.build_path)
 
 

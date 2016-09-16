@@ -8,8 +8,7 @@ import shelve
 from subprocess import CalledProcessError
 from memoize import mproperty
 import six
-from .logger import *
-
+import logging
 
 class Result(object):
     def __init__(self):
@@ -34,7 +33,7 @@ class Runner(object):
             return shelf
         except:
             if self.cache_path.exists():
-                logger.verbose("Resetting cache and trying again...")
+                logging.info("Resetting cache and trying again...")
                 self.cache_path.unlink()
                 shelf = shelve.open(str(self.cache_path))
                 return self
@@ -79,11 +78,10 @@ class Runner(object):
 
         if echo or echo is None and self.echo:
             if cwd and self.echo_directories:
-                logger.echo('cd {}'.format(cwd))
+                logging.info('cd {}'.format(cwd))
 
             # TODO: Wont properly reproduce command if command is a string
-            logger.echo(' '.join(arg.replace(' ', '\\ ') for arg in args))
-            # logger.echo(args)
+            logging.info(' '.join(arg.replace(' ', '\\ ') for arg in args))
 
         if cache_key:
             # assert not env # TODO
@@ -119,9 +117,9 @@ class Runner(object):
         if check and return_code != 0:
             # TODO
             if stdout:
-                logger.debug(stdout)
+                logging.debug(stdout)
             if stderr:
-                logger.debug(stdout)
+                logging.debug(stdout)
             raise CalledProcessError(return_code, command, stdout)
 
         if cache_key:
