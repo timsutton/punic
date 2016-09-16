@@ -19,6 +19,7 @@ from .utilities import *
 from .version_check import *
 from .config_init import *
 from .carthage_cache import *
+from punic.graph import make_graph
 import punic.shshutil as shutil
 from punic import *
 from .runner import *
@@ -214,22 +215,7 @@ def graph(context, fetch, use_submodules, use_ssh, open):
     if use_ssh:
         punic.config.use_ssh = use_ssh
 
-    with timeit('graph', log=punic.config.log_timings):
-        with error_handling():
-
-            graph = punic.graph()
-
-            logging.info('Writing graph file to "{}".'.format(os.getcwd()))
-            nx.drawing.nx_pydot.write_dot(graph, 'graph.dot')
-
-            command = 'dot graph.dot -ograph.png -Tpng'
-            if runner.can_run(command):
-                logging.info('Rendering dot file to png file.')
-                runner.check_run(command)
-                if open:
-                    click.launch('graph.png')
-            else:
-                logging.warning('graphviz not installed. Cannot convert graph to a png.')
+    make_graph(punic, open)
 
 
 @punic_cli.command(name='copy-frameworks')
