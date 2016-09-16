@@ -360,6 +360,11 @@ def install(context, xcode_version):
         logger.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
         carthage_cache.install()
 
+@punic_cli.command()
+@click.pass_context
+def init(context):
+    config_init()
+
 
 def main():
     punic_cli()
