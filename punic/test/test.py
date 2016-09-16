@@ -11,17 +11,23 @@ import punic.shshutil as shutil
 import tempfile
 
 
-def test_update():
+def setup():
     test_data_path = Path(__file__).parent / 'Examples/SwiftIO'
 
     items = ['Cartfile', 'Cartfile.resolved', 'punic.yaml']
 
     temp_dir = Path(tempfile.mkdtemp())
 
-    with work_directory(temp_dir):
-        for item in items:
-            shutil.copy(test_data_path / item, temp_dir)
+    for item in items:
+        shutil.copy(test_data_path / item, temp_dir)
 
+    return temp_dir
+
+
+def test_update_and_build():
+    temp_dir = setup()
+
+    with work_directory(temp_dir):
         runner = Runner()
         output = runner.check_run('punic update')
 
@@ -29,6 +35,24 @@ def test_update():
         assert (Path.cwd() / 'Carthage/Build/Mac/SwiftUtilities.framework').exists()
         assert (Path.cwd() / 'Carthage/Build/Mac/SwiftIO.dSYM').exists()
         assert (Path.cwd() / 'Carthage/Build/Mac/SwiftUtilities.dSYM').exists()
+
+        output = runner.check_run('punic build')
+
+
+def test_list():
+    temp_dir = setup()
+
+    with work_directory(temp_dir):
+        runner = Runner()
+        output = runner.check_run('punic list')
+
+
+def test_clean():
+    temp_dir = setup()
+
+    with work_directory(temp_dir):
+        runner = Runner()
+        output = runner.check_run('punic clean')
 
 
 def test_version():
