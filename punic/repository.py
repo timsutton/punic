@@ -9,6 +9,12 @@ import affirm
 import six
 import logging
 
+# Ideally we could six.urllib but this causes problem with nosetests!
+if six.PY2:
+    import urlparse
+elif six.PY3:
+    import urllib.parse as urlparse
+
 from memoize import mproperty
 from .runner import *
 from .config import *
@@ -24,7 +30,8 @@ class Repository(object):
         if repo_path:
             self.path = repo_path
         else:
-            url_hash = hashlib.md5(self.identifier.remote_url).hexdigest()
+            remote_url = self.identifier.remote_url.encode("utf-8")
+            url_hash = hashlib.md5(remote_url).hexdigest()
             self.path = punic.config.repo_cache_directory / "{}_{}".format(self.identifier.project_name, url_hash)
 
         self.specifications_cache = dict()
@@ -90,7 +97,7 @@ class Repository(object):
             logging.debug('<sub>Cloning</sub>: <ref>{}</ref>'.format(self))
 
             url = self.identifier.remote_url
-            import urlparse
+
             parsed_url = urlparse.urlparse(url)
             if parsed_url.scheme == 'file':
                 repo = parsed_url.path

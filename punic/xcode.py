@@ -324,10 +324,10 @@ def _parse_info(string):
 
     try:
         while True:
-            line = lines.next()
+            line = six.next(lines)
             if re.match(r'^\s+Targets:$', line):
                 while True:
-                    line = lines.next()
+                    line = six.next(lines)
                     match = re.match(r'        (.+)', line)
                     if not match:
                         break
@@ -335,7 +335,7 @@ def _parse_info(string):
                         targets.append(match.group(1))
             if re.match(r'^\s+Build Configurations:$', line):
                 while True:
-                    line = lines.next()
+                    line = six.next(lines)
                     match = re.match(r'        (.+)', line)
                     if not match:
                         break
@@ -343,7 +343,7 @@ def _parse_info(string):
                         configurations.append(match.group(1))
             if re.match(r'^\s+Schemes:$', line):
                 while True:
-                    line = lines.next()
+                    line = six.next(lines)
                     match = re.match(r'        (.+)', line)
                     if not match:
                         break
