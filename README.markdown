@@ -55,18 +55,22 @@ $ punic --help
 Usage: punic [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  --echo                Echo all commands to terminal.
-  --verbose             Verbose logging.
-  --color / --no-color  TECHNICOLOR.
-  --help                Show this message and exit.
+  --echo                  Echo all commands to terminal.
+  --verbose               Verbose logging.
+  --color / --no-color    TECHNICOLOR.
+  --timing / --no-timing  Log timing info
+  --help                  Show this message and exit.
 
 Commands:
   build            Fetch and build the project's dependencies.
+  cache            Cache punic build artifacts to Amazon S3
   clean            Clean project & punic environment.
   copy-frameworks  In a Run Script build phase, copies each...
   fetch            Fetch the project's dependencies..
   graph            Output resolved dependency graph.
   init             Generate punic configuration file.
+  list             Lists all platforms, projects, xcode...
+  readme           Opens punic readme in your browser...
   resolve          Resolve dependencies and output...
   update           Update and rebuild the project's...
   version          Display the current version of Punic.
@@ -144,6 +148,7 @@ If you always specify the same platform and configuration for builds you can cre
 defaults:
   configuration: Debug
   platform: iOS
+  xcode-version: 7.3.1
 ```
 
 You can use `punic init` to help you generate a `punic.yaml` (TODO: We intend `punic.yaml` will increase in expressiveness over time)
