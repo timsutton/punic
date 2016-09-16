@@ -88,13 +88,10 @@ class Checkout(object):
             relative_path = path.relative_to(self.checkout_path)
             if 'Carthage/Checkouts' in str(relative_path):
                 return False
-            logger.debug(relative_path)
-
             return True
 
         project_paths = self.checkout_path.glob("**/*.xcodeproj")
         project_paths = [path for path in project_paths if test(path)]
-        logger.debug(project_paths)
         if not project_paths:
             raise Exception("No projects found in {}".format(self.checkout_path))
 
