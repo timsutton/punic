@@ -1,5 +1,9 @@
 # Version History
 
+## 0.1.19
+
+* Minor changes to README. Otherwise identical to 0.1.18 (made to combine two branches).
+
 ## 0.1.18
 
 * Make sub-project Build symlinks relative (fixes #11)
