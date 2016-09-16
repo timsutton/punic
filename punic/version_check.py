@@ -13,14 +13,14 @@ def version_check(verbose=False, timeout=0.3, failure_is_an_option=True):
     try:
         log = logging.info if verbose else logging.debug
 
-        log('<sub>Checking punic version...</sub>', prefix=not verbose)
+        log('<sub>Checking punic version...</sub>')
 
         current_version = SemanticVersion.string(punic.__version__)
         # TODO: Is this the best URL?
         result = requests.get('https://raw.githubusercontent.com/schwa/punic/develop/VERSION', timeout=timeout)
         latest_version = SemanticVersion.string(result.text.strip())
 
-        log('Current version: <rev>{}</rev>, latest version: <rev>{}</rev>'.format(current_version, latest_version), prefix=not verbose)
+        log('Current version: <rev>{}</rev>, latest version: <rev>{}</rev>'.format(current_version, latest_version))
         if current_version < latest_version:
             logging.warn("""You are using version <rev>{}</rev>, version <rev>{}</rev> is available.
             Use <echo>`pip install -U git+https://github.com/schwa/punic`</echo> to update to latest version.""".format(current_version, latest_version))

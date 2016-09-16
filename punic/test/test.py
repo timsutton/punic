@@ -1,6 +1,4 @@
 
-__all__ = ['test']
-
 from click.testing import CliRunner
 from pathlib2 import Path
 
@@ -13,8 +11,7 @@ import punic.shshutil as shutil
 import tempfile
 
 
-
-def test():
+def test_update():
     test_data_path = Path(__file__).parent / 'Examples/SwiftIO'
 
     items = ['Cartfile', 'Cartfile.resolved', 'punic.yaml']
@@ -32,3 +29,10 @@ def test():
         assert (Path.cwd() / 'Carthage/Build/Mac/SwiftUtilities.framework').exists()
         assert (Path.cwd() / 'Carthage/Build/Mac/SwiftIO.dSYM').exists()
         assert (Path.cwd() / 'Carthage/Build/Mac/SwiftUtilities.dSYM').exists()
+
+
+def test_version():
+    temp_dir = Path(tempfile.mkdtemp())
+
+    with work_directory(temp_dir):
+        output = runner.check_run('punic version')

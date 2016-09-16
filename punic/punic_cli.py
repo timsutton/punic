@@ -236,11 +236,11 @@ def version(context, check, simple):
     if simple:
         print("{}".format(punic.__version__))
     else:
-        logging.info('Punic version: {}'.format(punic.__version__), prefix=False)
+        logging.info('Punic version: {}'.format(punic.__version__))
 
         sys_version = sys.version_info
         sys_version = SemanticVersion.from_dict(dict(major=sys_version.major, minor=sys_version.minor, micro=sys_version.micro, releaselevel=sys_version.releaselevel, serial=sys_version.serial, ))
-        logging.info('Python version: {}'.format(sys_version), prefix=False)
+        logging.info('Python version: {}'.format(sys_version))
 
         if check:
             version_check(verbose=True, timeout=None, failure_is_an_option=False)
