@@ -246,16 +246,6 @@ def version(context, check, simple):
             version_check(verbose=True, timeout=None, failure_is_an_option=False)
 
 
-# @punic_cli.command()
-# @click.pass_context
-# @click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
-# @click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
-# @click.option('--xcode', default=None)
-# def init(context, **kwargs):
-#     """Generate punic configuration file."""
-#     config_init(**kwargs)
-
-
 @punic_cli.command()
 @click.pass_context
 def readme(context):
@@ -274,6 +264,7 @@ def readme(context):
 @click.argument('deps', nargs=-1)
 @click.pass_context
 def list(context, **kwargs):
+    """Lists all platforms, projects, xcode projects, schemes for all dependencies."""
     punic = context.obj
     punic.config.update(**kwargs)
     deps = kwargs['deps']
@@ -310,6 +301,15 @@ def list(context, **kwargs):
     import yaml
 
     yaml.safe_dump(tree, stream = sys.stdout)
+
+@punic_cli.command()
+@click.pass_context
+@click.option('--configuration', default=None, help="""Dependency configurations to build. Usually 'Release' or 'Debug'.""")
+@click.option('--platform', default=None, help="""Platform to build. Comma separated list.""")
+@click.option('--xcode', default=None)
+def init(context, **kwargs):
+    """Generate punic configuration file."""
+    config_init(**kwargs)
 
 
 @punic_cli.group(cls=DYMGroup)
@@ -350,10 +350,6 @@ def install(context, xcode_version):
         logging.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
         carthage_cache.install()
 
-@punic_cli.command()
-@click.pass_context
-def init(context):
-    config_init()
 
 
 def main():
