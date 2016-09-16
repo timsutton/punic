@@ -229,22 +229,7 @@ A skips list is made of a list of filters. Each filter is a list of platform nam
 
 ## Roadmap
 
-The current roadmap for Punic is as follows (in rough order of priority):
-
-- [X] Allow specification of default platforms and configurations in new style config file (`punic.yaml`)
-- [X] `copy-frameworks` subcommand.
-- [X] `fetch` subcommand
-- [X] Replace `bootstrap` with a better `build`
-- [X] Support `Cartfile.private` functionality
-- [X] Support branch style Cartfile specifications.
-- [X] Support specifying target dependencies at command line. Building only.
-- [ ] Add a `migrate` subcommand that can migrate Cartfiles to the punic.yaml.
-- [ ] Add a `table-of-contents` subcommand that will produce a filtered list of all projects, schemes etc of all dependencies. This TOC could then be used inside punic.yaml as a whitelist or blacklist. This will allow us to do things like skip frameworks that should not be built.
-- [ ] Reliability. Punic needs to be tested against as many other Cartfiles as possible and needs to reliably produce the same build order
-- [ ] Replace Cartfiles (including .private) with Punic.yaml. Need to support Cartfiles and punic.yaml concurrently.
-- [ ] Support `build` subcommand's `--no-skip-current` switch
-- [ ] Support specifying target dependencies at command line. Full resolve/fetch
-- [ ] Unit test Resolver
+The punic roadmap is managed in this issue: https://github.com/schwa/punic/issues/10
 
 ## Differences between Punic & Carthage
 
