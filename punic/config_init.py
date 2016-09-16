@@ -4,12 +4,14 @@ __all__ = ['config_init']
 
 import yaml
 from pathlib2 import Path
-from .xcode import *
 from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit import prompt
 from prompt_toolkit.auto_suggest import (AutoSuggest, Suggestion)
 import six
 import sys
+
+from .xcode import *
+from .platform import *
 
 
 class ListAutoSuggest(AutoSuggest):
@@ -41,8 +43,6 @@ def _xcode_versions():
 
 def _prompt(s, items, default=None):
     items = [six.text_type(item) for item in items]
-    # text = prompt(u'X: ', )
-    # text = prompt(u'{}: '.format(s), auto_suggest = ListAutoSuggest(items), default = items[0])
     completer = WordCompleter(items, ignore_case=True)
 
     kwargs = {'completer': completer, 'complete_while_typing': True,}

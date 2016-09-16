@@ -5,8 +5,9 @@ __all__ = ['copy_frameworks_main']
 import os
 import re
 from pathlib2 import Path
+import logging
+
 from .runner import *
-from .logger import *
 from .xcode import uuids_from_binary
 import punic.shshutil as shutil
 
@@ -29,14 +30,14 @@ def copy_frameworks_main():
 
     for input_path in input_files:
 
-        logger.info('Processing: "{}"'.format(input_path.name))
+        logging.info('Processing: "{}"'.format(input_path.name))
 
         # We don't modify the input frameworks but rather the ones in the built products directory
         output_path = frameworks_path / input_path.name
 
         framework_name = input_path.stem
 
-        logger.info('\tCopying framework "{}" to "$SYMROOT/{}"'.format(framework_name, output_path.relative_to(sym_root)))
+        logging.info('\tCopying framework "{}" to "$SYMROOT/{}"'.format(framework_name, output_path.relative_to(sym_root)))
         if output_path.exists():
             shutil.rmtree(output_path)
 
@@ -59,7 +60,7 @@ def copy_frameworks_main():
             match = re.match(r'^Architectures in the fat file: (.+) are: (.+)'.format(binary_path), output)
             assert match.groups()[0] == str(binary_path)
             architectures = set(match.groups()[1].strip().split(' '))
-            logger.info('\tArchitectures: {}'.format(list(architectures)))
+            logging.info('\tArchitectures: {}'.format(list(architectures)))
 
             # Produce a list of architectures that are not valid
             excluded_architectures = architectures.difference(valid_architectures)
@@ -70,18 +71,18 @@ def copy_frameworks_main():
 
             # For each invalid architecture strip it from framework
             for architecture in excluded_architectures:
-                logger.info('\tStripping "{}" from "{}"'.format(architecture, framework_name))
+                logging.info('\tStripping "{}" from "{}"'.format(architecture, framework_name))
                 output = runner.check_call(['/usr/bin/xcrun', 'lipo', '-remove', architecture, '-output', binary_path, binary_path])
 
                 # Resign framework
-                logger.info('\tResigning "{}"/"{}" with "{}"'.format(framework_name, architecture, expanded_identity))
+                logging.info('\tResigning "{}"/"{}" with "{}"'.format(framework_name, architecture, expanded_identity))
 
-            logger.info('\tCode signing: "$SYMROOT/{}"'.format(binary_path.relative_to(sym_root)))
+            logging.info('\tCode signing: "$SYMROOT/{}"'.format(binary_path.relative_to(sym_root)))
 
             # noinspection PyUnusedLocal
             result = runner.check_call(['/usr/bin/xcrun', 'codesign', '--force', '--sign', expanded_identity, '--preserve-metadata=identifier,entitlements', binary_path])
         else:
-            logger.info('\tCode signing not allowed. Skipping.')
+            logging.info('\tCode signing not allowed. Skipping.')
 
         if action == 'install':
             uuids = uuids_from_binary(binary_path)
@@ -93,7 +94,7 @@ def copy_frameworks_main():
 
                 dsym_output_path = built_products_dir / dsym_path.name
 
-                logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(dsym_path.relative_to(project_dir)))
+                logging.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(dsym_path.relative_to(project_dir)))
                 if dsym_output_path.exists():
                     shutil.rmtree(dsym_output_path)
                 shutil.copytree(dsym_path, dsym_output_path, symlinks=True)
@@ -102,5 +103,5 @@ def copy_frameworks_main():
             if enable_bitcode:
                 for uuid in uuids:
                     bcsymbolmap_path = punic_builds_dir / (uuid + '.bcsymbolmap')
-                    logger.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(bcsymbolmap_path.relative_to(project_dir)))
+                    logging.info('\tCopying "$PROJECT_DIR/{}" to "$BUILT_PRODUCTS_DIR"'.format(bcsymbolmap_path.relative_to(project_dir)))
                     shutil.copy(bcsymbolmap_path, built_products_dir)

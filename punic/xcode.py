@@ -7,8 +7,9 @@ import affirm
 from pathlib2 import Path
 from memoize import mproperty
 import six
+import logging
+
 from .runner import *
-from .logger import *
 from .semantic_version import *
 
 
@@ -135,9 +136,9 @@ class XcodeProject(object):
         try:
             self.check_call(subcommand='build', arguments=arguments)
         except CalledProcessError as e:
-            logger.error('<err>Error</err>: Failed to build - result code <echo>{}</echo>'.format(e.returncode))
-            logger.error('Command: <echo>{}</echo>'.format(e.cmd))
-            logger.error(e.output)
+            logging.error('<err>Error</err>: Failed to build - result code <echo>{}</echo>'.format(e.returncode))
+            logging.error('Command: <echo>{}</echo>'.format(e.cmd))
+            logging.error(e.output)
             exit(e.returncode)
 
         build_settings = self.build_settings(arguments=arguments)
@@ -323,10 +324,10 @@ def _parse_info(string):
 
     try:
         while True:
-            line = lines.next()
+            line = six.next(lines)
             if re.match(r'^\s+Targets:$', line):
                 while True:
-                    line = lines.next()
+                    line = six.next(lines)
                     match = re.match(r'        (.+)', line)
                     if not match:
                         break
@@ -334,7 +335,7 @@ def _parse_info(string):
                         targets.append(match.group(1))
             if re.match(r'^\s+Build Configurations:$', line):
                 while True:
-                    line = lines.next()
+                    line = six.next(lines)
                     match = re.match(r'        (.+)', line)
                     if not match:
                         break
@@ -342,7 +343,7 @@ def _parse_info(string):
                         configurations.append(match.group(1))
             if re.match(r'^\s+Schemes:$', line):
                 while True:
-                    line = lines.next()
+                    line = six.next(lines)
                     match = re.match(r'        (.+)', line)
                     if not match:
                         break

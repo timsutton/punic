@@ -1,15 +1,16 @@
 from __future__ import division, absolute_import, print_function
 
-__version__ = '0.1.17'
+__version__ = '0.1.18'
 __all__ = ['Punic']
 
 import os
 from copy import copy
 from pathlib2 import Path
+import logging
+
 from .cartfile import Cartfile
 from .checkout import Checkout
 from .config import config
-from .logger import logger
 from .repository import Repository, Revision
 from .resolver import Resolver, Node
 from .runner import runner
@@ -48,10 +49,10 @@ class Punic(object):
 
         for index, value in enumerate(build_order[:-1]):
             dependency, version = value
-            logger.debug('{} <ref>{}</ref> <rev>{}</rev> <ref>{}</ref>'.format(index + 1, dependency, version.revision if version else '', dependency.remote_url))
+            logging.debug('{} <ref>{}</ref> <rev>{}</rev> <ref>{}</ref>'.format(index + 1, dependency, version.revision if version else '', dependency.remote_url))
 
         specifications = [Specification(identifier=dependency, predicate=VersionPredicate('"{}"'.format(version.revision))) for dependency, version in build_order[:-1]]
-        logger.debug("<sub>Saving</sub> <ref>Cartfile.resolved</ref>")
+        logging.debug("<sub>Saving</sub> <ref>Cartfile.resolved</ref>")
 
         cartfile = Cartfile(use_ssh=self.config.use_ssh, specifications=specifications)
         cartfile.write((self.config.root_path / 'Cartfile.resolved').open('w'))
@@ -73,7 +74,7 @@ class Punic(object):
     def build(self, dependencies):
         # type: ([str])
 
-        logger.info('Using xcode version: {}'.format(self.config.xcode))
+        logging.info('Using xcode version: {}'.format(self.config.xcode))
 
         configuration, platforms = self.config.configuration, self.config.platforms
 
@@ -112,7 +113,7 @@ class Punic(object):
                     schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.framework_target.supported_platform_names]
                     for scheme in schemes:
                         if not filter_dependency(platform, checkout, project, scheme):
-                            logger.warn('<sub>Skipping</sub>: {} / {} / {} / {}'.format(platform, checkout.identifier.project_name, project.path.name, scheme.name))
+                            logging.warn('<sub>Skipping</sub>: {} / {} / {} / {}'.format(platform, checkout.identifier.project_name, project.path.name, scheme.name))
                             continue
                         self._build_one(platform, project, scheme.name, configuration)
 
@@ -169,7 +170,7 @@ class Punic(object):
 
         if self.config.dry_run:
             for sdk in platform.sdks:
-                logger.warn('<sub>DRY-RUN: (Not) Building</sub>: <ref>{}</ref> (scheme: {}, sdk: {}, configuration: {})...'.format(project.path.name, scheme, sdk, configuration))
+                logging.warn('<sub>DRY-RUN: (Not) Building</sub>: <ref>{}</ref> (scheme: {}, sdk: {}, configuration: {})...'.format(project.path.name, scheme, sdk, configuration))
             return
 
         products = dict()
@@ -178,13 +179,13 @@ class Punic(object):
 
         # Build device & simulator (if sim exists)
         for sdk in platform.sdks:
-            logger.info('<sub>Building</sub>: <ref>{}</ref> (scheme: {}, sdk: {}, configuration: {})...'.format(project.path.name, scheme, sdk, configuration))
+            logging.info('<sub>Building</sub>: <ref>{}</ref> (scheme: {}, sdk: {}, configuration: {})...'.format(project.path.name, scheme, sdk, configuration))
 
             derived_data_path = self.config.derived_data_path
 
             resolved_configuration = configuration if configuration else project.default_configuration
             if not resolved_configuration:
-                logger.warn("No configuration specified for project and no default configuration found. This could be a problem.")
+                logging.warn("No configuration specified for project and no default configuration found. This could be a problem.")
 
             arguments = XcodeBuildArguments(scheme=scheme, configuration=resolved_configuration, sdk=sdk, toolchain=toolchain, derived_data_path=derived_data_path)
 
@@ -197,7 +198,7 @@ class Punic(object):
 
         ########################################################################################################
 
-        logger.debug("<sub>Post processing</sub>...")
+        logging.debug("<sub>Post processing</sub>...")
 
         # By convention sdk[0] is always the device sdk (e.g. 'iphoneos' and not 'iphonesimulator')
         device_sdk = platform.device_sdk
@@ -210,7 +211,7 @@ class Punic(object):
 
         ########################################################################################################
 
-        logger.debug('<sub>Copying binary</sub>...')
+        logging.debug('<sub>Copying binary</sub>...')
         if output_product.product_path.exists():
             shutil.rmtree(output_product.product_path)
 
@@ -222,7 +223,7 @@ class Punic(object):
         ########################################################################################################
 
         if len(products) > 1:
-            logger.debug('<sub>Lipo-ing</sub>...')
+            logging.debug('<sub>Lipo-ing</sub>...')
             executable_paths = [product.executable_path for product in products.values()]
             command = ['/usr/bin/xcrun', 'lipo', '-create'] + executable_paths + ['-output', output_product.executable_path]
             runner.check_run(command)
@@ -231,7 +232,7 @@ class Punic(object):
 
         ########################################################################################################
 
-        logger.debug('<sub>Copying swiftmodule files</sub>...')
+        logging.debug('<sub>Copying swiftmodule files</sub>...')
         for product in products.values():
             for path in product.module_paths:
                 relative_path = path.relative_to(product.product_path)
@@ -239,14 +240,14 @@ class Punic(object):
 
         ########################################################################################################
 
-        logger.debug('<sub>Copying bcsymbolmap files</sub>...')
+        logging.debug('<sub>Copying bcsymbolmap files</sub>...')
         for product in products.values():
             for path in product.bcsymbolmap_paths:
                 shutil.copy(path, output_product.target_build_dir)
 
         ########################################################################################################
 
-        logger.debug('<sub>Producing dSYM files</sub>...')
+        logging.debug('<sub>Producing dSYM files</sub>...')
         command = ['/usr/bin/xcrun', 'dsymutil', str(output_product.executable_path), '-o', str(output_product.target_build_dir / (output_product.executable_name + '.dSYM'))]
         runner.check_run(command)
 

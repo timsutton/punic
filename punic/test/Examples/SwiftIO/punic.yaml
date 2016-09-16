@@ -1,0 +1,4 @@
+defaults:
+  configuration: Debug
+  platform: Mac
+  xcode-version: 7.3.1

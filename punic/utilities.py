@@ -5,8 +5,7 @@ __all__ = ['work_directory', 'timeit']
 import contextlib
 import os
 import time
-from .logger import *
-
+import logging
 
 @contextlib.contextmanager
 def work_directory(path):
@@ -32,4 +31,4 @@ def timeit(task=None, log=True):
     yield
     end = time.time()
     if log:
-        logger.info('Task \'<ref>{}</ref>\' took <echo>{:.6f}</echo> seconds.'.format(task if task else '<unnamed task>', end - start))
+        logging.info('Task \'<ref>{}</ref>\' took <echo>{:.6f}</echo> seconds.'.format(task if task else '<unnamed task>', end - start))
