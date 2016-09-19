@@ -1,6 +1,11 @@
 # Version History
 
+## 0.1.20
+
+# WIP
+
 ## 0.1.19
+
 
 * Minor changes to README. Otherwise identical to 0.1.18 (made to combine two branches).
 
