@@ -17,7 +17,9 @@ See [VERSION_HISTORY.markdown](https://github.com/schwa/punic/blob/master/VERSIO
 
 ## Caveat!!!
 
-Punic can be considered an early preview release and probably is not ready for production use. Use at your own peril.
+<strike>Punic can be considered an early preview release and probably is not ready for production use. Use at your own peril.</strike>
+
+Punic has been running on a production system for a while now while bugs probably can and do exist it is ready to replace Carthage.
 
 ## Installation
 
