@@ -6,7 +6,6 @@ import re
 from functools import total_ordering
 
 
-# TODO: Doesn't support full http://semvar.org spec
 @total_ordering
 class SemanticVersion(object):
     @classmethod
@@ -21,17 +20,19 @@ class SemanticVersion(object):
         match = re.match('(?:v)?(\d+)(?:\.(\d+)(?:\.(\d+))?)?', s)
         return True if match else False
 
-    def __init__(self, major, minor, patch=None, labels=None):
+    def __init__(self, major, minor = 0, patch=None, identifiers=None):
         """
         >>> SemanticVersion(1, 0)
         1.0
         >>> SemanticVersion(1, 0, 0)
         1.0
+        >>> SemanticVersion(1, identifiers = ['0'])
+        1.0-0
         """
         self.major = major if major else 0
         self.minor = minor if minor else 0
         self.patch = patch if patch else 0
-        self.labels = labels if labels else []
+        self.identifiers = [Identifier(identifier) for identifier in identifiers] if identifiers else []
 
     @property
     def _components(self):
@@ -41,14 +42,14 @@ class SemanticVersion(object):
         """
         # TODO: using a tuple breaks code
         #        return (self.major, self.minor, self.patch)
-        return [self.major, self.minor, self.patch, self.labels]
+        return [self.major, self.minor, self.patch, self.identifiers]
 
     def __repr__(self):
         components = [self.major, self.minor] + ([self.patch] if self.patch else [])
         components = [str(component) for component in components]
         repr = '.'.join(components)
-        if len(self.labels) >= 1:
-            repr += '-' + '.'.join(self.labels)
+        if len(self.identifiers) >= 1:
+            repr += '-' + '.'.join([str(identifier) for identifier in self.identifiers])
         return repr
 
     def __eq__(self, other):
@@ -117,15 +118,15 @@ class SemanticVersion(object):
         >>> SemanticVersion.string('v5.0.0-beta6')
         5.0-beta6
         """
-        match = re.match('^(?:v)?(?P<major>\d+)(?:\.(?P<minor>\d+)(?:\.(?P<patch>\d+))?)?(?:-(?P<labels>.+))?$', s)
+        match = re.match('^(?:v)?(?P<major>\d+)(?:\.(?P<minor>\d+)(?:\.(?P<patch>\d+))?)?(?:-(?P<identifiers>.+))?$', s)
         if not match:
             raise Exception('"{}" not a semantic version.'.format(s))
         d = match.groupdict()
         major = int(d['major']) if d['major'] else 0
         minor = int(d['minor']) if d['minor'] else 0
         patch = int(d['patch']) if d['patch'] else 0
-        labels = d['labels'].split('.') if d['labels'] else []
-        return SemanticVersion(major=major, minor=minor, patch=patch, labels=labels)
+        identifiers = [Identifier(identifier) for identifier in (d['identifiers'].split('.') if d['identifiers'] else [])]
+        return SemanticVersion(major=major, minor=minor, patch=patch, identifiers=identifiers)
 
     @property
     def next_major(self):
@@ -135,3 +136,41 @@ class SemanticVersion(object):
         """
         # type: () -> SemanticVersion
         return SemanticVersion(major=self.major + 1, minor=0, patch=0)
+
+
+
+class Identifier(object):
+
+    def __init__(self, value):
+        if isinstance(value, Identifier):
+            value = value.string_value
+
+        self.string_value = value
+        self.int_value = int(value) if RepresentsInt(value) else None
+
+
+    def __repr__(self):
+        return self.string_value
+
+
+    def __eq__(self, other):
+        return self.string_value == other.string_value
+
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+    def __lt__(self, other):
+        if self.int_value is not None and other.int_value is not None:
+            return self.int_value < other.int_value
+        else:
+            return self.string_value < other.string_value
+
+
+    def __hash__(self):
+        return hash(self.string_value)
+
+INT_RE = re.compile(r"^[-]?\d+$")
+def RepresentsInt(s):
+    return INT_RE.match(str(s)) is not None
