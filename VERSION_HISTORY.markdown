@@ -1,5 +1,9 @@
 # Version History
 
+## 0.1.21
+
+* WIP
+
 ## 0.1.20
 
 * Fixes #13 - versions with semver identifiers (e.g. `v5.0.0-beta6`) now are parsed and compared correctly.
