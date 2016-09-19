@@ -21,7 +21,7 @@ class SemanticVersion(object):
         match = re.match('(?:v)?(\d+)(?:\.(\d+)(?:\.(\d+))?)?', s)
         return True if match else False
 
-    def __init__(self, major, minor, patch=None, identifiers=None):
+    def __init__(self, major, minor, patch=None, labels=None):
         """
         >>> SemanticVersion(1, 0)
         1.0
@@ -31,22 +31,25 @@ class SemanticVersion(object):
         self.major = major if major else 0
         self.minor = minor if minor else 0
         self.patch = patch if patch else 0
-        self.identifiers = identifiers if identifiers else []
+        self.labels = labels if labels else []
 
     @property
     def _components(self):
         """
         >>> SemanticVersion(1, 2, 3)._components
-        [1, 2, 3]
+        [1, 2, 3, []]
         """
         # TODO: using a tuple breaks code
         #        return (self.major, self.minor, self.patch)
-        return [self.major, self.minor, self.patch]
+        return [self.major, self.minor, self.patch, self.labels]
 
     def __repr__(self):
         components = [self.major, self.minor] + ([self.patch] if self.patch else [])
         components = [str(component) for component in components]
-        return '.'.join(components)
+        repr = '.'.join(components)
+        if len(self.labels) >= 1:
+            repr += '-' + '.'.join(self.labels)
+        return repr
 
     def __eq__(self, other):
         """
@@ -72,6 +75,10 @@ class SemanticVersion(object):
         True
         >>> SemanticVersion.string('1.1') > SemanticVersion.string('1.0')
         True
+        >>> SemanticVersion.string('v5.0.0-beta6') > SemanticVersion.string('v5.0.0-beta1')
+        True
+        >>> SemanticVersion.string('v5.0.0-beta1') > SemanticVersion.string('v5.0.0-beta6')
+        False
         """
         return self._components < other._components
 
@@ -105,15 +112,18 @@ class SemanticVersion(object):
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         Exception: "garbage" not a semantic version.
+        >>> SemanticVersion.string('v5.0.0-beta6')
+        5.0-beta6
         """
-        match = re.match('(?:v)?(\d+)(?:\.(\d+)(?:\.(\d+))?)?', s)
+        match = re.match('^(?:v)?(?P<major>\d+)(?:\.(?P<minor>\d+)(?:\.(?P<patch>\d+))?)?(?:-(?P<labels>.+))?$', s)
         if not match:
             raise Exception('"{}" not a semantic version.'.format(s))
-        groups = match.groups()
-        major = int(groups[0])
-        minor = int(groups[1]) if groups[1] else None
-        patch = int(groups[2]) if groups[2] else None
-        return SemanticVersion(major=major, minor=minor, patch=patch)
+        d = match.groupdict()
+        major = int(d['major']) if d['major'] else 0
+        minor = int(d['minor']) if d['minor'] else 0
+        patch = int(d['patch']) if d['patch'] else 0
+        labels = d['labels'].split('.') if d['labels'] else []
+        return SemanticVersion(major=major, minor=minor, patch=patch, labels=labels)
 
     @property
     def next_major(self):
