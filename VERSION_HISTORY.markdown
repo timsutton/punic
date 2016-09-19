@@ -2,7 +2,8 @@
 
 ## 0.1.20
 
-# WIP
+* Fixes #13 - versions with semver identifiers (e.g. `v5.0.0-beta6`) now are parsed and compared correctly.
+* Added some more unit tests for non-github project identifiers.
 
 ## 0.1.19
 
