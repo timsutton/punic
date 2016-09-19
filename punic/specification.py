@@ -45,6 +45,8 @@ class Specification(object):
         "some/branch"
         >>> Specification.cartfile_string('git "file:///Users/example/Project" "some/branch"').identifier
         Project
+        >>> Specification.cartfile_string('git "git@gitlab.com:mokagio/punic-cartfile-issue.git" "master"').identifier
+        punic-cartfile-issue
         """
 
         match = re.match(r'^(?P<address>(?P<service>github|git)\s+"[^/]+/(?:.+?)")(?:\s+(?P<predicate>.+)?)?', string)
@@ -84,6 +86,8 @@ class ProjectIdentifier(object):
         'github "foo/bar"'
         >>> ProjectIdentifier.string('git "file:///Users/example/Projects/Example-Project"')
         Example-Project
+        >>> ProjectIdentifier.string('git "git@gitlab.com:mokagio/punic-cartfile-issue.git"')
+        punic-cartfile-issue
         """
 
         assert isinstance(string, six.string_types)
