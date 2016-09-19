@@ -290,7 +290,7 @@ No thank you.
 
 ### Why Python and not Swift?
 
-TODO: ~7000 lines of swift in Carthage (excluding dependencies) vs ~1000 lines of Python in Punic.
+TODO: ~7000 lines of swift in Carthage (excluding dependencies) vs ~2000 lines of Python in Punic.
 TODO: Batteries included
 TODO: bootstrap problems
 
