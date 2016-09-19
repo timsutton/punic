@@ -236,7 +236,7 @@ A skips list is made of a list of filters. Each filter is a list of platform nam
 
 ## Roadmap
 
-The punic roadmap is managed in this issue: https://github.com/schwa/punic/issues/10
+The punic roadmap is managed here: https://github.com/schwa/punic/projects
 
 ## Differences between Punic & Carthage
 
