@@ -79,6 +79,8 @@ class SemanticVersion(object):
         True
         >>> SemanticVersion.string('v5.0.0-beta1') > SemanticVersion.string('v5.0.0-beta6')
         False
+        >>> SemanticVersion.string('v5.0.0-10') > SemanticVersion.string('v5.0.0-2')
+        True
         """
         return self._components < other._components
 
