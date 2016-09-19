@@ -9,7 +9,9 @@ from punic.runner import *
 import punic.shshutil as shutil
 
 import tempfile
+import os
 
+quick_tests_only = bool(int(os.environ.get('QUICK_TEST_ONLY', '0')))
 
 def setup():
     test_data_path = Path(__file__).parent / 'Examples/SwiftIO'
@@ -25,6 +27,9 @@ def setup():
 
 
 def test_update_and_build():
+    if quick_tests_only:
+        return
+
     temp_dir = setup()
 
     with work_directory(temp_dir):
@@ -40,6 +45,9 @@ def test_update_and_build():
 
 
 def test_list():
+    if quick_tests_only:
+        return
+
     temp_dir = setup()
 
     with work_directory(temp_dir):
@@ -48,6 +56,9 @@ def test_list():
 
 
 def test_clean():
+    if quick_tests_only:
+        return
+
     temp_dir = setup()
 
     with work_directory(temp_dir):
