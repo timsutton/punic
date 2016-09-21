@@ -64,7 +64,13 @@ class Repository(object):
         self.check_work_directory()
 
         output = runner.check_run('git tag', cwd=self.path)
-        tags = output.split('\n')
+        tags = [tag for tag in output.split('\n') if tag]
+
+        if config.verbose == True:
+            bad_tags = [tag for tag in tags if not SemanticVersion.is_semantic(tag)]
+            if bad_tags:
+                logging.warning("Warning: Found tags in \'{}\' that are not semantic: {}".format(self, ', '.join(['\'{}\''.format(tag) for tag in bad_tags])))
+
         tags = [Revision(repository=self, revision=tag, revision_type=Revision.Type.tag) for tag in tags if SemanticVersion.is_semantic(tag)]
         return sorted(tags)
 
