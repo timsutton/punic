@@ -2,6 +2,7 @@
 
 ## 0.1.21
 
+* Better filtering of semantic versions in a projects tags. Fixes #14
 * WIP
 
 ## 0.1.20
