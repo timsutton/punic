@@ -8,6 +8,9 @@ from functools import total_ordering
 
 @total_ordering
 class SemanticVersion(object):
+
+    expression = re.compile(r'^(?:v)?(?P<major>\d+)(?:\.(?P<minor>\d+)(?:\.(?P<patch>\d+))?)?(?:-(?P<identifiers>.+))?$')
+
     @classmethod
     def is_semantic(cls, s):
         """
@@ -17,7 +20,7 @@ class SemanticVersion(object):
         False
         """
         # type: (str) -> bool
-        match = re.match('(?:v)?(\d+)(?:\.(\d+)(?:\.(\d+))?)?', s)
+        match = SemanticVersion.expression.match(s)
         return True if match else False
 
     def __init__(self, major, minor = 0, patch=None, identifiers=None):
@@ -120,7 +123,7 @@ class SemanticVersion(object):
         >>> SemanticVersion.string('v5.0.0-beta6')
         5.0-beta6
         """
-        match = re.match('^(?:v)?(?P<major>\d+)(?:\.(?P<minor>\d+)(?:\.(?P<patch>\d+))?)?(?:-(?P<identifiers>.+))?$', s)
+        match = SemanticVersion.expression.match(s)
         if not match:
             raise Exception('"{}" not a semantic version.'.format(s))
         d = match.groupdict()
