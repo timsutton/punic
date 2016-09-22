@@ -46,6 +46,15 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 * ❗️ = Unimplemented but probably a good idea to implement one day. Contributions welcome!
 * 🔨️️ = Partially implemented. More work likely be needed for this feature to be useable by everyone.
 
+### Distribution
+
+* Update version numbers
+* Tag
+* Push master
+* python setup.py sdist bdist_wheel
+* twine upload dist/*
+
+
 ### Notes:
 
 1. Binary archives will not be supported until Swift supports a non-fragile ABI.
