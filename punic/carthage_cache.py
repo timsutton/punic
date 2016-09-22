@@ -40,7 +40,7 @@ class CarthageCache(object):
         return path
 
     def hash_for_project(self):
-        output = self.config.xcode.check_call('xcrun swift -version')
+        output = self.config.xcode.check_call('swift -version')
         swift_version = re.search(r'Swift version ((?:\d+\.)*(?:\d+))', output).group(1)
 
         resolve_file = Path('Cartfile.resolved').open().read()
