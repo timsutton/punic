@@ -3,7 +3,7 @@
 ## 0.1.21
 
 * Better filtering of semantic versions in a projects tags. Fixes #14
-* WIP
+* Uploaded on https://pypi.python.org/pypi
 
 ## 0.1.20
 
