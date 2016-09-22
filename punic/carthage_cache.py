@@ -40,7 +40,7 @@ class CarthageCache(object):
         return path
 
     def hash_for_project(self):
-        output = self.config.xcode.check_call('xcrun swift -version')
+        output = self.config.xcode.check_call('swift -version')
         swift_version = re.search(r'Swift version ((?:\d+\.)*(?:\d+))', output).group(1)
 
         resolve_file = Path('Cartfile.resolved').open().read()
@@ -90,7 +90,7 @@ class CarthageCache(object):
             archive_path = self.archive(force = force)
 
         conn = boto.connect_s3(self.AWS_ACCESS_KEY_ID, self.AWS_SECRET_ACCESS_KEY)
-        bucket = conn.create_bucket(self.bucket_name, location=boto.s3.connection.Location.DEFAULT)
+        bucket = conn.get_bucket(self.bucket_name)
         key_name = archive_path.name
 
         if bucket.get_key(archive_path.name) and not force:
