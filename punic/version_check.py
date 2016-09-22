@@ -23,7 +23,7 @@ def version_check(verbose=False, timeout=0.3, failure_is_an_option=True):
         log('Current version: <rev>{}</rev>, latest version: <rev>{}</rev>'.format(current_version, latest_version))
         if current_version < latest_version:
             logging.warn("""You are using version <rev>{}</rev>, version <rev>{}</rev> is available.
-            Use <echo>`pip install -U git+https://github.com/schwa/punic`</echo> to update to latest version.""".format(current_version, latest_version))
+            Use <echo>`pip install -U punic`</echo> to update to latest version.""".format(current_version, latest_version))
     # TODO: Duplicated code
     except requests.exceptions.ReadTimeout as e:
         logging.debug('<error>Failed to check versions')

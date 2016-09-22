@@ -27,25 +27,24 @@ Quick install (for [homebrew](http://brew.sh) users):
 
 ```shell
 $ brew update
-$ brew install python
+$ brew install python         # or `brew install python3`
 $ brew install libyaml
-$ pip install --upgrade git+https://github.com/schwa/punic.git
+$ pip install punic           # or `pip3 install punic`
 ```
 
-Punic is python 3(.5) compatible too.
-
-```shell
-$ brew update
-$ brew install python3
-$ brew install libyaml
-$ pip3 install --upgrade git+https://github.com/schwa/punic.git
-```
+Note: Punic is python 3(.5) compatible and should work the same in both versions of the language.
 
 If you have an error installing punic run pip again with the verbose flag (`pip install --upgrade git+https://github.com/schwa/punic.git`) and create an [issue](https://github.com/schwa/punic/issues).
 
 Note be careful installing punic (and in face _all_ python software) with `sudo`. In fact installing with `sudo` is not explicitly supported.
 
 Installing punic inside a python virtualenv is supported but you might have difficulty if you try to execute a virtualenv-ed punic from Xcode (e.g. `punic copy-frameworks`).
+
+## Update Punic
+
+```shell
+$ pip install --upgrade punic # or -U if you're lazy
+```
 
 ## Usage
 
