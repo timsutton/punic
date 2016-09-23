@@ -40,6 +40,7 @@ setup(
         'click',
         'click_didyoumean',
         'flufl.enum',
+        'jsonpath_rw',
         'memoize',
         'networkx',
         'pathlib2',

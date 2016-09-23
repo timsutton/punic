@@ -20,7 +20,7 @@ elif six.PY3:
 
 
 class Specification(object):
-    def __init__(self, identifier, predicate):
+    def __init__(self, identifier, predicate = None):
         self.identifier = identifier
         self.predicate = predicate
         self.raw_string = None

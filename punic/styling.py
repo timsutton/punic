@@ -6,19 +6,28 @@ __all__ = ['styled']
 from six.moves.html_parser import HTMLParser
 from blessings import Terminal
 
+term = Terminal()
+
+default_styles = {
+    'err': term.red,
+    'ref': term.yellow,
+    'rev': term.bold,
+    'cmd': term.cyan + term.underline,  # 'sub': term.cyan,
+    'echo': term.yellow,
+}
+
 
 class MyHTMLParser(HTMLParser):
-    term = Terminal()
 
-    def __init__(self, styled):
+
+
+    def __init__(self, styled, styles = None):
         HTMLParser.__init__(self)
 
         self.s = ''
         self.styled = styled
 
-        self.styles = {'err': MyHTMLParser.term.red, 'ref': MyHTMLParser.term.yellow, 'rev': MyHTMLParser.term.bold, 'cmd': MyHTMLParser.term.cyan + self.term.underline, # 'sub': term.cyan,
-            'echo': MyHTMLParser.term.yellow,}
-
+        self.styles = styles if styles else default_styles
         self.style_stack = []
 
     # noinspection PyUnusedLocal
@@ -36,15 +45,15 @@ class MyHTMLParser(HTMLParser):
         self.s += data
 
     def apply(self):
-        self.s += MyHTMLParser.term.normal
+        self.s += term.normal
         for style in set(self.style_stack):
             self.s += style
 
 
-def styled(s, styled):
-    parser = MyHTMLParser(styled=styled)
+def styled(s, styled = True, styles = None):
+    parser = MyHTMLParser(styled=styled, styles = styles)
     parser.feed(s)
-    return parser.s + (MyHTMLParser.term.normal if styled else '')
+    return parser.s + (term.normal if styled else '')
 
 # '<head>***</head> Checkout out <title>SwiftLogging</title> at "<version>v1.0.1</version>"')
 #

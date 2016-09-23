@@ -24,6 +24,7 @@ import punic.shshutil as shutil
 from punic import *
 from .runner import *
 from .checkout import *
+from .search import *
 
 @click.group(cls=DYMGroup)
 @click.option('--echo', default=False, is_flag=True, help="""Echo all commands to terminal.""")
@@ -350,6 +351,18 @@ def install(context, xcode_version):
         logging.info("Cache filename: <ref>'{}'</ref>".format(carthage_cache.archive_name_for_project()))
         carthage_cache.install()
 
+
+
+@punic_cli.command()
+@click.pass_context
+@click.argument('name')
+@click.option('--append', is_flag=True, default=False, help="""Add a selected project to a Cartfile""")
+@click.option('--language', default='swift', help="""Search for projects of specified language""")
+def search(context, name, append, language):
+    """Search github for repositories and optionally add them to a Cartfile."""
+    punic = context.obj
+
+    github_search(punic, name, cartfile_append=append, language=language)
 
 
 def main():
