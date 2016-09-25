@@ -9,13 +9,15 @@ import affirm
 import six
 import logging
 
+from memoize import mproperty
+from pathlib2 import Path
+
 # Ideally we could six.urllib but this causes problem with nosetests!
 if six.PY2:
     import urlparse
 elif six.PY3:
     import urllib.parse as urlparse
 
-from memoize import mproperty
 from .runner import *
 from .config import *
 from .errors import *
@@ -117,6 +119,7 @@ class Repository(object):
             logging.info('<sub>Fetching</sub>: <ref>{}</ref>'.format(self))
             runner.check_run('git fetch', cwd=self.path)
 
+
     def specifications_for_revision(self, revision):
         # type: (Revision) -> [Specification]
 
@@ -130,19 +133,23 @@ class Repository(object):
             cartfile = Cartfile(use_ssh=self.config.use_ssh, overrides=config.repo_overrides)
             specifications = []
 
-            if (self.path / 'Cartfile').exists():
-                cartfile.read(self.path / 'Cartfile')
+            cartfile_path = self.path / 'Cartfile'
+            cartfile_private_path = self.path / 'Cartfile.private'
+
+            if cartfile_path.exists():
+                cartfile.read(cartfile_path)
                 specifications += cartfile.specifications
 
-            if (self.path / 'Cartfile.private').exists():
-                cartfile.read(self.path / 'Cartfile.private')
+            if cartfile_private_path.exists():
+                cartfile.read(cartfile_private_path)
                 if set(specifications).intersection(cartfile.specifications):
-                    raise PunicRepresentableError("Specifications in your Cartfile.private conflict with specifications within your Cartfile.")
+                    raise PunicRepresentableError(
+                        "Specifications in your Cartfile.private conflict with specifications within your Cartfile.")
                 specifications += cartfile.specifications
 
             if not specifications:
-                raise PunicRepresentableError("No specifications found in Cartfile or Cartfile.private")
-
+                raise PunicRepresentableError(
+                    "No specifications found in {} or {}".format(cartfile_path.relative_to(Path.cwd()), cartfile_private_path.relative_to(Path.cwd())))
 
         else:
             self.check_work_directory()
