@@ -2,7 +2,9 @@
 
 ## 0.2.0
 
-* WIP
+* punic is now hosted on the Python Package Index http://pypi.python.org
+* `punic search` - search for github repos and automatically append them to your Cartfile.
+* Minor bug fixes and merged pull requests
 
 ## 0.1.21
 
