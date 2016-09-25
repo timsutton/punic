@@ -233,10 +233,13 @@ skips:
 
 A skips list is made of a list of filters. Each filter is a list of platform name, dependency name, Xcode project name and scheme name. You can leave out the scheme name if you want to skip all schemes in a particular xcode project.
 
-
 ## Roadmap
 
 The punic roadmap is managed here: https://github.com/schwa/punic/projects
+
+## Contributing
+
+Bug reports, feature suggestions are most welcome. If you want improve punic yourself clone punic, and run `pip install -e .` from inside. You can then make changes inside your cloned repository and test them live.
 
 ## Differences between Punic & Carthage
 
