@@ -114,6 +114,6 @@ class Config(object):
             self.repo_overrides = d['repo-overrides']
 
         if 'skips' in d:
-            self.skips = d['skips']
+            self.skips = d['skips'] or []
 
 config = Config()
