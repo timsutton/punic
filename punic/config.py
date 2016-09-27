@@ -5,6 +5,7 @@ __all__ = ['Config', 'config']
 from pathlib2 import Path
 import yaml
 import logging
+import os
 
 from .runner import *
 from .xcode import *
@@ -69,14 +70,26 @@ class Config(object):
         if platform:
             self.platforms = parse_platforms(platform)
 
+        if self.verbose and os.environ.get('DUMP_CONFIG', False):
+            self.dump()
+
     def dump(self):
+
+        logging.info('# Environment ##' + '#' * 64)
+
+        logging.info('CWD: {}'.format(os.getcwd()))
+
+        key_width = max([len(k) for k in os.environ.keys()] + [len(k) for k in self.__dict__.items()])
+
+        os.environ.keys()
+
+        for key, value in sorted(os.environ.items()):
+            logging.info('{:{key_width}}: {}'.format(key, value, key_width = key_width + 1))
+
         logging.info('# Configuration ' + '#' * 64)
 
-        items = self.__dict__.items()
-        items.sort()
-
-        for key, value in items:
-            logging.info('{}: {}'.format(key, value))
+        for key, value in sorted(self.__dict__.items()):
+            logging.info('{:{key_width}}: {}'.format(key, value, key_width = key_width + 1))
         logging.info('#' * 80)
 
     @property
