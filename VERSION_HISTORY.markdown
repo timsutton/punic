@@ -1,5 +1,7 @@
 # Version History
 
+## 0.2.1
+
 ## 0.2.0
 
 * punic is now hosted on the Python Package Index http://pypi.python.org
