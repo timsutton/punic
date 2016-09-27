@@ -95,7 +95,8 @@ class Checkout(object):
         project_paths = self.checkout_path.glob("**/*.xcodeproj")
         project_paths = [path for path in project_paths if test(path)]
         if not project_paths:
-            raise Exception("No projects found in {}".format(self.checkout_path))
+            logging.warning("No projects found in {}".format(self.checkout_path))
+            return []
 
         projects = [XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path)) for project_path in project_paths]
         return projects
