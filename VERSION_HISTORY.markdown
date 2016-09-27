@@ -2,6 +2,9 @@
 
 ## 0.2.1
 
+* Fixes #17 - failing to find projects is a warning not exception.
+* In verbose mode if DUMP_CONFIG env is set - dump configuration.
+
 ## 0.2.0
 
 * punic is now hosted on the Python Package Index http://pypi.python.org
