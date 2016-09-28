@@ -1,5 +1,9 @@
 # Version History
 
+## 0.2.2
+
+* WIP
+
 ## 0.2.1
 
 * Fixes #17 - failing to find projects is a warning not exception.

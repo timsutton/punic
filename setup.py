@@ -14,7 +14,7 @@ check_libyaml()
 
 setup(
     name='punic',
-    version='0.2.1',
+    version='0.2.2',
     url='http://github.com/schwa/punic',
     license='MIT',
     author='Jonathan Wight',
