@@ -33,8 +33,11 @@ class GitHub(object):
 
     @mproperty
     def auth(self):
-        github_user = unicode(subprocess.check_output(shlex.split('git config --get github.user')).strip(), 'utf-8')
-        github_token = unicode(subprocess.check_output(shlex.split('git config --get github.token')).strip(), 'utf-8')
+        try:
+            github_user = unicode(subprocess.check_output(shlex.split('git config --get github.user')).strip(), 'utf-8')
+            github_token = unicode(subprocess.check_output(shlex.split('git config --get github.token')).strip(), 'utf-8')
+        except subprocess.CalledProcessError as e:
+            return None
         return (github_user, github_token)
 
     def search(self, name, language = 'swift'):
