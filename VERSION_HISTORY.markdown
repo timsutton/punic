@@ -2,7 +2,7 @@
 
 ## 0.2.2
 
-* WIP
+* Fixes #18: don't fail `punic search` if github credentials cannot be found. Only side effect is that you cannot perform as many github apis as a non-signed in user. Should not be a problem.
 
 ## 0.2.1
 
