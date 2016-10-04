@@ -23,7 +23,7 @@ class SemanticVersion(object):
         match = SemanticVersion.expression.match(s)
         return True if match else False
 
-    def __init__(self, major, minor = 0, patch=None, identifiers=None):
+    def __init__(self, major, minor = 0, patch=0, identifiers=None):
         """
         >>> SemanticVersion(1, 0)
         1.0
@@ -32,6 +32,10 @@ class SemanticVersion(object):
         >>> SemanticVersion(1, identifiers = ['0'])
         1.0-0
         """
+        assert isinstance(major, int)
+        assert isinstance(minor, int)
+        assert isinstance(patch, int)
+
         self.major = major if major else 0
         self.minor = minor if minor else 0
         self.patch = patch if patch else 0
@@ -141,6 +145,15 @@ class SemanticVersion(object):
         """
         # type: () -> SemanticVersion
         return SemanticVersion(major=self.major + 1, minor=0, patch=0)
+
+    @property
+    def next_minor(self):
+        """
+        >>> SemanticVersion.string('1.2').next_major
+        2.0
+        """
+        # type: () -> SemanticVersion
+        return SemanticVersion(major=self.major, minor=self.minor + 1, patch=0)
 
 
 

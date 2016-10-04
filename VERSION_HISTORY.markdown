@@ -3,6 +3,7 @@
 ## 0.2.2
 
 * Fixes #18: don't fail `punic search` if github credentials cannot be found. Only side effect is that you cannot perform as many github apis as a non-signed in user. Should not be a problem.
+* Fixes serious problem with ~> operator. Previously 1.0 ~> 1.1 would succeed. Not that will fail. Now only 1.0 ~> 1.0.1 will succeed. This was a major bug and difference with Carthage. PLease upgrade to 2.2
 
 ## 0.2.1
 

@@ -252,6 +252,27 @@ class VersionPredicate(object):
             return '~> {}'.format(self.value)
 
     def test(self, version):
+        """
+        >>> VersionPredicate('== 1.0').test(SemanticVersion.string('1.0'))
+        True
+        >>> VersionPredicate('== 1.0').test(SemanticVersion.string('1.1'))
+        False
+        >>> VersionPredicate('>= 1.0').test(SemanticVersion.string('1.1'))
+        True
+        >>> VersionPredicate('>= 1.1').test(SemanticVersion.string('1.0'))
+        False
+        >>> VersionPredicate('~> 1.0').test(SemanticVersion.string('1.0'))
+        True
+        >>> VersionPredicate('~> 1.0').test(SemanticVersion.string('0.9'))
+        False
+        >>> VersionPredicate('~> 1.0').test(SemanticVersion.string('1.0.1'))
+        True
+        >>> VersionPredicate('~> 1.0').test(SemanticVersion.string('1.1'))
+        False
+        >>> VersionPredicate('~> 1.0').test(SemanticVersion.string('2.0'))
+        False
+        """
+
         # type: (SemanticVersion) -> bool
         if self.operator == VersionOperator.any:
             return True
@@ -260,5 +281,5 @@ class VersionPredicate(object):
         elif self.operator == VersionOperator.greater_than_or_equals:
             return version >= self.value
         elif self.operator == VersionOperator.semantic_greater_than_or_equals:
-            return self.value <= version <= self.value.next_major
+            return self.value <= version < self.value.next_minor
         return False
