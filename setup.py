@@ -22,7 +22,7 @@ setup(
     description='Clean room python implementation of a subset of Carthage functionality',
     packages=['punic'],
     keywords = ['carthage', 'build', 'xcode', 'iOS', 'cocoapods', 'cocoa', 'macOS'],
-    platforn = "MacOS X",
+    platform = "MacOS X",
     classifiers = [
         'Development Status :: 4 - Beta',
         'Environment :: MacOS X',
