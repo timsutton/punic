@@ -2,7 +2,7 @@
 
 ## 0.2.3
 
-* WIP
+* Fixes #22 - make the tag -> semantic version parsing more lenient. Previously we'd support only correct semantic versions with an optional "v" prefix. Now the prefix can be anything.
 
 ## 0.2.2
 

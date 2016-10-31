@@ -9,7 +9,7 @@ from functools import total_ordering
 @total_ordering
 class SemanticVersion(object):
 
-    expression = re.compile(r'^(?:v)?(?P<major>\d+)(?:\.(?P<minor>\d+)(?:\.(?P<patch>\d+))?)?(?:-(?P<identifiers>.+))?$')
+    expression = re.compile(r'^(?P<prefix>[a-z-]+)?(?P<major>\d+)(?:\.(?P<minor>\d+)(?:\.(?P<patch>\d+))?)?(?:-(?P<identifiers>.+))?$')
 
     @classmethod
     def is_semantic(cls, s):
@@ -120,12 +120,21 @@ class SemanticVersion(object):
         1.2
         >>> SemanticVersion.string('1.2.3')
         1.2.3
-        >>> SemanticVersion.string('garbage')
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
-        Exception: "garbage" not a semantic version.
         >>> SemanticVersion.string('v5.0.0-beta6')
         5.0-beta6
+        >>> SemanticVersion.string('test5.0.0-beta6')
+        5.0-beta6
+        >>> SemanticVersion.string('test5')
+        5.0
+        >>> SemanticVersion.string('garbage')
+        Traceback (most recent call last):
+        Exception: "garbage" not a semantic version.
+        >>> SemanticVersion.string('v')
+        Traceback (most recent call last):
+        Exception: "v" not a semantic version.
+        >>> SemanticVersion.string('')
+        Traceback (most recent call last):
+        Exception: "" not a semantic version.
         """
         match = SemanticVersion.expression.match(s)
         if not match:
