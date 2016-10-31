@@ -68,7 +68,7 @@ class Runner(object):
     def check_run(self, *args, **kwargs):
         kwargs['check'] = True
         result = self.run(*args, **kwargs)
-        return result.stdout
+        return six.text_type(result.stdout)
 
     # TODO: Cleanup
     check_call = check_run
