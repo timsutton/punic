@@ -21,6 +21,7 @@ elif six.PY3:
 
 class Specification(object):
     def __init__(self, identifier, predicate = None):
+        # type: (str, VersionPredicate)
         self.identifier = identifier
         self.predicate = predicate
         self.raw_string = None
@@ -157,7 +158,7 @@ class ProjectIdentifier(object):
         >>> ProjectIdentifier.string('github "foo/bar"') == ProjectIdentifier.string('github "foo/bar"')
         True
         """
-        return self.identifier == other.identifier
+        return self.identifier.lower() == other.identifier.lower()
 
     def __ne__(self, other):
         """
@@ -171,7 +172,7 @@ class ProjectIdentifier(object):
         >>> ProjectIdentifier.string('github "foo/bar"') < ProjectIdentifier.string('github "foo/bar2"')
         True
         """
-        return self.identifier < other.identifier
+        return self.identifier.lower() < other.identifier.lower()
 
     def __hash__(self):
         """
@@ -180,7 +181,7 @@ class ProjectIdentifier(object):
         >>> hash(ProjectIdentifier.string('github "foo/bar"')) != hash(ProjectIdentifier.string('github "foo/bar2"'))
         True
         """
-        return hash(self.identifier)
+        return hash(self.identifier.lower())
 
     def matches(self, name_filter):
         # type: ([str]) -> bool
