@@ -154,7 +154,7 @@ class Repository(object):
         else:
             self.check_work_directory()
 
-            result = runner.run('git show "{}:Cartfile"'.format(revision), cwd=self.path)
+            result = runner.run('git show "{}:Cartfile"'.format(self.rev_parse(revision)), cwd=self.path)
             if result.return_code != 0:
                 specifications = []
             else:

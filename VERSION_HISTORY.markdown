@@ -4,6 +4,7 @@
 
 * Fixes #22 - make the tag -> semantic version parsing more lenient. Previously we'd support only correct semantic versions with an optional "v" prefix. Now the prefix can be anything.
 * Fixes #23 - uses lowercase comparisons for project identifiers so that the same dependency cannot be pulled in multiple times because it was specified with different case
+# Fixes #24 - branches with a / in them would break `git show`. Now we revparse before git show.
 * Other misc bug fixes.
 
 ## 0.2.2
