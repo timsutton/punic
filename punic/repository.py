@@ -85,6 +85,7 @@ class Repository(object):
         if result.return_code == 0:
             return result.stdout.strip()
 
+        # TODO: assumes remote is called origin.
         result = runner.run('git rev-parse "origin/{}"'.format(s), echo=False, cwd=self.path)
         if result.return_code == 0:
             return result.stdout.strip()
@@ -185,8 +186,6 @@ class Revision(object):
         assert isinstance(repository, Repository)
         assert isinstance(revision, six.string_types)
         #        assert isinstance(revision_type, Revision.Type) # TODO: This doesn't work.
-
-
         self.repository = repository
         self.revision = revision
         self.revision_type = revision_type
@@ -205,7 +204,7 @@ class Revision(object):
             if self.semantic_version and other.semantic_version and not Revision.always_use_is_ancestor:
                 return self.semantic_version == other.semantic_version
             else:
-                return self.sha == other.sha
+                return (self.revision, self.revision_type) == (other.revision, other.revision_type)
         except:
             logging.error(self.repository)
             raise
@@ -219,14 +218,15 @@ class Revision(object):
             return self.semantic_version < other.semantic_version
         else:
             self.repository.check_work_directory()
-            result = runner.run('git merge-base --is-ancestor "{}" "{}"'.format(other, self), cwd=self.repository.path)
+
+            result = runner.run('git merge-base --is-ancestor "{}" "{}"'.format(other.sha, self.sha), cwd=self.repository.path)
             if result.return_code == 0:
                 return False
             if result.return_code == 1:
                 return True
             else:
-                raise Exception('git merge-base returned {}'.format(result.return_code))
+                raise Exception('git merge-base returned {} {} {} {} {}'.format(result.return_code, result.stderr, self.repository, other.sha, self.sha))
 
     def __hash__(self):
         # TODO: Should include repo too?
-        return hash(self.revision)
+        return hash((self.revision, self.revision_type))
