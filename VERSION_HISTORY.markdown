@@ -1,5 +1,9 @@
 # Version History
 
+## 0.2.4
+
+* WIP
+
 ## 0.2.3
 
 * Fixes #22 - make the tag -> semantic version parsing more lenient. Previously we'd support only correct semantic versions with an optional "v" prefix. Now the prefix can be anything.
