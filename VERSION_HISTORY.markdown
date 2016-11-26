@@ -2,7 +2,7 @@
 
 ## 0.2.4
 
-* WIP
+* Fixes #25 - punic would be tricked into trying to build static frameworks (e.g. Facebook's Bolts framework). This would break the dSYM generation code.
 
 ## 0.2.3
 

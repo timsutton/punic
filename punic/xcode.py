@@ -210,8 +210,8 @@ class Target(object):
 
     @property
     def product_is_framework(self):
-        return self.package_type == 'com.apple.package-type.wrapper.framework'
-
+        mach_o_type = self.build_settings.get('MACH_O_TYPE', None)
+        return mach_o_type == 'mh_dylib' and self.package_type == 'com.apple.package-type.wrapper.framework'
 
 ########################################################################################################################
 
