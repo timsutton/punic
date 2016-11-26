@@ -1,5 +1,9 @@
 # Version History
 
+## 0.2.5
+
+* WIP
+
 ## 0.2.4
 
 * Fixes #19 - `punic checkout` now "prepares" the project checkout in the same way `punic build` will.
