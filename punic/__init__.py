@@ -69,7 +69,12 @@ class Punic(object):
         if not self.config.build_path.exists():
             self.config.build_path.mkdir(parents=True)
 
-        self._ordered_dependencies(name_filter=dependencies)
+        filtered_dependencies = self._ordered_dependencies(name_filter=dependencies)
+
+        checkouts = [Checkout(punic=self, identifier=identifier, revision=revision) for identifier, revision in filtered_dependencies]
+        for checkout in checkouts:
+            checkout.prepare()
+
 
     def build(self, dependencies):
         # type: ([str])
