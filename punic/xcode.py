@@ -152,7 +152,7 @@ class XcodeProject(object):
         # type: (str, XcodeBuildArguments) -> [str]
         assert not arguments or isinstance(arguments, XcodeBuildArguments)
         arguments = arguments.to_list() if arguments else []
-        command = ['xcodebuild', '-project', self.path] + arguments + [subcommand]
+        command = ['xcodebuild', '-project' if self.path.suffix =='.xcodeproj' else '-workspace', self.path] + arguments + [subcommand]
         return self.xcode.check_call(command, **kwargs)
 
 

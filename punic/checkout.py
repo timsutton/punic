@@ -1,6 +1,7 @@
 import os
 import re
 import logging
+import itertools
 
 from punic import shshutil as shutil
 from punic.config import config
@@ -78,6 +79,7 @@ class Checkout(object):
             # TODO: Generate this programatically.
             os.symlink("../../../Build", str(carthage_symlink_path))
 
+    projectExpression = re.compile(r"\.xcodeproj/[^/]+\.xcworkspace$")
     @property
     def projects(self):
         def _make_cache_identifier(project_path):
@@ -92,11 +94,23 @@ class Checkout(object):
                 return False
             return True
 
-        project_paths = self.checkout_path.glob("**/*.xcodeproj")
+        project_paths = itertools.chain(self.checkout_path.glob("**/*.xcworkspace"), self.checkout_path.glob("**/*.xcodeproj"))
         project_paths = [path for path in project_paths if test(path)]
         if not project_paths:
             logging.warning("No projects found in {}".format(self.checkout_path))
             return []
 
-        projects = [XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path)) for project_path in project_paths]
+        projects = []
+        schemes = []
+        for project_path in project_paths:
+            if Checkout.projectExpression.search(str(project_path)):
+                continue
+            project = XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path))
+            for scheme in list(project.scheme_names):
+                if scheme in schemes:
+                    project.info[2].remove(scheme)
+                else:
+                    schemes.append(scheme)
+            if len(project.scheme_names) > 0:
+                    projects.append(project)
         return projects
