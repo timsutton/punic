@@ -49,7 +49,7 @@ class SemanticVersion(object):
         """
         # TODO: using a tuple breaks code
         #        return (self.major, self.minor, self.patch)
-        return [self.major, self.minor, self.patch, self.identifiers]
+        return ([self.major, self.minor, self.patch], self.identifiers)
 
     def __repr__(self):
         components = [self.major, self.minor] + ([self.patch] if self.patch else [])
@@ -70,7 +70,7 @@ class SemanticVersion(object):
         >>> SemanticVersion.string('1') != SemanticVersion.string('1')
         False
         """
-        return self._components == other._components
+        return self._components[0] == other._components[0] and self._components[1] == other._components[1]
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -91,8 +91,21 @@ class SemanticVersion(object):
         True
         >>> SemanticVersion.string('v5.0.0-dummy10') > SemanticVersion.string('v5.0.0-dummy2')
         False
+        >>> SemanticVersion.string('v5.0.0') > SemanticVersion.string('v5.0.0-dummy2')
+        True
         """
-        return self._components < other._components
+
+        # The same version with no identifiers is rated higher then one with identifiers
+        if self._components[0] < other._components[0]:
+            return True
+        elif self._components[0] == other._components[0]:
+            if len(other._components[1]) == 0 and len(self._components[1]) > 0:
+                return True
+            elif len(self._components[1]) == 0 and len(other._components[1]) > 0:
+                return False
+            else:
+                return self._components[1] < other._components[1]
+        return False
 
     def __hash__(self):
         """
