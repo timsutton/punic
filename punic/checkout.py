@@ -80,6 +80,7 @@ class Checkout(object):
             os.symlink("../../../Build", str(carthage_symlink_path))
 
     projectExpression = re.compile(r"\.xcodeproj/[^/]+\.xcworkspace$")
+    playgroundExpression = re.compile(r"\.playground/[^/]+\.xcworkspace$")
     @property
     def projects(self):
         def _make_cache_identifier(project_path):
@@ -103,7 +104,7 @@ class Checkout(object):
         projects = []
         schemes = []
         for project_path in project_paths:
-            if Checkout.projectExpression.search(str(project_path)):
+            if Checkout.projectExpression.search(str(project_path)) or Checkout.playgroundExpression.search(str(project_path)):
                 continue
             project = XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path))
             for scheme in list(project.scheme_names):
