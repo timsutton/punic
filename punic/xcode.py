@@ -265,6 +265,8 @@ class XcodeBuildProduct(object):
         product.product_name = build_settings['PRODUCT_NAME']  # 'Example'
         product.executable_name = build_settings['EXECUTABLE_NAME']  # 'Example'
         product.target_build_dir = Path(build_settings['TARGET_BUILD_DIR'])  # ~/Library/Developer/Xcode/DerivedData/Example-<random>/Build/Products/<configuration>-<sdk>
+        product.sdk = re.match(r'([A-Za-z]+)', build_settings['SDK_NAME']).groups()[0]
+
         return product
 
     def __repr__(self):
