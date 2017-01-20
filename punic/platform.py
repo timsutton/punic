@@ -31,7 +31,7 @@ class Platform(object):
 
 Platform.all = [
     Platform(name='iOS', nickname='iOS', sdks=['iphoneos', 'iphonesimulator'], output_directory_name='iOS'),
-    Platform(name='macOS', nickname='Mac', sdks=['macosx'], output_directory_name='Mac'),
+    Platform(name='macOS', nickname='Mac', sdks=['macosx'], output_directory_name='Mac'), # TODO: Change path to macOS? Will SDK name change?
     Platform(name='watchOS', nickname='watchOS', sdks=['watchos', 'watchsimulator'], output_directory_name='watchOS'),
     Platform(name='tvOS', nickname='tvOS', sdks=['appletvos', 'appletvsimulator'], output_directory_name='tvOS')
 ]
