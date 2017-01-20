@@ -81,4 +81,4 @@ def config_init(**kwargs):
 
     sys.stdout.write(stream.getvalue())
     if _prompt('Write config to `punic.yaml`', ['yes', 'no'], default='no') == 'yes':
-        Path('punic.yaml').open('wb').write(stream.getvalue())
+        Path('punic.yaml').open('wb').write(str(stream.getvalue()))
