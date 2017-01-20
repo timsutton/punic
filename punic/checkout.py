@@ -10,6 +10,10 @@ from punic.xcode import XcodeProject
 
 
 class Checkout(object):
+
+    projectExpression = re.compile(r"\.xcodeproj/[^/]+\.xcworkspace$")
+    playgroundExpression = re.compile(r"\.playground/[^/]+\.xcworkspace$")
+
     def __init__(self, punic, identifier, revision):
         self.punic = punic
         self.identifier = identifier
@@ -79,8 +83,6 @@ class Checkout(object):
             # TODO: Generate this programatically.
             os.symlink("../../../Build", str(carthage_symlink_path))
 
-    projectExpression = re.compile(r"\.xcodeproj/[^/]+\.xcworkspace$")
-    playgroundExpression = re.compile(r"\.playground/[^/]+\.xcworkspace$")
     @property
     def projects(self):
         def _make_cache_identifier(project_path):
@@ -98,7 +100,7 @@ class Checkout(object):
         project_paths = itertools.chain(self.checkout_path.glob("**/*.xcworkspace"), self.checkout_path.glob("**/*.xcodeproj"))
         project_paths = [path for path in project_paths if test(path)]
         if not project_paths:
-            logging.warning("No projects found in {}".format(self.checkout_path))
+            logging.warning("No projects/workspaces found in {}".format(self.checkout_path))
             return []
 
         projects = []
