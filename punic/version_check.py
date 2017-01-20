@@ -16,8 +16,8 @@ def version_check(verbose=False, timeout=0.3, failure_is_an_option=True):
         log('<sub>Checking punic version...</sub>')
 
         current_version = SemanticVersion.string(punic.__version__)
-        # TODO: Is this the best URL?
-        result = requests.get('https://raw.githubusercontent.com/schwa/punic/develop/VERSION', timeout=timeout)
+        # TODO: Is this the best URL? Ideally it would be best to get this info from python cheese shop or PIP
+        result = requests.get('https://raw.githubusercontent.com/schwa/punic/master/VERSION', timeout=timeout)
         latest_version = SemanticVersion.string(result.text.strip())
 
         log('Current version: <rev>{}</rev>, latest version: <rev>{}</rev>'.format(current_version, latest_version))
