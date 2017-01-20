@@ -290,14 +290,11 @@ def list(context, **kwargs):
             checkout.prepare()
             for project in checkout.projects:
                 tree[platform.name][str(checkout.identifier)]['projects'][project.path.name] = {'schemes':{}}
+                tree[platform.name][str(checkout.identifier)]['projects'][project.path.name]['path'] = str(project.path.relative_to(config.checkouts_path))
                 schemes = project.schemes
                 schemes = [scheme for scheme in schemes if scheme.framework_target]
                 schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.framework_target.supported_platform_names]
                 tree[platform.name][str(checkout.identifier)]['projects'][project.path.name]['schemes'] = [scheme.name for scheme in schemes]
-
-    # from pprint import pprint
-    #
-    # pprint(tree)
 
     import yaml
 
