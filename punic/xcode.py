@@ -144,9 +144,11 @@ class XcodeProject(object):
         build_settings = self.build_settings(arguments=arguments)
         scheme = self.scheme_named(arguments.scheme)
         assert scheme
-        build_settings = build_settings[scheme.framework_target.name]
-        assert build_settings
-        return XcodeBuildProduct.build_settings(build_settings)
+
+        products = []
+        for target in scheme.framework_targets:
+            products.append(XcodeBuildProduct.build_settings(build_settings[target.name]))
+        return products
 
     def check_call(self, subcommand, arguments=None, **kwargs):
         # type: (str, XcodeBuildArguments) -> [str]
@@ -175,9 +177,18 @@ class Scheme(object):
         return targets
 
     @mproperty
-    def framework_target(self):
+    def supported_platform_names(self):
+        supported_platform_names = set()
+
+        for target in self.framework_targets:
+            supported_platform_names.update(target.supported_platform_names)
+        return supported_platform_names
+
+
+    @mproperty
+    def framework_targets(self):
         targets = [target for target in self.targets if target.product_is_framework]
-        return targets[0] if targets else None
+        return targets
 
 
 ########################################################################################################################

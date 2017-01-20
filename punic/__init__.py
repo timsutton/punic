@@ -7,6 +7,7 @@ import os
 from copy import copy
 from pathlib2 import Path
 import logging
+from collections import defaultdict
 
 from .cartfile import Cartfile
 from .checkout import Checkout
@@ -114,8 +115,8 @@ class Punic(object):
                 for project in checkout.projects:
                     schemes = project.schemes
 
-                    schemes = [scheme for scheme in schemes if scheme.framework_target]
-                    schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.framework_target.supported_platform_names]
+                    schemes = [scheme for scheme in schemes if scheme.framework_targets]
+                    schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.supported_platform_names]
                     for scheme in schemes:
                         if not filter_dependency(platform, checkout, project, scheme):
                             logging.warn('<sub>Skipping</sub>: {} / {} / {} / {}'.format(platform, checkout.identifier.project_name, project.path.name, scheme.name))
@@ -178,7 +179,7 @@ class Punic(object):
                 logging.warn('<sub>DRY-RUN: (Not) Building</sub>: <ref>{}</ref> (scheme: {}, sdk: {}, configuration: {})...'.format(project.path.name, scheme, sdk, configuration))
             return
 
-        products = dict()
+        all_products = []
 
         toolchain = self.config.toolchain
 
@@ -194,66 +195,77 @@ class Punic(object):
 
             arguments = XcodeBuildArguments(scheme=scheme, configuration=resolved_configuration, sdk=sdk, toolchain=toolchain, derived_data_path=derived_data_path)
 
-            product = project.build(arguments=arguments)
-            products[sdk] = product
+            all_products += project.build(arguments=arguments)
 
-        self._post_process(platform, products)
+        self._post_process(platform, all_products)
 
     def _post_process(self, platform, products):
+        # type: (punic.platform.Platform, List)
 
         ########################################################################################################
 
         logging.debug("<sub>Post processing</sub>...")
 
-        # By convention sdk[0] is always the device sdk (e.g. 'iphoneos' and not 'iphonesimulator')
-        device_sdk = platform.device_sdk
-        device_product = products[device_sdk]
+        # TODO: QUESTION: Is it possible that this could mix targets with different SDKs?
+        products_by_name_then_sdk = defaultdict(dict)
+        for product in products:
+            products_by_name_then_sdk[product.full_product_name][product.sdk] = product
 
-        ########################################################################################################
 
-        output_product = copy(device_product)
-        output_product.target_build_dir = self.config.build_path / platform.output_directory_name
+        for products_by_sdk in products_by_name_then_sdk.values():
 
-        ########################################################################################################
+            products = products_by_sdk.values()
 
-        logging.debug('<sub>Copying binary</sub>...')
-        if output_product.product_path.exists():
-            shutil.rmtree(output_product.product_path)
+            # TODO: By convention sdk[0] is always the device sdk (e.g. 'iphoneos' and not 'iphonesimulator')
+            primary_sdk = platform.sdks[0]
 
-        if not device_product.product_path.exists():
-            raise Exception("No product at: {}".format(device_product.product_path))
+            device_product = products_by_sdk[primary_sdk]
 
-        shutil.copytree(device_product.product_path, output_product.product_path, symlinks=True)
+            ########################################################################################################
 
-        ########################################################################################################
+            output_product = copy(device_product)
+            output_product.target_build_dir = self.config.build_path / platform.output_directory_name
 
-        if len(products) > 1:
-            logging.debug('<sub>Lipo-ing</sub>...')
-            executable_paths = [product.executable_path for product in products.values()]
-            command = ['/usr/bin/xcrun', 'lipo', '-create'] + executable_paths + ['-output', output_product.executable_path]
+            ########################################################################################################
+
+            logging.debug('<sub>Copying binary</sub>...')
+            if output_product.product_path.exists():
+                shutil.rmtree(output_product.product_path)
+
+            if not device_product.product_path.exists():
+                raise Exception("No product at: {}".format(device_product.product_path))
+
+            shutil.copytree(device_product.product_path, output_product.product_path, symlinks=True)
+
+            ########################################################################################################
+
+            if len(products) > 1:
+                logging.debug('<sub>Lipo-ing</sub>...')
+                executable_paths = [product.executable_path for product in products]
+                command = ['/usr/bin/xcrun', 'lipo', '-create'] + executable_paths + ['-output', output_product.executable_path]
+                runner.check_run(command)
+                mtime = executable_paths[0].stat().st_mtime
+                os.utime(str(output_product.executable_path), (mtime, mtime))
+
+            ########################################################################################################
+
+            logging.debug('<sub>Copying swiftmodule files</sub>...')
+            for product in products:
+                for path in product.module_paths:
+                    relative_path = path.relative_to(product.product_path)
+                    shutil.copyfile(path, output_product.product_path / relative_path)
+
+            ########################################################################################################
+
+            logging.debug('<sub>Copying bcsymbolmap files</sub>...')
+            for product in products:
+                for path in product.bcsymbolmap_paths:
+                    shutil.copy(path, output_product.target_build_dir)
+
+            ########################################################################################################
+
+            logging.debug('<sub>Producing dSYM files</sub>...')
+            command = ['/usr/bin/xcrun', 'dsymutil', str(output_product.executable_path), '-o', str(output_product.target_build_dir / (output_product.executable_name + '.dSYM'))]
             runner.check_run(command)
-            mtime = executable_paths[0].stat().st_mtime
-            os.utime(str(output_product.executable_path), (mtime, mtime))
 
-        ########################################################################################################
-
-        logging.debug('<sub>Copying swiftmodule files</sub>...')
-        for product in products.values():
-            for path in product.module_paths:
-                relative_path = path.relative_to(product.product_path)
-                shutil.copyfile(path, output_product.product_path / relative_path)
-
-        ########################################################################################################
-
-        logging.debug('<sub>Copying bcsymbolmap files</sub>...')
-        for product in products.values():
-            for path in product.bcsymbolmap_paths:
-                shutil.copy(path, output_product.target_build_dir)
-
-        ########################################################################################################
-
-        logging.debug('<sub>Producing dSYM files</sub>...')
-        command = ['/usr/bin/xcrun', 'dsymutil', str(output_product.executable_path), '-o', str(output_product.target_build_dir / (output_product.executable_name + '.dSYM'))]
-        runner.check_run(command)
-
-        ########################################################################################################
+            ########################################################################################################
