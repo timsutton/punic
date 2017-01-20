@@ -45,7 +45,7 @@ class SemanticVersion(object):
     def _components(self):
         """
         >>> SemanticVersion(1, 2, 3)._components
-        [1, 2, 3, []]
+        ([1, 2, 3], [])
         """
         # TODO: using a tuple breaks code
         #        return (self.major, self.minor, self.patch)
