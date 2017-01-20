@@ -59,6 +59,7 @@ docs/_build/
 # PyBuilder
 target/
 
+.idea
 
 Testing/
 local_testing.py
