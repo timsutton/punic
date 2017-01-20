@@ -270,7 +270,7 @@ class XcodeBuildProduct(object):
         return product
 
     def __repr__(self):
-        return 'BuildProduct({})'.format(self.__dict__)
+        return 'BuildProduct({full_product_name}, {sdk})'.format(**self.__dict__)
 
     @classmethod
     def string(cls, string):
