@@ -11,9 +11,6 @@ from punic.xcode import XcodeProject
 
 class Checkout(object):
 
-    projectExpression = re.compile(r"\.xcodeproj/[^/]+\.xcworkspace$")
-    playgroundExpression = re.compile(r"\.playground/[^/]+\.xcworkspace$")
-
     def __init__(self, punic, identifier, revision):
         self.punic = punic
         self.identifier = identifier
@@ -90,7 +87,6 @@ class Checkout(object):
             cache_identifier = '{},{}'.format(str(rev), project_path.relative_to(self.checkout_path))
             return cache_identifier
 
-
         def test(path):
             relative_path = path.relative_to(self.checkout_path)
             if 'Carthage/Checkouts' in str(relative_path):
@@ -105,8 +101,11 @@ class Checkout(object):
 
         projects = []
         schemes = []
+        embedded_project_pattern = re.compile(r"\.(xcworkspace|xcodeproj)/[^/]+\.xcworkspace$")
+
         for project_path in project_paths:
-            if Checkout.projectExpression.search(str(project_path)) or Checkout.playgroundExpression.search(str(project_path)):
+            if embedded_project_pattern .search(str(project_path)):
+                #print('Skipping project\'s embedded workspace:', project_path)
                 continue
             project = XcodeProject(self, config.xcode, project_path, _make_cache_identifier(project_path))
             for scheme in list(project.scheme_names):
@@ -115,5 +114,5 @@ class Checkout(object):
                 else:
                     schemes.append(scheme)
             if len(project.scheme_names) > 0:
-                    projects.append(project)
+                projects.append(project)
         return projects
