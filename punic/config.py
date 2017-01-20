@@ -109,6 +109,8 @@ class Config(object):
         # type: (Path)
 
         d = yaml.safe_load(path.open())
+        if not d:
+            return
         if 'defaults' in d:
             defaults = d['defaults']
             if 'configuration' in defaults:
