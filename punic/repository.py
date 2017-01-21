@@ -101,6 +101,9 @@ class Repository(object):
         except Exception:
             raise NoSuchRevision(repository=self, revision=revision)
 
+        runner.check_run('git submodule update --init --recursive', cwd=self.path)
+
+
     def fetch(self):
         if not self.path.exists():
             logging.debug('<sub>Cloning</sub>: <ref>{}</ref>'.format(self))
@@ -113,7 +116,7 @@ class Repository(object):
             else:
                 repo = url
 
-            runner.check_run('git clone --recursive "{}" "{}"'.format(repo, str(self.path)), cwd=self.path.parent)
+            runner.check_run('git clone --recursive --recurse-submodules "{}" "{}"'.format(repo, str(self.path)), cwd=self.path.parent)
         else:
             self.check_work_directory()
 

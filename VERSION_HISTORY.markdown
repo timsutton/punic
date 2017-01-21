@@ -2,6 +2,7 @@
 
 ## 0.2.5
 
+* Clones and updates now update submodules correctly.
 * WIP
 
 ## 0.2.4
