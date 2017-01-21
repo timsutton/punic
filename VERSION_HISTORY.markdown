@@ -2,8 +2,14 @@
 
 ## 0.2.5
 
-* Clones and updates now update submodules correctly.
-* WIP
+* More lax handling of semantic versions - better attempts at making non-semantic versions semantic-ish (various tickets).
+* Clones and updates now update submodules correctly (which means punic now works with Realm again).
+* Updated for python 3.6 (unit tests & travis scripts). Thanks @Caiopia.
+* Fix handling of semantic version _with_ identifiers vs ones without (e.g. 1.0-beta vs 1.0). Thanks @leoMehlig.
+* Apple TV and Apple Watch platforms added. Thanks @krbarnes and @Caiopia. (Surprised this one slid for so long!)
+* xcworkspaces are now supported. Thanks @leoMehlig. (Again this one slid for longer than I expected!)
+* `punic version` now reports the latest version found on the Python Cheeseshop (i.e. the version `pip install -U punic` installs)
+* Various code tidy-ups and minor bug fixes/improvements.
 
 ## 0.2.4
 
