@@ -9,6 +9,7 @@
 * Apple TV and Apple Watch platforms added. Thanks @krbarnes and @Caiopia. (Surprised this one slid for so long!)
 * xcworkspaces are now supported. Thanks @leoMehlig. (Again this one slid for longer than I expected!)
 * `punic version` now reports the latest version found on the Python Cheeseshop (i.e. the version `pip install -U punic` installs)
+* No longer assumes there's a 1:1 correspondance between schemes and targets/build products. Now schemes will build all sub-build products. I wish more Xcode projects were set up in this manner.
 * Various code tidy-ups and minor bug fixes/improvements.
 
 ## 0.2.4
