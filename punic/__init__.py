@@ -91,7 +91,6 @@ class Punic(object):
 
         checkouts = [Checkout(punic=self, identifier=identifier, revision=revision) for identifier, revision in filtered_dependencies]
 
-
         skips = self.config.skips
 
         def filter_dependency(platform, checkout, project, scheme):
@@ -134,7 +133,7 @@ class Punic(object):
             if spec.predicate.operator == VersionOperator.commitish:
                 try:
                     revision = Revision(repository=repository, revision=spec.predicate.value, revision_type=Revision.Type.commitish, check = True)
-                except Exception, e:
+                except Exception as e:
                     logging.warning(e.message)
                     return None
                 else:
@@ -173,7 +172,7 @@ class Punic(object):
             if specification.predicate.operator == VersionOperator.commitish:
                 try:
                     revision = Revision(repository=repository, revision=specification.predicate.value, revision_type=Revision.Type.commitish, check = True)
-                except Exception, e:
+                except Exception as e:
                     logging.warning(e.message)
                     return None
                 tags.append(revision)
