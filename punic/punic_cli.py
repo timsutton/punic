@@ -292,8 +292,8 @@ def list(context, **kwargs):
                 tree[platform.name][str(checkout.identifier)]['projects'][project.path.name] = {'schemes':{}}
                 tree[platform.name][str(checkout.identifier)]['projects'][project.path.name]['path'] = str(project.path.relative_to(config.checkouts_path))
                 schemes = project.schemes
-                schemes = [scheme for scheme in schemes if scheme.framework_target]
-                schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.framework_target.supported_platform_names]
+                schemes = [scheme for scheme in schemes if scheme.framework_targets]
+                schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.supported_platform_names]
                 tree[platform.name][str(checkout.identifier)]['projects'][project.path.name]['schemes'] = [scheme.name for scheme in schemes]
 
     import yaml
