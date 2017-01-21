@@ -132,7 +132,13 @@ class Punic(object):
         def _predicate_to_revision(spec):
             repository = self._repository_for_identifier(spec.identifier)
             if spec.predicate.operator == VersionOperator.commitish:
-                return Revision(repository=repository, revision=spec.predicate.value, revision_type=Revision.Type.commitish)
+                try:
+                    revision = Revision(repository=repository, revision=spec.predicate.value, revision_type=Revision.Type.commitish, check = True)
+                except Exception, e:
+                    logging.warning(e.message)
+                    return None
+                else:
+                    return revision
             else:
                 raise Exception("Cannot convert spec to revision: {}".format(spec))
 
@@ -165,12 +171,19 @@ class Punic(object):
             repository = self._repository_for_identifier(specification.identifier)
             tags = repository.revisions_for_predicate(specification.predicate)
             if specification.predicate.operator == VersionOperator.commitish:
-                tags.append(Revision(repository=repository, revision=specification.predicate.value, revision_type=Revision.Type.commitish))
+                try:
+                    revision = Revision(repository=repository, revision=specification.predicate.value, revision_type=Revision.Type.commitish, check = True)
+                except Exception, e:
+                    logging.warning(e.message)
+                    return None
+                tags.append(revision)
                 tags.sort()
             assert len(tags)
             return repository.identifier, tags
 
-        return [make(specification) for specification in specifications]
+        dependencies = [make(specification) for specification in specifications]
+        dependencies = [dependency for dependency in dependencies if dependency]
+        return dependencies
 
     def _build_one(self, platform, project, scheme, configuration):
 

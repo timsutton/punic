@@ -11,6 +11,7 @@
 * `punic version` now reports the latest version found on the Python Cheeseshop (i.e. the version `pip install -U punic` installs)
 * No longer assumes there's a 1:1 correspondance between schemes and targets/build products. Now schemes will build all sub-build products. I wish more Xcode projects were set up in this manner.
 * Various code tidy-ups and minor bug fixes/improvements.
+* Don't fail if a commit referred to by a Cartfile is no longer in a repo (this is usually due to deleted branches). Warn instead.
 
 ## 0.2.4
 

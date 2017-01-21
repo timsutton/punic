@@ -86,11 +86,11 @@ class Repository(object):
             return result.stdout.strip()
 
         # TODO: assumes remote is called origin.
-        result = runner.run('git rev-parse "origin/{}"'.format(s), echo=False, cwd=self.path)
+        command = 'git rev-parse "origin/{}"'.format(s)
+        result = runner.run(command, echo=False, cwd=self.path)
         if result.return_code == 0:
             return result.stdout.strip()
-
-        raise Exception('Could not rev-parse "{}"'.format(s))
+        raise Exception('{}: \'{}\' failed with {}'.format(self, command, result))
 
     def checkout(self, revision):
         # type: (Revision)
@@ -158,7 +158,13 @@ class Repository(object):
         else:
             self.check_work_directory()
 
-            result = runner.run('git show "{}:Cartfile"'.format(self.rev_parse(revision)), cwd=self.path)
+            try:
+                parsed_revision = self.rev_parse(revision)
+            except:
+                print("FAILED") # JIWTODO
+                return []
+
+            result = runner.run('git show "{}:Cartfile"'.format(parsed_revision), cwd=self.path)
             if result.return_code != 0:
                 specifications = []
             else:
@@ -185,7 +191,7 @@ class Revision(object):
         tag = 'tag'
         commitish = 'commitish'
 
-    def __init__(self, repository, revision, revision_type):
+    def __init__(self, repository, revision, revision_type, check = True):
         assert isinstance(repository, Repository)
         assert isinstance(revision, six.string_types)
         #        assert isinstance(revision_type, Revision.Type) # TODO: This doesn't work.
@@ -193,6 +199,19 @@ class Revision(object):
         self.revision = revision
         self.revision_type = revision_type
         self.semantic_version = (SemanticVersion.string(self.revision) if self.revision_type == Revision.Type.tag else None)
+
+        if check and not self.exists:
+            raise Exception('Could not find revision matching {} in repository <ref>{}</ref>.'.format(self.revision, self.repository))
+
+    @mproperty
+    def exists(self):
+        # TODO: dont use exceptions for logic
+        try:
+            self.repository.rev_parse(self.revision)
+        except:
+            return False
+        return True
+
 
     @mproperty
     def sha(self):
