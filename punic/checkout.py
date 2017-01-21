@@ -101,7 +101,7 @@ class Checkout(object):
 
         projects = []
         schemes = []
-        embedded_project_pattern = re.compile(r"\.(xcworkspace|xcodeproj)/[^/]+\.xcworkspace$")
+        embedded_project_pattern = re.compile(r"\.(playground|xcodeproj)/[^/]+\.xcworkspace$")
 
         for project_path in project_paths:
             if embedded_project_pattern .search(str(project_path)):
