@@ -75,7 +75,7 @@ Commands:
   search           Search github for repositories and optionally...
   update           Update and rebuild the project's...
   version          Display the current version of Punic.
-schwa@ungoliant ~/D/test> 
+schwa@ungoliant ~/D/test>
 ```
 
 Each sub-command also has built in help:
@@ -102,7 +102,7 @@ github "AlamoFire/AlamoFire"
 github "realm/realm-cocoa"
 ```
 
-TODO: See carthage documentation for exact syntax.
+Punic uses Carthage's syntax and structure for Cartfiles. For more information see the [Carthage documentation](https://github.com/Carthage/Carthage/blob/master/Documentation/Artifacts.md#cartfile) itself.
 
 A `Cartfile` isn't required to exactly specify what version of which dependency it requires, To do that you can manually resolve your dependencies:
 
