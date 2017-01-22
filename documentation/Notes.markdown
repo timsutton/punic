@@ -52,7 +52,7 @@ A complete list of Carthage compatibility as of version 0.16.2 of Carthage follo
 * Tag
 * Push master
 * python setup.py sdist bdist_wheel
-* twine upload dist/*
+* twine upload --skip-existing dist/*
 
 
 ### Notes:
