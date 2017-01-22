@@ -1,5 +1,9 @@
 # Version History
 
+## 0.2.6
+
+WIP
+
 ## 0.2.5
 
 * More lax handling of semantic versions - better attempts at making non-semantic versions semantic-ish (various tickets).
