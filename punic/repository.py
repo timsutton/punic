@@ -71,7 +71,7 @@ class Repository(object):
         if config.verbose == True:
             bad_tags = [tag for tag in tags if not SemanticVersion.is_semantic(tag)]
             if bad_tags:
-                logging.warning("Warning: Found tags in \'{}\' that are not semantic: {}".format(self, ', '.join(['\'{}\''.format(tag) for tag in bad_tags])))
+                logging.warning("<err>Warning</err>: Found tags in \'{}\' that are not semantic: {}".format(self, ', '.join(['\'{}\''.format(tag) for tag in bad_tags])))
 
         tags = [Revision(repository=self, revision=tag, revision_type=Revision.Type.tag) for tag in tags if SemanticVersion.is_semantic(tag)]
         return sorted(tags)
