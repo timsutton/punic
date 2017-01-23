@@ -12,22 +12,21 @@ from punic.runner import *
 
 def make_graph(punic, open):
     try:
-        with timeit('graph', log=punic.config.log_timings):
-            with error_handling():
+        with error_handling():
 
-                graph = punic.graph()
+            graph = punic.graph()
 
-                logging.info('Writing graph file to "{}".'.format(os.getcwd()))
-                nx.drawing.nx_pydot.write_dot(graph, 'graph.dot')
+            logging.info('Writing graph file to "{}".'.format(os.getcwd()))
+            nx.drawing.nx_pydot.write_dot(graph, 'graph.dot')
 
-                command = 'dot graph.dot -ograph.png -Tpng'
-                if runner.can_run(command):
-                    logging.info('Rendering dot file to png file.')
-                    runner.check_run(command)
-                    if open:
-                        click.launch('graph.png')
-                else:
-                    logging.warning('graphviz not installed. Cannot convert graph to a png.')
+            command = 'dot graph.dot -ograph.png -Tpng'
+            if runner.can_run(command):
+                logging.info('Rendering dot file to png file.')
+                runner.check_run(command)
+                if open:
+                    click.launch('graph.png')
+            else:
+                logging.warning('graphviz not installed. Cannot convert graph to a png.')
     except ImportError as e:
         pip = 'pip' if sys.version_info.major < 3 else 'pip3'
         steps = ['brew install graphviz', '{} install pydotplus'.format(pip)]

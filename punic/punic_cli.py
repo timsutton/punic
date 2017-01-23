@@ -95,7 +95,7 @@ def fetch(context, **kwargs):
     punic.config.fetch = True  # obviously
     punic.config.update(**kwargs)
 
-    with timeit('fetch', log=punic.config.log_timings):
+    with timeit('fetch'):
         with error_handling():
             punic.fetch()
 
@@ -115,7 +115,7 @@ def resolve(context, **kwargs):
     punic.config.update(**kwargs)
 
 
-    with timeit('resolve', log=punic.config.log_timings):
+    with timeit('resolve'):
         with error_handling():
             punic.resolve()
 
@@ -142,7 +142,7 @@ def build(context, **kwargs):
     logging.debug('Platforms: {}'.format(punic.config.platforms))
     logging.debug('Configuration: {}'.format(punic.config.configuration))
 
-    with timeit('build', log=punic.config.log_timings):
+    with timeit('build'):
         with error_handling():
             punic.build(dependencies=deps)
 
@@ -165,7 +165,7 @@ def update(context, **kwargs):
 
     deps = kwargs['deps']
 
-    with timeit('update', log=punic.config.log_timings):
+    with timeit('update'):
         with error_handling():
             punic.resolve()
             punic.build(dependencies=deps)
@@ -182,22 +182,23 @@ def clean(context, derived_data, caches, build, all):
     logging.info("<cmd>Clean</cmd>")
     punic = context.obj
 
-    if build or all:
-        logging.info('Erasing Carthage/Build directory')
-        if punic.config.build_path.exists():
-            shutil.rmtree(punic.config.build_path)
+    with timeit('clean'):
+        if build or all:
+            logging.info('Erasing Carthage/Build directory')
+            if punic.config.build_path.exists():
+                shutil.rmtree(punic.config.build_path)
 
-    if derived_data or all:
-        logging.info('Erasing derived data directory')
-        if punic.config.derived_data_path.exists():
-            shutil.rmtree(punic.config.derived_data_path)
+        if derived_data or all:
+            logging.info('Erasing derived data directory')
+            if punic.config.derived_data_path.exists():
+                shutil.rmtree(punic.config.derived_data_path)
 
-    if caches or all:
-        if punic.config.repo_cache_directory.exists():
-            logging.info('Erasing {}'.format(punic.config.repo_cache_directory))
-            shutil.rmtree(punic.config.repo_cache_directory)
-        logging.info('Erasing run cache')
-        runner.reset()
+        if caches or all:
+            if punic.config.repo_cache_directory.exists():
+                logging.info('Erasing {}'.format(punic.config.repo_cache_directory))
+                shutil.rmtree(punic.config.repo_cache_directory)
+            logging.info('Erasing run cache')
+            runner.reset()
 
 
 @punic_cli.command()
@@ -215,8 +216,8 @@ def graph(context, fetch, use_submodules, use_ssh, open):
         punic.config.use_submodules = use_submodules
     if use_ssh:
         punic.config.use_ssh = use_ssh
-
-    make_graph(punic, open)
+    with timeit('graph'):
+        make_graph(punic, open)
 
 
 @punic_cli.command(name='copy-frameworks')

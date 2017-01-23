@@ -1,7 +1,7 @@
 from __future__ import division, absolute_import, print_function
 
 __version__ = '0.2.6'
-__all__ = ['Punic']
+__all__ = ['Punic', 'current_session']
 
 import os
 from copy import copy
@@ -19,10 +19,19 @@ from .specification import ProjectIdentifier, Specification, VersionPredicate, V
 from .xcode import XcodeBuildArguments
 import punic.shshutil as shutil
 
+
+current_session = None
+
+
 class Punic(object):
     __slots__ = ['root_path', 'config', 'all_repositories', 'root_project']
 
     def __init__(self, root_path=None):
+
+        global current_session
+
+        if not current_session:
+            current_session = self
 
         if not root_path:
             root_path = Path.cwd()
@@ -118,7 +127,7 @@ class Punic(object):
                     schemes = [scheme for scheme in schemes if platform.device_sdk in scheme.supported_platform_names]
                     for scheme in schemes:
                         if not filter_dependency(platform, checkout, project, scheme):
-                            logging.warn('<sub>Skipping</sub>: {} / {} / {} / {}'.format(platform, checkout.identifier.project_name, project.path.name, scheme.name))
+                            logging.warn('<err>Warning:</err> <sub>Skipping</sub>: {} / {} / {} / {}'.format(platform, checkout.identifier.project_name, project.path.name, scheme.name))
                             continue
                         self._build_one(platform, project, scheme.name, configuration)
 

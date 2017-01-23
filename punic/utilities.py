@@ -6,6 +6,7 @@ import contextlib
 import os
 import time
 import logging
+import punic
 
 @contextlib.contextmanager
 def work_directory(path):
@@ -25,7 +26,11 @@ def work_directory(path):
 
 
 @contextlib.contextmanager
-def timeit(task=None, log=True):
+def timeit(task=None, log=None):
+
+    if log is None:
+        log = punic.current_session.config.log_timings
+
     # type: (Union[str, None])
     start = time.time()
     yield
