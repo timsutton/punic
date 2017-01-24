@@ -20,6 +20,7 @@ class NoSuchRevision(Exception):
     def __init__(self, repository, revision):
         self.repository = repository
         self.revision = revision
+        self.message = "No such revision <rev>'{}'</rev> in repository <ref>'{}'</ref>.".format(self.revision, self.repository)
 
 
 @contextlib.contextmanager
