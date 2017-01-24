@@ -23,6 +23,7 @@ from .config import *
 from .errors import *
 from .cartfile import *
 from .semantic_version import *
+from .errors import NoSuchRevision
 
 
 class Repository(object):
@@ -201,7 +202,7 @@ class Revision(object):
         self.semantic_version = (SemanticVersion.string(self.revision) if self.revision_type == Revision.Type.tag else None)
 
         if check and not self.exists:
-            raise Exception('Could not find revision matching {} in repository <ref>{}</ref>.'.format(self.revision, self.repository))
+            raise NoSuchRevision(repository=repository, revision=revision)
 
     @mproperty
     def exists(self):

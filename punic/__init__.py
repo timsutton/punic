@@ -18,7 +18,7 @@ from .runner import runner
 from .specification import ProjectIdentifier, Specification, VersionPredicate, VersionOperator
 from .xcode import XcodeBuildArguments
 import punic.shshutil as shutil
-
+from .errors import NoSuchRevision
 
 current_session = None
 
@@ -181,8 +181,8 @@ class Punic(object):
             if specification.predicate.operator == VersionOperator.commitish:
                 try:
                     revision = Revision(repository=repository, revision=specification.predicate.value, revision_type=Revision.Type.commitish, check = True)
-                except Exception as e:
-                    logging.warning(e.message)
+                except NoSuchRevision as e:
+                    logging.warning("<err>Warning</err>: {}".format(e.message))
                     return None
                 tags.append(revision)
                 tags.sort()
@@ -212,7 +212,7 @@ class Punic(object):
 
             resolved_configuration = configuration if configuration else project.default_configuration
             if not resolved_configuration:
-                logging.warn("No configuration specified for project and no default configuration found. This could be a problem.")
+                logging.warn("<err>Warning</err>: No configuration specified for project and no default configuration found. This could be a problem.")
 
             arguments = XcodeBuildArguments(scheme=scheme, configuration=resolved_configuration, sdk=sdk, toolchain=toolchain, derived_data_path=derived_data_path)
 
