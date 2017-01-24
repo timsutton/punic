@@ -57,11 +57,11 @@ class Punic(object):
         resolver = self._resolver()
         build_order = resolver.resolve_build_order()
 
-        for index, value in enumerate(build_order[:-1]):
-            dependency, version = value
+        for index, node in enumerate(build_order[:-1]):
+            dependency, version = node.identifier, node.version
             logging.debug('{} <ref>{}</ref> <rev>{}</rev> <ref>{}</ref>'.format(index + 1, dependency, version.revision if version else '', dependency.remote_url))
 
-        specifications = [Specification(identifier=dependency, predicate=VersionPredicate('"{}"'.format(version.revision))) for dependency, version in build_order[:-1]]
+        specifications = [Specification(identifier=node.identifier, predicate=VersionPredicate('"{}"'.format(node.version.revision))) for node in build_order[:-1]]
         logging.debug("<sub>Saving</sub> <ref>Cartfile.resolved</ref>")
 
         cartfile = Cartfile(use_ssh=self.config.use_ssh, specifications=specifications)
@@ -98,7 +98,7 @@ class Punic(object):
 
         filtered_dependencies = self._ordered_dependencies(name_filter=dependencies)
 
-        checkouts = [Checkout(punic=self, identifier=identifier, revision=revision) for identifier, revision in filtered_dependencies]
+        checkouts = [Checkout(punic=self, identifier=node.identifier, revision=node.version) for node in filtered_dependencies]
 
         skips = self.config.skips
 
@@ -152,7 +152,7 @@ class Punic(object):
 
         dependencies = [(spec.identifier, _predicate_to_revision(spec)) for spec in cartfile.specifications]
         resolved_dependencies = self._resolver().resolve_versions(dependencies)
-        resolved_dependencies = [dependency for dependency in resolved_dependencies if dependency[0].matches(name_filter)]
+        resolved_dependencies = [dependency for dependency in resolved_dependencies if dependency.identifier.matches(name_filter)]
         return resolved_dependencies
 
     def _repository_for_identifier(self, identifier):

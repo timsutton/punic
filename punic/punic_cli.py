@@ -114,7 +114,6 @@ def resolve(context, **kwargs):
     logging.info("<cmd>Resolve</cmd>")
     punic.config.update(**kwargs)
 
-
     with timeit('resolve'):
         with error_handling():
             punic.resolve()
@@ -280,7 +279,7 @@ def list(context, **kwargs):
 
     filtered_dependencies = punic._ordered_dependencies(name_filter=deps)
 
-    checkouts = [Checkout(punic=punic, identifier=identifier, revision=revision) for identifier, revision in filtered_dependencies]
+    checkouts = [Checkout(punic=punic, identifier=node.identifier, revision=node.version) for node in filtered_dependencies]
 
     tree = {}
 

@@ -5,10 +5,25 @@ __all__ = ['Resolver', 'Node']
 from collections import (defaultdict, namedtuple)
 from networkx import (DiGraph, dfs_preorder_nodes, topological_sort, number_of_nodes, number_of_edges)
 import logging
-
 from .repository import *
 
-Node = namedtuple('Node', 'identifier version')
+class Node:
+    def __init__(self, identifier, version):
+        self.identifier = identifier
+        self.version = version
+    def __repr__(self):
+        return "{}@{}".format(self.identifier, self.version)
+    def items(self):
+        return self.identifier, self.version
+
+    def __hash__(self):
+        return hash(self.identifier) ^ hash(self.version)
+
+    def __eq__(self, other):
+        return self.identifier == other.identifier and self.version == other.version
+
+
+#Node = namedtuple("Node", "identifier version")
 
 
 class Resolver(object):
@@ -17,11 +32,8 @@ class Resolver(object):
         self.dependencies_for_node = dependencies_for_node
 
     def build_graph(self, dependency_filter=None):
-        # type: ([str]) -> DiGraph
-
         def populate_graph(graph, parent, depth=0):
             graph.add_node(parent)
-
             for child_identifier, child_versions in self._dependencies_for_node(parent):
                 for child_version in child_versions:
                     child = Node(child_identifier, child_version)
@@ -29,7 +41,6 @@ class Resolver(object):
                         continue
                     graph.add_edge(parent, child)
                     populate_graph(graph, child, depth=depth + 1)
-
         graph = DiGraph()
         populate_graph(graph=graph, parent=self.root)
         return graph
@@ -44,13 +55,14 @@ class Resolver(object):
 
         # Build a graph up of _all_ version of _all_ dependencies
         graph = self.build_graph()
+        logging.debug('Input universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
-        logging.debug('Universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        ################################################################################################################
 
         # Build a dictionary of all versions of all dependencies
         all_dependencies = defaultdict(set)
-        for dependency, version in dfs_preorder_nodes(graph):
-            all_dependencies[dependency].add(version)
+        for node in dfs_preorder_nodes(graph):
+            all_dependencies[node.identifier].add(node.version)
 
         ################################################################################################################
 
@@ -71,8 +83,8 @@ class Resolver(object):
                 if not node in graph:
                     return
 
-                for dependency, version in graph.successors(node):
-                    mini[dependency].add(version)
+                for node in graph.successors(node):
+                    mini[node.identifier].add(node.version)
                 for dependency, versions in mini.items():
                     some = all_dependencies[dependency]
                     difference = some.difference(versions)
@@ -91,17 +103,19 @@ class Resolver(object):
         prune_1()
         prune_2()
 
-        logging.debug('Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logging.debug('Pruned graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         ################################################################################################################
 
+        logging.debug('<sub>Uniquing graph</sub>')
+
+        # Calculate a unique set of dependencies. If multiple dependnecies have the same child dependency this "uniques" them
         dependencies = set([(dependency, sorted(versions)[-1]) for dependency, versions in sorted(all_dependencies.items())])
 
-        ################################################################################################################
-
+        # Build a graph _again_ but only with actual dependencies. This is the "correct" dependency graph
         graph = self.build_graph(dependency_filter=lambda child, child_version: (child, child_version) in dependencies)
 
-        logging.debug('Pruned universal graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
+        logging.debug('Uniqued graph has {} nodes, {} edges.'.format(number_of_nodes(graph), number_of_edges(graph)))
 
         ################################################################################################################
 
